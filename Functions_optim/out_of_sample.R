@@ -5,7 +5,7 @@
 # and the alternative outputs are additionally the SMI and SMI groups returns, mean returns
 # and volatility, covariance and TP weights.
 
-out_of_sample = function(slices, r_shrink = 0, cor_shrink = 1, interval = "1d", section = NULL) {
+out_of_sample_old = function(slices, r_shrink = 0, cor_shrink = 1, interval = "1d", section = NULL) {
   
   out_of_sample_SMI = out_of_sample_SMI_groups = c()
   

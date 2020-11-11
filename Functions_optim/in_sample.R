@@ -2,7 +2,7 @@
 # The inputs are the constructor output and optionally the data interval.
 # The outputs are the SMI and SMI groups in sample sharpe ratio.
 
-in_sample = function(constructor, interval = "1d") {
+in_sample_old = function(constructor, interval = "1d") {
   
   # Calculate TP weights
   tpw_SMI = markovitz_optim_tp(constructor$SMI_mu_sd,

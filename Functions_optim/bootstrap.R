@@ -5,7 +5,7 @@
 # the coordinates of the efficiency frontier, the coordinates of the mvp and tp
 # and the standard error of the weights of the mvp and tp.
 
-bootstrap = function(returns) {
+bootstrap_old = function(returns) {
   
   # Define number of bootstrap samples
   returns = returns[-1]

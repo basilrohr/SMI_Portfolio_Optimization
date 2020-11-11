@@ -2,7 +2,7 @@
 # The inputs are the SMI returns, stocks, group names and group compositions and the number of slices.
 # The outputs are a the years to be optimized and the years to not be optimized.
 
-slicer = function(SMI_returns, SMI_stocks, SMI_groups_names, SMI_groups, slices = 5) {
+slicer_old = function(SMI_returns, SMI_stocks, SMI_groups_names, SMI_groups, slices = 5) {
   
   # Slice data
   years = split(SMI_returns, format(SMI_returns$Date, "%Y"))
