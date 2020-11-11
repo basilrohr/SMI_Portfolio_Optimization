@@ -27,16 +27,3 @@ pf_return(mvpw, mr)
 pf_volatility(mvpw, covm)
 pf_return(gmvpw, gmr)
 pf_volatility(gmvpw, gcovm)
-
-
-
-
-seq = seq(0, 1, 0.01)
-c = ef_weights(mvp_weights(a), tp_weights(a, b), seq)
-
-
-
-
-
-
-
