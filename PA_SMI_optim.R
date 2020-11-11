@@ -27,3 +27,7 @@ pf_return(mvpw, mr)
 pf_volatility(mvpw, covm)
 pf_return(gmvpw, gmr)
 pf_volatility(gmvpw, gcovm)
+
+
+
+
