@@ -16,7 +16,7 @@ R.utils::sourceDirectory(paste0(dir, "/Functions"), modifiedOnly = F)
 # Calculate all parameters
 assign_list_output(constructor(SMI_returns, SMI_stocks, SMI_groups_names, SMI_groups))
 
-
+hallo = 2
 
 tq_index_options()
 
