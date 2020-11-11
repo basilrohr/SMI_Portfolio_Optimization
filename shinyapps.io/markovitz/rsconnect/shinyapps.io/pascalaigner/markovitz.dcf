@@ -1,0 +1,12 @@
+name: markovitz
+title:
+username:
+account: pascalaigner
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3046790
+bundleId: 3768234
+url: https://pascalaigner.shinyapps.io/markovitz/
+when: 1603318812.50651
+asMultiple: FALSE
+asStatic: FALSE
