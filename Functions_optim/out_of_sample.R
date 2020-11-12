@@ -56,8 +56,8 @@ out_of_sample_old = function(slices, r_shrink = 0, cor_shrink = 1, interval = "1
   }
   
   # Calculate sharpe ratio
-  sr_os_SMI = sharpe_ratio(mean(out_of_sample_SMI), sd(out_of_sample_SMI), 0, interval)
-  sr_os_SMI_groups = sharpe_ratio(mean(out_of_sample_SMI_groups), sd(out_of_sample_SMI_groups), 0, interval)
+  sr_os_SMI = sharpe_ratio_old(mean(out_of_sample_SMI), sd(out_of_sample_SMI), 0, interval)
+  sr_os_SMI_groups = sharpe_ratio_old(mean(out_of_sample_SMI_groups), sd(out_of_sample_SMI_groups), 0, interval)
   
   if (is.null(section)) {
     return(list("sr_os_SMI" = sr_os_SMI,
@@ -81,5 +81,5 @@ out_of_sample_old = function(slices, r_shrink = 0, cor_shrink = 1, interval = "1
   }
 }
 
-out_of_sample_vec = Vectorize(out_of_sample, vectorize.args = c("r_shrink", "cor_shrink"),
+out_of_sample_vec_old = Vectorize(out_of_sample_old, vectorize.args = c("r_shrink", "cor_shrink"),
                               SIMPLIFY = F)
