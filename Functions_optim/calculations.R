@@ -80,9 +80,8 @@ bootstrap = function(returns) {
     sample = returns[sample(nrow(returns), replace = T),]
     cm = cov_mat(sample); mr = mean_returns(sample)
     mvpw = mvp_weights(cm); tpw = tp_weights(cm, mr)
-    samples_mvp_weights[,i] = mvp_weights(cm)
-    samples_tp_weights[,i] = tp_weights(cm, mr)
-    samples_ef_weights = ef_weights(mvpw, tpw, seq(-2, 2, 0.1))
+    samples_mvp_weights[,i] = mvpw; samples_tp_weights[,i] = tpw
+    samples_ef_weights = ef_weights(mvpw, tpw, seq(-1.5, 1.5, 0.1))
     samples_ef_points[[i]] = ef_points(samples_ef_weights, cm, mr)
   }
   weights_sd = function(x) {quantile(x, 0.84) - quantile(x, 0.5)}
@@ -92,8 +91,49 @@ bootstrap = function(returns) {
        samples_ef_points = samples_ef_points)
 }
 
+# Cross validation training and test sets
+cross_validation_sets = function(returns) {
+  n = 5
+  sets = split(returns, rep(1:n, length.out = nrow(returns), each = ceiling(nrow(returns)/n)))
+  training_sets = test_sets = vector(mode = "list", length = n)
+  for (i in seq_along(sets)) {
+    training_set = bind_rows(sets[-i]); test_set = bind_rows(sets[i])
+    training_sets[[i]] = list(returns = training_set, cov_mat = cov_mat(training_set),
+                              mean_returns = mean_returns(training_set))
+    test_sets[[i]] = list(returns = test_set, cov_mat = cov_mat(test_set),
+                          mean_returns = mean_returns(test_set))
+  }
+  list(training_sets = training_sets, test_sets = test_sets)
+}
 
+# Out of sample Sharpe ratio
+out_of_sample = function(sets, sfr = 0, sfcor = 1, set = NULL) {
+  if(is.null(set)) {seq = seq_along(sets[[1]])} else {seq = set}
+  weighted_returns = c()
+  for (i in seq) {
+    covm = sets[[1]][[i]]$cov_mat; mr = sets[[1]][[i]]$mean_returns
+    corm = cov2cor(covm); diag(corm) = 0
+    scorm = diag(nrow(corm)) + sfcor * corm
+    scovm = diag(volatilities(covm)) %*% scorm %*% diag(volatilities(covm))
+    smr = (1-sfr) * mr + sfr * mean(mr)
+    tpw = tp_weights(scovm, smr)
+    weighted_returns_set = c(as.matrix(sets[[2]][[i]]$returns[-1]) %*% tpw)
+    weighted_returns = c(weighted_returns, weighted_returns_set)
+  }
+  if(is.null(set)) {mean(weighted_returns) / sd(weighted_returns)}
+  else {
+    list(sharpe_ratio = mean(weighted_returns) / sd(weighted_returns),
+         shrinking_cov_mat = scovm, shrinking_mean_returns = smr, tpw = tpw)
+  }
+}
+out_of_sample_vec = Vectorize(out_of_sample, vectorize.args = c("sfr", "sfcor"))
 
+# In sample Sharpe ratio
+in_sample = function(returns) {
+  tpw = tp_weights(cov_mat(returns), mean_returns(returns))
+  weighted_returns = c(as.matrix(returns[-1]) %*% tpw)
+  mean(weighted_returns) / sd(weighted_returns)
+}
 
 
 
