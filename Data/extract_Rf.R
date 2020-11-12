@@ -1,11 +1,6 @@
-# Get code directory
-dir = "/Dropbox/BA-Boyz/PA/Code"
-if (Sys.info()["sysname"] == "Windows") {dir = paste0("C:/Users/", Sys.info()["user"], dir)}
-if (Sys.info()["sysname"] == "Darwin") {dir = paste0("/Users/", Sys.info()["user"], dir)}
-
 # Read SARON data file
 # https://www.six-group.com/exchanges/indices/data_centre/swiss_reference_rates/reference_rates_en.html
-data = read.csv(paste0(dir, "/Data/Risk-free rate/hsrron.csv"), skip = 3, sep = ";")[,c(1, 2)]
+data = read.csv("./Data/Risk-free rate/hsrron.csv", skip = 3, sep = ";")[,c(1, 2)]
 data$Date = as.POSIXct(data$Date, format = "%d.%m.%Y")
 
 # Split years
@@ -29,8 +24,8 @@ names(LIBOR_mean_rates) = seq(2001, 2020)
 
 # Combine LIBOR and SARON and save vector
 interval = "1d" # Daily: 1d; Weekly: 1wk; Monthly: 1mo
-if (interval == "1d") {divisor = 260}
+if (interval == "1d") {divisor = 252}
 if (interval == "1wk") {divisor = 52}
 if (interval == "1mo") {divisor = 12}
 Rf = c(LIBOR_mean_rates[1:(length(LIBOR_mean_rates)-SARON_years)], SARON_mean_rates) / divisor
-save(Rf, file = paste0(dir, paste0("/Data/Rf_", interval, ".Rda")))
+save(Rf, file = paste0("./Data/Rf_", interval, ".Rda"))

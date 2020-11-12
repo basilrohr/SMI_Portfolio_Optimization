@@ -1,9 +1,10 @@
 # Groups
-groups = list(Consumer = c("Adecco", "Nestle", "Richemont", "Swatch", "Swisscom"),
-              Finance = c("Credit Suisse", "Julius Baer", "Swiss Life", "Swiss Re",
-                          "UBS", "Zurich Insurance"),
-              Industrial = c("ABB", "Geberit", "Givaudan", "LafargeHolcim", "SGS"),
-              Pharma = c("Lonza", "Novartis", "Roche", "Sika"))
+load("./Data/returns_1d.Rda")
+stocks = colnames(returns[-1])
+groups = list(Consumer = stocks[c(2, 9, 11, 15, 18)],
+              Finance = stocks[c(3, 6, 16, 17, 19, 20)],
+              Industrial = stocks[c(1, 4, 5, 7, 13)],
+              Pharma = stocks[c(8, 10, 12, 14)])
 
 # Groups returns
 groups_returns = function(returns, groups) {
@@ -25,6 +26,12 @@ mean_returns = function(returns) {colMeans(returns[-1])}
 
 # Volatilities
 volatilities = function(cov_mat) {sqrt(diag(cov_mat))}
+
+# Standard error of mean
+se_mean = function(x) {sd(x) / sqrt(length(x))}
+
+# Standard error of standard deviation
+se_sd = function(x) {1 / sqrt(2 * (length(x)-1)) * sd(x)}
 
 # Minimum variance portfolio weights
 mvp_weights = function(cov_mat) {
@@ -91,6 +98,21 @@ bootstrap = function(returns) {
        samples_ef_points = samples_ef_points)
 }
 
+# In sample Sharpe ratio
+in_sample = function(returns) {
+  tpw = tp_weights(cov_mat(returns), mean_returns(returns))
+  weighted_returns = c(as.matrix(returns[-1]) %*% tpw)
+  mean(weighted_returns) / sd(weighted_returns)
+}
+
+# Annualized Sharpe ratio
+annualized_sharpe_ratio = function(sharpe_ratio, interval) {
+  if (interval == "1d") {f = sqrt(252)}
+  if (interval == "1wk") {f = sqrt(52)}
+  if (interval == "1mo") {f = sqrt(12)}
+  sharpe_ratio * f
+}
+
 # Cross validation training and test sets
 cross_validation_sets = function(returns) {
   n = 5
@@ -123,31 +145,7 @@ out_of_sample = function(sets, sfr = 0, sfcor = 1, set = NULL) {
   if(is.null(set)) {mean(weighted_returns) / sd(weighted_returns)}
   else {
     list(sharpe_ratio = mean(weighted_returns) / sd(weighted_returns),
-         shrinking_cov_mat = scovm, shrinking_mean_returns = smr, tpw = tpw)
+         shrinking_cov_mat = scovm, shrinking_mean_returns = smr, tp_weights = tpw)
   }
 }
 out_of_sample_vec = Vectorize(out_of_sample, vectorize.args = c("sfr", "sfcor"))
-
-# In sample Sharpe ratio
-in_sample = function(returns) {
-  tpw = tp_weights(cov_mat(returns), mean_returns(returns))
-  weighted_returns = c(as.matrix(returns[-1]) %*% tpw)
-  mean(weighted_returns) / sd(weighted_returns)
-}
-
-
-print("test")
-
-
-a = 3
-b = 5
-a + b
-
-
-
-
-
-
-
-
-

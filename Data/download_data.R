@@ -1,8 +1,3 @@
-# Get code directory
-dir = "/Dropbox/BA-Boyz/PA/Code"
-if (Sys.info()["sysname"] == "Windows") {dir = paste0("C:/Users/", Sys.info()["user"], dir)}
-if (Sys.info()["sysname"] == "Darwin") {dir = paste0("/Users/", Sys.info()["user"], dir)}
-
 # Specify data parameters
 # https://finance.yahoo.com/quote/%5ESSMI/components?p=%5ESSMI
 
@@ -29,13 +24,13 @@ interval = "1d" # Daily: 1d; Weekly: 1wk; Monthly: 1mo
 #   url = paste0("https://query1.finance.yahoo.com/v7/finance/download/", stock_symbols[i],
 #                "?period1=", start_date_unix, "&period2=", end_date_unix,
 #                "&interval=", interval, "&events=history&includeAdjustedClose=true")
-#   dest = paste0(dir, "/Data/", interval, "/", stocks[i], ".csv")
+#   dest = paste0("./Data/", interval, "/", stocks[i], ".csv")
 #   download.file(url, dest)
 # }
 
 # Combine data files to single data frame
 for (i in 1:length(stocks)) {
-  data = read.csv(paste0(dir, "/Data/", interval, "/", stocks[i], ".csv"),
+  data = read.csv(paste0("./Data/", interval, "/", stocks[i], ".csv"),
                   na.strings = "null")[,c(1, 5)]
   if (i == 1) {df = data.frame(as.Date(data[,1]))}
   df = cbind(df, data[,2])
@@ -48,5 +43,5 @@ colnames(df) = c("Date", stocks)
 df = df[rowSums(is.na(df)) == 0,]
 
 # Save data frame
-save(df, file = paste0(dir, "/Data/", paste0("data_", interval, ".Rda")))
-# load(paste0(dir, "/Data/", paste0("data_", interval, ".Rda")))
+save(df, file = paste0("./Data/", paste0("data_", interval, ".Rda")))
+# load(paste0("./Data/", paste0("data_", interval, ".Rda")))
