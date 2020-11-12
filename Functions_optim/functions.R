@@ -1,4 +1,3 @@
-# Groups
 load("./Data/returns_1d.Rda")
 stocks = colnames(returns[-1])
 groups = list(Consumer = stocks[c(2, 9, 11, 15, 18)],
@@ -6,7 +5,6 @@ groups = list(Consumer = stocks[c(2, 9, 11, 15, 18)],
               Industrial = stocks[c(1, 4, 5, 7, 13)],
               Pharma = stocks[c(8, 10, 12, 14)])
 
-# Groups returns
 groups_returns = function(returns, groups) {
   groups_returns = data.frame(matrix(nrow = nrow(returns), ncol = length(groups)+1,
                               dimnames = list(NULL, c("Date", names(groups)))))
@@ -15,25 +13,18 @@ groups_returns = function(returns, groups) {
   groups_returns
 }
 
-# Covariance matrix
 cov_mat = function(returns) {cov(returns[-1])}
 
-# Correlation matrix
 cor_mat = function(returns) {cor(returns[-1])}
 
-# Mean returns
 mean_returns = function(returns) {colMeans(returns[-1])}
 
-# Volatilities
 volatilities = function(cov_mat) {sqrt(diag(cov_mat))}
 
-# Standard error of mean
 se_mean = function(x) {sd(x) / sqrt(length(x))}
 
-# Standard error of standard deviation
 se_sd = function(x) {1 / sqrt(2 * (length(x)-1)) * sd(x)}
 
-# Minimum variance portfolio weights
 mvp_weights = function(cov_mat) {
   ones = rep(1, nrow(cov_mat))
   mu_inv = ones %*% solve(cov_mat) %*% ones
@@ -41,7 +32,6 @@ mvp_weights = function(cov_mat) {
   c(mvp_weights)
 }
 
-# Tangency portfolio weights
 tp_weights = function(cov_mat, mean_returns) {
   ones = rep(1, nrow(cov_mat))
   lambda_inv = ones %*% solve(cov_mat) %*% mean_returns
@@ -49,36 +39,29 @@ tp_weights = function(cov_mat, mean_returns) {
   c(tp_weights)
 }
 
-# Portfolio return
 pf_return = function(weights, mean_returns) {c(weights %*% mean_returns)}
 
-# Portfolio volatility
 pf_volatility = function(weights, cov_mat) {c(sqrt(weights %*% cov_mat %*% weights))}
 
-# Efficiency frontier weights
 ef_weights = Vectorize(function(mvp_weights, tp_weights, alpha){alpha * mvp_weights +
     (1-alpha) * tp_weights}, vectorize.args = "alpha")
 
-# Efficiency frontier points
 ef_points = function(ef_weights, cov_mat, mean_returns) {
   x = apply(ef_weights, 2, function(x){pf_volatility(x, cov_mat)})
   y = apply(ef_weights, 2, function(x){pf_return(x, mean_returns)})
   cbind(x, y)
 }
 
-# Minimum variance portfolio point via efficiency frontier points
 mvp_point = function(ef_points) {
   i = which.min(ef_points[,1])
   cbind(ef_points[,1][i], ef_points[,2][i])
 }
 
-# Tangency portfolio point via efficiency frontier points
 tp_point = function(ef_points) {
   i = which.max(ef_points[,2] / ef_points[,1])
   cbind(ef_points[,1][i], ef_points[,2][i])
 }
 
-# Bootstrap mvp and tp weights standard errors and efficiency frontiers
 bootstrap = function(returns) {
   n = 100
   samples_mvp_weights = samples_tp_weights = matrix(nrow = ncol(returns)-1, ncol = n)
@@ -98,14 +81,12 @@ bootstrap = function(returns) {
        samples_ef_points = samples_ef_points)
 }
 
-# In sample Sharpe ratio
 in_sample = function(returns) {
   tpw = tp_weights(cov_mat(returns), mean_returns(returns))
   weighted_returns = c(as.matrix(returns[-1]) %*% tpw)
   mean(weighted_returns) / sd(weighted_returns)
 }
 
-# Annualized Sharpe ratio
 annualized_sharpe_ratio = function(sharpe_ratio, interval) {
   if (interval == "1d") {f = sqrt(252)}
   if (interval == "1wk") {f = sqrt(52)}
@@ -113,7 +94,6 @@ annualized_sharpe_ratio = function(sharpe_ratio, interval) {
   sharpe_ratio * f
 }
 
-# Cross validation training and test sets
 cross_validation_sets = function(returns) {
   n = 5
   sets = split(returns, rep(1:n, length.out = nrow(returns), each = ceiling(nrow(returns)/n)))
@@ -128,7 +108,6 @@ cross_validation_sets = function(returns) {
   list(training_sets = training_sets, test_sets = test_sets)
 }
 
-# Out of sample Sharpe ratio
 out_of_sample = function(sets, sfr = 0, sfcor = 1, set = NULL) {
   if(is.null(set)) {seq = seq_along(sets[[1]])} else {seq = set}
   weighted_returns = c()
@@ -148,4 +127,5 @@ out_of_sample = function(sets, sfr = 0, sfcor = 1, set = NULL) {
          shrinking_cov_mat = scovm, shrinking_mean_returns = smr, tp_weights = tpw)
   }
 }
+
 out_of_sample_vec = Vectorize(out_of_sample, vectorize.args = c("sfr", "sfcor"))
