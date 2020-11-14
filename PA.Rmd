@@ -44,7 +44,7 @@ library(grid)
 # Get code directory
 # Load data and functions
 load("./Data/data_1d.Rda")
-load("./Data/Rf_1d.Rda")
+load("./Data/rf_1d.Rda")
 load("./Data/SMI_returns_1d.Rda")
 R.utils::sourceDirectory("./Functions", modifiedOnly = F)
 ```
@@ -80,7 +80,7 @@ The reason for using logarithmic returns is that the numbers take smaller values
 <p> *$x_{t}$ = closing stock price at time t* <p>
 
 ```{r tabplot1, echo = F}
-Rftap = Rf * 260
+Rftap = rf * 260
 Rftap = data.frame(names(Rftap), round(Rftap, 3))
 rownames(Rftap) = c()
 kable(Rftap, caption = "Average overnight risk-free return per year in \\%", format = "latex", 
