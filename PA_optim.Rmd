@@ -6,8 +6,10 @@ author:
   - Maurice Gerber
   - Basil Rohr
 date: "`r format(Sys.time(), '%d. %B %Y')`"
-abstract: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?\\newpage"
-output: bookdown::pdf_book
+abstract: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?\\par\\textbf{Keywords:} Portfolio optimization, Robust optimization, Markowitz model, Covariance matrix, Shrinkage, Sharpe ratio\\newpage"
+output: 
+  bookdown::pdf_book:
+    toc: FALSE
 classoption: twocolumn
 geometry: margin = 20mm
 documentclass: extarticle
@@ -18,8 +20,6 @@ header-includes:
   - \floatplacement{table}{H}
   - \setlength{\abovecaptionskip}{0pt}
 ---
-
-\newpage
 
 ```{r, include = F}
 knitr::opts_chunk$set(echo = F)
@@ -37,11 +37,13 @@ load("./Data/returns_1d.Rda")
 R.utils::sourceDirectory("./Code", modifiedOnly = F)
 ```
 
-# Problem
-Markowitz Optimization and other models of Finance require estimates of the expected return, the standard deviation and the correlations of individual assets.
+# Introduction
+Markowitz' Optimization and other models of Finance require estimates of the expected return, the standard deviation and the correlations of individual assets.
 These estimates are subject to estimation errors, especially when they are based on short historical time series. This leads to the danger of over- fitting historical data and - in the case of portfolio optimization - of producing portfolios that perform well in backtesting, but perform poorly in the future.
 To overcome these problems, several approaches have been proposed. This includes Bayesian approaches, including shrinking Estimators for historical returns, volatilites and correlations. It also includes resampling/bootstrapping approaches, where expected returns, volatilites and correlations are modelled as random variables.
 We will analyze a variety of such approaches, identify those that add most value in the context of investment management, and combine/improve them. The goal is a recommended methodology for computing the strategic asset allocation of pension funds and other institutional investors.
+
+\newpage
 
 # Swiss Market Index
 The Swiss Market Index or (SMI) is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. The SMI covers approximately 80% of the total capitalization of the Swiss stock market. It is also a price index, which means that dividends are not included in the index. The SMI is always reviewed twice a year and, if necessary, reassembled. In our case, we use the composition per end of 2018. The reason for the 2018 composition is, that enough historical data for all those companies is available.     
@@ -346,7 +348,7 @@ kable(mvpw_gr, caption = "Weights of MVP by group", digits = 3,
 ## Tangency portfolio 
 The tangency portfolio results from the tangent of the capital market line and the efficient frontier, which will be shown more detailed in chapter [Efficient Frontier]. The capital market line is an important component of the Capital Asset Pricing Model. The slope of the capital market line indicates how much more return is expected per additional volatility, therefore a steeper slope of the capital market line gives a better Sharpe ratio. This is exactly the situation when the capital market line is tangential to the efficient frontier. Therefore, the best possible diversified portfolio results from the weightings of the tangency portfolio. 
 
-In this paper the MVP and TP serve as useful reference points to compare the Sharpe ratio of different optimizations. The tangency portfolio is often referred to in the literature as the market portfolio. In the equation for the capital market line, shown as formula \@ref(eq:cml), the expected return of the market portfolio respectively the tangency portfolio is written as $R_{tp}$.
+In this paper the MVP and TP serve as useful reference points to compare the Sharpe ratio of different optimizations. The tangency portfolio is often referred to in the literature as the market portfolio. In the equation for the capital market line, shown as equation \@ref(eq:cml), the expected return of the market portfolio respectively the tangency portfolio is written as $R_{tp}$.
 
 *Capital Market Line:*
 \begin{equation}
@@ -412,7 +414,7 @@ R_{P} = \vec{w}^T * \vec{R}
 <p> *$\vec{R}$ = mean return* <p>
 
 \begin{equation}
-\sigma_{P} = \vec{w}^T\Sigma\vec{w}
+\sigma_{P} = \sqrt{\vec{w}^T\Sigma\vec{w}}    
   \label{eq:cord2}
 \end{equation}
 
@@ -472,10 +474,9 @@ R_{P} = \vec{w}^T * \vec{R}
 #   custom_theme_markdown)))
 ```
 
-In the chart above, all stocks of the SMI and the four groups are shown in a return-volatility diagram. The MVP, tangency portfolio and efficient frontier are also plotted. It is clear to see that the grouping has a lower volatility and a higher return, which leads to a better Sharpe ratio.
+In figure \@ref(fig:gg3) it is clearly visible that the SMI shows a significantly higher return with almost the same volatility and vice versa. This leads to a larger in sample Sharpe ratio of the SMI compared to the groups. The reason for a higher in sample Sharpe ratio of the individual stocks is due to the higher amount of data. There are 20 stocks in the SMI for which the weighting can be optimized, but only four in the grouping. However, it will become apparent in chapter \@ref(cross) that this no longer applies to the out of sample Sharpe ratio, which in our case is much more important than the in sample.
 
 # Bootstrap
-
 In this part a bootstrap process was made to analyze the robustness of the tangency portfolio weights when resampling all historical returns.
 
 All dates from the historical data were sampled in the same dimension, with replacing included. Which means that certain dates can occur multiple times. From each sampled date, the corresponding returns of each stock are added to the new data, consequently maintaining the daily differences between stocks. If replacing would not be included in the sampling method, the correlation matrix would remain constant to the one of the original data.
@@ -549,7 +550,7 @@ The TP weights of two individual stocks is illustrated in \@ref(fig:gg9). Genera
 
 \newpage
 
-# Cross validation
+# Cross validation {#cross}
 This chapter describes the methodology to measure the performance of the Markovitz model.
 
 The measure is the previously described Sharpe ratio and in particular the out of sample Sharpe ratio is of interest. Out of sample means that the model is not tested on the data which created it but on an independent dataset instead. Contrary, in sample means that the model is tested on the data which created it. A widely used method for out of sample testing is the so-called cross validation.
@@ -564,7 +565,7 @@ In the case of the Markovitz model, this means that the returns, volatility and 
 
 ```{r tabplot11}
 is_r = in_sample(r); is_gr = in_sample(gr)
-sets_r = cross_validation_sets(r); sets_gr = cross_validation_sets(gr)
+sets_r = cross_validation_sets(r,5); sets_gr = cross_validation_sets(gr)
 os_r = out_of_sample(sets_r); os_gr = out_of_sample(sets_gr)
 
 t11 = data.frame(c(is_r, is_gr), c(os_r, os_gr), row.names = c("SMI", "Groups"))
@@ -577,12 +578,10 @@ As one might expect, the optimization performs better in sample and therefore th
 
 \newpage
 
-# Shrinking
-
+# Shrinkage
 One method for improving the out of sample Sharpe ratio is shrinking. This approach focuses on altering the returns and correlation prior to the optimization with the goal to obtain a better model in regard to the out of sample Sharpe ratio.
 
 ## Shrinking factor for return
-
 The formula for the return shrinking factor is shown in \@ref(eq:shrinkR). When the shrinking factor is set to zero, the returns are not altered and remain the same. When increasing the shrinking factor from zero up to one, the returns converge towards their mean value.
 
 \begin{equation}
@@ -596,7 +595,6 @@ R_{i}(\lambda) = (1 - \lambda)*R_{i} + \lambda * \overline{R}
 <p> *$\overline{R}$ = mean return of all stocks* <p>
 
 ## Shrinking factor for correlation
-
 The formula for the correlation shrinking factor is shown in \@ref(eq:shrinkCor). The reason for shrinking the correlation instead of the covariance is that the former is standardized and therefore more suitable. When the shrinking factor is set to one, the correlation is not altered and remains the same. When decreasing the shrinking factor from one to zero, the correlation converges towards zero. This means that all entries of the correlation matrix are equal to zero except the diagonal, which is by definition always equal to one.
 
 \begin{equation}
@@ -604,15 +602,14 @@ The formula for the correlation shrinking factor is shown in \@ref(eq:shrinkCor)
   \label{eq:shrinkCor}
 \end{equation}
 
-<p> *$\rho_{i,j} (\epsilon)$ = correlation coefficient at {i,j} as a function of $\epsilon$* <p>
+<p> *$\rho_{i,j} (\epsilon)$ = correlation coefficient as a function of $\epsilon$* <p>
 <p> *$\epsilon$ = shrinking factor* <p>
-<p> *$I_{i,j}$ = identity matrix at {i,j}* <p>
-<p> *$\tilde{\rho_{i,j}}$ = correlation matrix with diagonal zero at {i,j}* <p>
+<p> *$I_{i,j}$ = identity matrix* <p>
+<p> *$\tilde{\rho_{i,j}}$ = correlation matrix with diagonal zero* <p>
 
 ## Achievable Sharpe ratios
 
 ### Shrinking factors analyzed separately
-
 The Sharpe ratio can be visualized as a function of the shrinking factor. Figure \@ref(fig:gg20) shows such a plot for the return shrinking factor. The global maxima are highlighted with points and their coordinates. It can be seen that the highest Sharpe ratio for the SMI is achieved with a shrinking factor of about two thirds. For the groups on the other hand shrinking does not lead to an improvement of the Sharpe ratio, as the highest Sharpe ratio is achieved at shrinking factor of zero which means that the returns are not altered. For the SMI it is visible that close to the shrinking factor one the line is interrupted. This implies that the corresponding Sharpe ratio is below zero which is not shown in the plot. These outliers are caused by extreme portfolio weights which are obtained at these shrinking factors. Extreme portfolio weights are obtained through near-singularity of the covariance matrix.
 
 ```{r gg20, fig.cap = 'Sharpe ratio as a function of return shrinking factor',fig.height = 3}
@@ -637,7 +634,6 @@ In the case of the groups shrinking does not have proven to make a noticeable im
 The conclusion of the SMI above also holds true here, as both shrinking factors deviate approximately the same from their original values, which in this case is no or almost no deviation.
 
 ### Shrinking factors analyzed simultaneously
-
 A further visualization is a three dimensional plot where the Sharpe ratio is plotted as a function of both shrinking coefficients. The points of the maxima and their values are also displayed.
 
 Figure \@ref(fig:gg22) shows such a plot for the SMI. The outliers where the Sharpe ratio drops below zero can also be seen in this plot in the top left corner, although only on the lower third of the correlation shrinking factor. The highest Sharpe ratio is achieved at a correlation shrinking factor of about one third again but a return shrinking factor of zero meaning the original values are used. Varying both shrinking factors together yields the same Sharpe ratio as in \@ref(fig:gg21) where only the correlation shrinking factor is varied. Noticeable is that the major part of the plot area has Sharpe ratios which are very close to each other.
@@ -685,20 +681,20 @@ https://www.six-group.com/exchanges/indices/data_centre/swiss_reference_rates/re
 https://www.global-rates.com/en/interest-rates/libor/swiss-franc/swiss-franc.aspx [Accessed 28 October 2020]
 
 [5] H. Makovitz (1952). Portfolio Selection.
-The Journal of Finance Vol. 7, No. 1, pp. 77-91 (15 pages). Published By: Wiley. [Accessed 05 September 2020]
+The Journal of Finance Vol. 7, No. 1, pp. 77-91 (15 pages). Published By: Wiley.
 
 [6] W. F. Sharpe (1966). Mutual Fund Performance.
 The Journal of Business, Vol. 39, No. 1, Part 2: Supplement on Security Prices, pp. 119-138. 
-Published by: The University of Chicago Press [Accessed 05 September 2020]
+Published by: The University of Chicago Press,
 
 [7] A. W. Lo (2003). The Statistics of Sharpe Ratios.
-Sloan School of Management, Massachusetts Instintute of Technology, Cambridge. [Accessed 03 November 2020]
+Sloan School of Management, Massachusetts Instintute of Technology, Cambridge.
 
 [8] Ahn, S. and Fessler, J. (2003). Standard Errors of Mean, Variance and, Standard Deviation Estimators. 
-EECS Department, The University of Michigan, pp.1-2. [Accessed 05 October 2020]
+EECS Department, The University of Michigan, pp.1-2.
 
 [9] D. G. Leuenberger (1998). Investment Science. 
-Published by: Oxford University Press, New York [Accessed 25 September 2020]
+Published by: Oxford University Press, New York.
 
 \newpage
 
