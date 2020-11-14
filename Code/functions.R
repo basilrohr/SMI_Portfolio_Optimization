@@ -62,8 +62,7 @@ tp_point = function(ef_points) {
   cbind(ef_points[,1][i], ef_points[,2][i])
 }
 
-bootstrap = function(returns) {
-  n = 100
+bootstrap = function(returns, n = 100) {
   samples_mvp_weights = samples_tp_weights = matrix(nrow = ncol(returns)-1, ncol = n)
   samples_ef_points = vector(mode = "list", length = n)
   for (i in 1:n) {
@@ -75,27 +74,26 @@ bootstrap = function(returns) {
     samples_ef_points[[i]] = ef_points(samples_ef_weights, cm, mr)
   }
   weights_sd = function(x) {quantile(x, 0.84) - quantile(x, 0.5)}
-  mvp_weights_sd = apply(samples_mvp_weights, 2, weights_sd)
-  tp_weights_sd = apply(samples_tp_weights, 2, weights_sd)
+  mvp_weights_sd = apply(samples_mvp_weights, 1, weights_sd)
+  tp_weights_sd = apply(samples_tp_weights, 1, weights_sd)
   list(mvp_weights_sd = mvp_weights_sd, tp_weights_sd = tp_weights_sd,
        samples_ef_points = samples_ef_points)
 }
 
-in_sample = function(returns) {
-  tpw = tp_weights(cov_mat(returns), mean_returns(returns))
-  weighted_returns = c(as.matrix(returns[-1]) %*% tpw)
-  mean(weighted_returns) / sd(weighted_returns)
-}
-
-annualized_sharpe_ratio = function(sharpe_ratio, interval) {
+ann_sharpe_ratio = function(sharpe_ratio, interval) {
   if (interval == "1d") {f = sqrt(252)}
   if (interval == "1wk") {f = sqrt(52)}
   if (interval == "1mo") {f = sqrt(12)}
   sharpe_ratio * f
 }
 
-cross_validation_sets = function(returns) {
-  n = 5
+in_sample = function(returns, interval = "1d") {
+  tpw = tp_weights(cov_mat(returns), mean_returns(returns))
+  weighted_returns = c(as.matrix(returns[-1]) %*% tpw)
+  ann_sharpe_ratio(mean(weighted_returns) / sd(weighted_returns), interval)
+}
+
+cross_validation_sets = function(returns, n = 5) {
   sets = split(returns, rep(1:n, length.out = nrow(returns), each = ceiling(nrow(returns)/n)))
   training_sets = test_sets = vector(mode = "list", length = n)
   for (i in seq_along(sets)) {
@@ -108,7 +106,7 @@ cross_validation_sets = function(returns) {
   list(training_sets = training_sets, test_sets = test_sets)
 }
 
-out_of_sample = function(sets, sfr = 0, sfcor = 1, set = NULL) {
+out_of_sample = function(sets, sfr = 0, sfcor = 1, interval = "1d", set = NULL) {
   if(is.null(set)) {seq = seq_along(sets[[1]])} else {seq = set}
   weighted_returns = c()
   for (i in seq) {
@@ -121,9 +119,9 @@ out_of_sample = function(sets, sfr = 0, sfcor = 1, set = NULL) {
     weighted_returns_set = c(as.matrix(sets[[2]][[i]]$returns[-1]) %*% tpw)
     weighted_returns = c(weighted_returns, weighted_returns_set)
   }
-  if(is.null(set)) {mean(weighted_returns) / sd(weighted_returns)}
+  if(is.null(set)) {ann_sharpe_ratio(mean(weighted_returns) /sd(weighted_returns), interval)}
   else {
-    list(sharpe_ratio = mean(weighted_returns) / sd(weighted_returns),
+    list(sharpe_ratio = ann_sharpe_ratio(mean(weighted_returns) / sd(weighted_returns), interval),
          shrinking_cov_mat = scovm, shrinking_mean_returns = smr, tp_weights = tpw)
   }
 }
