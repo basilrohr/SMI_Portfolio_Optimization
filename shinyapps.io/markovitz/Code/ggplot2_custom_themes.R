@@ -6,7 +6,8 @@ custom_theme_markdown = theme(axis.title.x = element_text(margin = margin(t = 10
                               panel.grid.major = element_line(colour = "grey", size = 0.4),
                               panel.grid.minor = element_line(colour = "grey", size = 0.2),
                               axis.ticks = element_blank(),
-                              text = element_text(family = "Times"))
+                              text = element_text(family = "Times", size = 15),
+                              legend.key =  element_blank())
 
 custom_theme_shiny = theme(axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
                            axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
@@ -15,4 +16,5 @@ custom_theme_shiny = theme(axis.title.x = element_text(margin = margin(t = 10, r
                            panel.grid.major = element_line(colour = "grey", size = 0.4),
                            panel.grid.minor = element_line(colour = "grey", size = 0.2),
                            axis.ticks = element_blank(),
-                           text = element_text(size = 15))
+                           text = element_text(size = 15),
+                           legend.key =  element_blank())

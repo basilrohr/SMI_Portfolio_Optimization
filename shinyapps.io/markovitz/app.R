@@ -1,17 +1,15 @@
 library(shiny)
 library(ggplot2)
-library(scales)
+library(ggcorrplot)
 library(dplyr)
-library(timeSeries)
+library(R.utils)
 library(sortable)
 library(DT)
-library(R.utils)
+library(shinycssloaders)
+library(cowplot)
 
-# Load functions
-dir = "."
-sourceDirectory(paste0(dir, "/Functions"), modifiedOnly = F)
+sourceDirectory("./Code", modifiedOnly = F)
 
-# Create user interface
 ui = navbarPage("Robust Methods of Portfolio Optimization",
                 tabPanel("Overview",
                          fluidRow(
@@ -24,188 +22,383 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                                 "Monthly" = "1mo")),
                                   textOutput("dataRange"),
                                   br(),
-                                  strong("Return"),
-                                  p("The return is calculated by log return minus risk-free rate."),
-                                  uiOutput("return"),
-                                  br(),
                                   selectInput(
                                     "stockSelector",
                                     "Plots",
-                                    SMI_stocks)),
-                           column(10, strong("Groups"),
+                                    stocks),
+                                  strong("Return"),
+                                  uiOutput("returnFormula")),
+                           column(5,
+                                  div(
+                                    style = "position: relative",
+                                    plotOutput("stockPlot", height = "300px",
+                                               hover = hoverOpts("stockPlotHover",
+                                                                 delay = 10, delayType = "debounce")),
+                                    uiOutput("stockPlotHoverInfo")),
+                                  br(),
+                                  div(
+                                    style = "position: relative",
+                                    plotOutput("returnPlot", height = "300px",
+                                               hover = hoverOpts("returnPlotHover",
+                                                                 delay = 10, delayType = "debounce")),
+                                    uiOutput("returnPlotHoverInfo"))),
+                           column(5,
+                                  tabsetPanel(
+                                    tabPanel("Mean return and volatility",
+                                             dataTableOutput("r_mr_vol", width = "90%")),
+                                    tabPanel("Correlation", br(),
+                                             plotOutput("r_cor", height = "600px")),
+                                    tabPanel("Risk-free rate",
+                                             dataTableOutput("rf", width = "90%")))))),
+                tabPanel("Groups",
+                         fluidRow(
+                           column(8,
+                                  strong("Groups"),
                                   bucket_list(
                                     group_name = "stockGroups",
                                     header = "Use drag and drop to move stocks around.",
                                     orientation = "horizontal",
                                     add_rank_list(
                                       input_id = "rankList1",
-                                      text = SMI_groups_names[1],
-                                      labels = get(SMI_groups_names[1])),
+                                      text = textInput("group1Name", NULL, value = "Consumer", width = "100%"),
+                                      labels = groups[[1]]),
                                     add_rank_list(
                                       input_id = "rankList2",
-                                      text = SMI_groups_names[2],
-                                      labels = get(SMI_groups_names[2])),
+                                      text = textInput("group2Name", NULL, value = "Finance", width = "100%"),
+                                      labels = groups[[2]]),
                                     add_rank_list(
                                       input_id = "rankList3",
-                                      text = SMI_groups_names[3],
-                                      labels = get(SMI_groups_names[3])),
+                                      text = textInput("group3Name", NULL, value = "Industrial", width = "100%"),
+                                      labels = groups[[3]]),
                                     add_rank_list(
                                       input_id = "rankList4",
-                                      text = SMI_groups_names[4],
-                                      labels = get(SMI_groups_names[4])),
+                                      text = textInput("group4Name", NULL, value = "Pharma", width = "100%"),
+                                      labels = groups[[4]]),
                                     add_rank_list(
                                       input_id = "rankList5",
+                                      text = textInput("group5Name", NULL, value = "Group 5", width = "100%"),
+                                      labels = c()),
+                                    add_rank_list(
+                                      input_id = "rankList6",
+                                      text = textInput("group6Name", NULL, value = "Group 6", width = "100%"),
+                                      labels = c()),
+                                    add_rank_list(
+                                      input_id = "rankList7",
+                                      text = textInput("group7Name", NULL, value = "Group 7", width = "100%"),
+                                      labels = c()),
+                                    add_rank_list(
+                                      input_id = "rankList8",
+                                      text = textInput("group8Name", NULL, value = "Group 8", width = "100%"),
+                                      labels = c()),
+                                    add_rank_list(
+                                      input_id = "rankList9",
                                       text = "Exclude",
-                                      labels = c())))),
-                         hr(),
-                         fluidRow(
-                           column(4,
-                                  div(
-                                    style = "position: relative",
-                                    plotOutput("stockPlot",
-                                               hover = hoverOpts("plot_hover2", delay = 10, delayType = "debounce"),
-                                               height = "300px"),
-                                    uiOutput("hover_info2"))),
-                           column(4,
-                                  div(
-                                    style = "position: relative",
-                                    plotOutput("returnPlot",
-                                               hover = hoverOpts("plot_hover1", delay = 10, delayType = "debounce"),
-                                               height = "300px"),
-                                    uiOutput("hover_info1"))),
+                                      labels = c())),
+                                  textOutput("errorGroupNames"),
+                                  tags$head(tags$style("#errorGroupNames{color: red; font-size: 16px;
+                                                       font-weight: bold;}"))),
                            column(4,
                                   tabsetPanel(
-                                    tabPanel("Stocks",
-                                             dataTableOutput("SMI_mu_sd", width = "90%")),
-                                    tabPanel("Groups",
-                                             dataTableOutput("SMI_groups_mu_sd", width = "90%")),
-                                    tabPanel("Risk-free rate",
-                                             dataTableOutput("Rf", width = "90%")))))),
-                tabPanel("Standard Errors"),
+                                    tabPanel("Mean return and volatility",
+                                             dataTableOutput("gr_mr_vol", width = "90%")),
+                                    tabPanel("Correlation", br(),
+                                             plotOutput("gr_cor", height = "500px")))))),
+                tabPanel("Standard Errors",
+                         fluidRow(
+                           column(2,
+                                  strong("Standard error return"),
+                                  uiOutput("seReturnFormula"),
+                                  strong("Standard error volatility"),
+                                  uiOutput("seVolatilityFormula")),
+                           column(10,
+                                  tabsetPanel(
+                                    tabPanel("Stocks", br(),
+                                             fluidRow(
+                                               column(5, plotOutput("seReturnPlot")),
+                                               column(4, dataTableOutput("seVolatility", width = "90%")))),
+                                    tabPanel("Groups", br(),
+                                             fluidRow(
+                                               column(5, plotOutput("seGroupsReturnPlot")),
+                                               column(4, dataTableOutput("seGroupsVolatility", width = "90%")))))))),
                 tabPanel("Markovitz Optimization",
-                         column(12,
-                                verbatimTextOutput("test")
-                                )),
+                         fluidRow(
+                           column(8,
+                                  tabsetPanel(
+                                    tabPanel("Stocks", br(),
+                                             fluidRow(
+                                               column(6, plotOutput("sdMVPWeightsPlot") %>% withSpinner),
+                                               column(6, plotOutput("sdTPWeightsPlot") %>% withSpinner))),
+                                    tabPanel("Groups", br(),
+                                             fluidRow(
+                                               column(6, plotOutput("sdMVPGroupsWeightsPlot") %>% withSpinner),
+                                               column(6, plotOutput("sdTPGroupsWeightsPlot") %>% withSpinner))))),
+                           column(4,
+                                  plotOutput("effFrontierBootstrap") %>% withSpinner,
+                                  actionButton("bootstrapButton", "Redo bootstrap")))),
+                tabPanel("Shrinking",
+                         fluidRow(
+                           column(5,
+                                  plotOutput("returnShrinking")),
+                           column(5,
+                                  plotOutput("correlationShrinking")))),
                 tabPanel("About the authors",
                          fluidRow(
                            column(12,
                                   img(src=paste0("Logo_ZHAW.jpg"), height = "200px")))))
 
-# Define functionality
-server = function(input, output) {
+server = function(input, output, session) {
   
-  df = reactive({
-    load(paste0(dir, "/Data/data_", input$intervalButton, ".Rda"))
+  df_react = reactive({
+    load(paste0("./Data/data_", input$intervalButton, ".Rda"))
     df
   })
   
-  SMI_returns = reactive({
-    load(paste0(dir, "/Data/SMI_returns_", input$intervalButton, ".Rda"))
-    SMI_returns
+  r_react = reactive({
+    load(paste0("./Data/returns_", input$intervalButton, ".Rda"))
+    returns
   })
   
-  parameters = reactive({
-    constructor(SMI_returns(), SMI_stocks, SMI_groups_names, list(input$rankList1, input$rankList2,
-                                                                  input$rankList3, input$rankList4))
+  g_react = reactive({
+    req(input$stockGroups)
+    groups_names = c(input$group1Name, input$group2Name, input$group3Name, input$group4Name,
+                     input$group5Name, input$group6Name, input$group7Name, input$group8Name)
+    dupl = duplicated(groups_names); error_message = ""
+    groups = list()
+    for (i in 1:(length(input$stockGroups)-1)) {
+      if (length(input$stockGroups[[i]]) >= 1) {
+        if (i %in% which(dupl)) {
+          error_message = "Error: Identical group names are not allowed."
+          break
+        }
+        groups[[groups_names[i]]] = input$stockGroups[[i]]
+      }
+    }
+    output$errorGroupNames = renderText({error_message})
+    groups
+  })
+  
+  gr_react = reactive({
+    groups_returns(r_react(), g_react())
   })
   
   output$dataRange = renderText({
-    paste0("Data ranges from ", format(df()[,1][1], "%d.%m.%Y"), " to ",
-           format(df()[,1][nrow(df())], "%d.%m.%Y"), ".")
+    paste0("Data ranges from ", format(df_react()[,1][1], "%d.%m.%Y"), " to ",
+           format(df_react()[,1][nrow(df_react())], "%d.%m.%Y"), ".")
   })
   
-  output$return = renderUI({
+  output$returnFormula = renderUI({
     withMathJax(helpText("$$R = R_{ln} - R_f = ln\\left(\\frac{x_t}{x_{t-1}}\\right) - R_f$$"))
   })
   
   output$stockPlot = renderPlot({
-    ggplot(df()) +
+    ggplot(df_react()) +
       geom_line(aes_string(x = "Date", y = paste0("`", input$stockSelector, "`"))) +
       labs(x = "Year", y = "Price [CHF]", title = paste(input$stockSelector, "stock price")) +
       scale_x_date(date_labels = "%Y", date_breaks = "2 years") +
       custom_theme_shiny
   })
   
+  output$stockPlotHoverInfo = renderUI({
+    hover = input$stockPlotHover
+    point = nearPoints(df_react(), hover, threshold = 5, maxpoints = 1, addDist = T)
+    if (nrow(point) == 0) {return(NULL)}
+    left_pct = (hover$x - hover$domain$left) / (hover$domain$right - hover$domain$left)
+    top_pct = (hover$domain$top - hover$y) / (hover$domain$top - hover$domain$bottom)
+    left_px = hover$range$left + left_pct * (hover$range$right - hover$range$left)
+    top_px = hover$range$top + top_pct * (hover$range$bottom - hover$range$top)
+    style = paste0("position: absolute; z-index: 100; background-color: rgba(245, 245, 245, 0.95);",
+                   "left:", left_px + 2, "px; top:", top_px + 2, "px;", "padding: 10px 10px 0px 10px;")
+    wellPanel(
+      style = style,
+      p(HTML(paste0(point$Date, "<br/>", round(point[input$stockSelector], 3), " CHF"))))
+  })
+  
   output$returnPlot = renderPlot({
-    ggplot(parameters()$SMI_returns) +
+    ggplot(r_react()) +
       geom_line(aes_string(x = "Date", y = paste0("`", input$stockSelector, "`"))) +
-      labs(x = "Year", y = "Log return [%]", title = paste(input$stockSelector, "log return")) +
+      labs(x = "Year", y = "Return [%]", title = paste(input$stockSelector, "return")) +
       scale_x_date(date_labels = "%Y", date_breaks = "2 years") +
       custom_theme_shiny
   })
   
-  output$SMI_mu_sd = renderDataTable({
-    parameters()$SMI_mu_sd %>%
-      datatable(rownames = NULL, options = list(dom = "tip", pageLength = 4)) %>%
-      formatRound(columns = c(2:3), digits = 3)
-  })
-  
-  output$SMI_groups_mu_sd = renderDataTable({
-    parameters()$SMI_groups_mu_sd %>%
-      datatable(rownames = NULL, options = list(dom = "t")) %>%
-      formatRound(columns = c(2:3), digits = 3)
-  })
-  
-  output$Rf = renderDataTable({
-    load(paste0(dir, "/Data/Rf_1d.Rda"))
-    Rf = data.frame(names(Rf), Rf * 260)
-    colnames(Rf) = c("Year", "Risk-free rate [%]")
-    Rf %>% datatable(rownames = NULL, options = list(dom = "tip", pageLength = 4)) %>%
-      formatRound(columns = 2, digits = 3)
-  })
-  
-  slices = reactive({
-    slicer(SMI_returns(), SMI_stocks, SMI_groups_names, list(input$rankList1, input$rankList2,
-                                                             input$rankList3, input$rankList4))
-  })
-  
-  sr_os = reactive({
-    out_of_sample(slices())
-  })
-  
-  sr_is = reactive({
-    in_sample(parameters())
-  })
-  
-  output$test = renderPrint({
-    sr_os()
-  })
-  
-  output$hover_info1 = renderUI({
-    hover = input$plot_hover1
-    point = nearPoints(parameters()$SMI_returns, hover, threshold = 5, maxpoints = 1, addDist = T)
-    if (nrow(point) == 0) return(NULL)
-    
+  output$returnPlotHoverInfo = renderUI({
+    hover = input$returnPlotHover
+    point = nearPoints(r_react(), hover, threshold = 5, maxpoints = 1, addDist = T)
+    if (nrow(point) == 0) {return(NULL)}
     left_pct = (hover$x - hover$domain$left) / (hover$domain$right - hover$domain$left)
     top_pct = (hover$domain$top - hover$y) / (hover$domain$top - hover$domain$bottom)
     left_px = hover$range$left + left_pct * (hover$range$right - hover$range$left)
     top_px = hover$range$top + top_pct * (hover$range$bottom - hover$range$top)
-    
-    style = paste0("position: absolute; z-index: 100; background-color: rgba(245, 245, 245, 0.95); ",
-                    "left:", left_px + 2, "px; top:", top_px + 2, "px;", "padding: 10px 10px 0px 10px;")
-    
-    wellPanel(
-      style = style,
-      p(HTML(paste0(point$Date, "<br/>", round(point[input$stockSelector], 3)))))
-  })
-  
-  output$hover_info2 = renderUI({
-    hover = input$plot_hover2
-    point = nearPoints(df(), hover, threshold = 5, maxpoints = 1, addDist = T)
-    if (nrow(point) == 0) return(NULL)
-    
-    left_pct = (hover$x - hover$domain$left) / (hover$domain$right - hover$domain$left)
-    top_pct = (hover$domain$top - hover$y) / (hover$domain$top - hover$domain$bottom)
-    left_px = hover$range$left + left_pct * (hover$range$right - hover$range$left)
-    top_px = hover$range$top + top_pct * (hover$range$bottom - hover$range$top)
-    
-    style = paste0("position: absolute; z-index: 100; background-color: rgba(245, 245, 245, 0.95); ",
+    style = paste0("position: absolute; z-index: 100; background-color: rgba(245, 245, 245, 0.95);",
                    "left:", left_px + 2, "px; top:", top_px + 2, "px;", "padding: 10px 10px 0px 10px;")
-    
     wellPanel(
       style = style,
-      p(HTML(paste0(point$Date, "<br/>", round(point[input$stockSelector], 3)))))
+      p(HTML(paste0(point$Date, "<br/>", round(point[input$stockSelector], 3)), "%")))
   })
+  
+  output$r_mr_vol = renderDataTable({
+    r = r_react()
+    r_mr_vol = data.frame(colnames(r[-1]), mean_returns(r), volatilities(cov_mat(r)))
+    r_mr_vol %>% datatable(colnames = c("Stock","Return [%]", "Volatility [%]"), rownames = NULL,
+                           options = list(dom = "tip", pageLength = 10)) %>%
+      formatRound(columns = c(2:3), digits = 3)
+  })
+  
+  output$r_cor = renderPlot({
+    gg_cor(cor_mat(r_react()), 3, 12, "Correlation", custom_theme_shiny)
+  })
+  
+  output$rf = renderDataTable({
+    load("./Data/rf_1d.Rda")
+    ann_rf = data.frame(names(rf), round(rf * 252, 3))
+    ann_rf %>% datatable(colnames = c("Year", "Rate [%]"), rownames = NULL,
+                         options = list(dom = "tip", pageLength = 10))
+  })
+  
+  output$gr_mr_vol = renderDataTable({
+    gr = gr_react()
+    gr_mr_vol = data.frame(colnames(gr[-1]), mean_returns(gr), volatilities(cov_mat(gr)))
+    gr_mr_vol %>% datatable(colnames = c("Group","Return [%]", "Volatility [%]"), rownames = NULL,
+                            options = list(dom = "t")) %>%
+      formatRound(columns = c(2:3), digits = 3)
+  })
+  
+  output$gr_cor = renderPlot({
+    gg_cor(cor_mat(gr_react()), 5, 15, "Correlation", custom_theme_shiny)
+  })
+  
+  output$seReturnFormula = renderUI({
+    withMathJax(helpText("$$\\sigma_{\\overline{R}} = \\frac{\\sigma}{\\sqrt{n}}$$"))
+  })
+  
+  output$seVolatilityFormula = renderUI({
+    withMathJax(helpText("$$\\sigma_{\\sigma} = \\sigma * \\frac{1}{\\sqrt{2 * (n - 1)}}$$"))
+  })
+  
+  seReturnPlot_react = reactive({
+    r = r_react(); gr = gr_react()
+    mr = mean_returns(r); gmr = mean_returns(gr)
+    se_r = apply(r[,-1], 2, se_mean); se_gr = apply(gr[,-1], 2, se_mean)
+    min = min(c(mr - se_r, gmr - se_gr)); max = max(c(mr + se_r, gmr + se_gr))
+    gg1 = gg_errorbar(colnames(r[-1]), mr, se_r, c(min, max), "Return [%]", 
+                      "Standard error return", custom_theme_shiny)
+    gg2 = gg_errorbar(colnames(gr[-1]), gmr, se_gr, c(min, max), "Return [%]",
+                      "Standard error return", custom_theme_shiny)
+    align_plots(gg1, gg2, align = "h")
+  })
+  
+  output$seReturnPlot = renderPlot({
+    ggdraw(seReturnPlot_react()[[1]])
+  })
+  
+  output$seGroupsReturnPlot = renderPlot({
+    ggdraw(seReturnPlot_react()[[2]])
+  })
+  
+  output$seVolatility = renderDataTable({
+    r = r_react()
+    se_volr = data.frame(colnames(r[-1]), apply(r[,-1], 2, se_sd))
+    se_volr %>% datatable(colnames = c("Stock", "Standard error volatility [%]"), rownames = NULL,
+                          options = list(dom = "tip", pageLength = 10)) %>%
+      formatRound(columns = 2, digits = 5)
+  })
+  
+  output$seGroupsVolatility = renderDataTable({
+    gr = gr_react()
+    se_volgr = data.frame(colnames(gr[-1]), apply(gr[,-1], 2, se_sd))
+    se_volgr %>% datatable(colnames = c("Group", "Standard error volatility [%]"), rownames = NULL,
+                           options = list(dom = "t")) %>%
+      formatRound(columns = 2, digits = 5)
+  })
+  
+  bootstrap_r_react = reactive({
+    input$bootstrapButton
+    bootstrap(r_react())
+  })
+  
+  bootstrap_gr_react = reactive({
+    input$bootstrapButton
+    bootstrap(gr_react())
+  })
+  
+  sdMVPWeightsPlot_react = reactive({
+    r = r_react(); gr = gr_react()
+    mvpw_r = mvp_weights(cov_mat(r)); mvpw_gr = mvp_weights(cov_mat(gr))
+    mvpw_sd_r = bootstrap_r_react()$mvp_weights_sd; mvpw_sd_gr = bootstrap_gr_react()$mvp_weights_sd
+    min = min(c(mvpw_r - mvpw_sd_r, mvpw_gr - mvpw_sd_gr))
+    max = max(c(mvpw_r + mvpw_sd_r, mvpw_gr + mvpw_sd_gr))
+    gg1 = gg_errorbar(colnames(r[-1]), mvpw_r, mvpw_sd_r, c(min, max), "Weights",
+                      "Standard deviation MVP weights", custom_theme_shiny)
+    gg2 = gg_errorbar(colnames(gr[-1]), mvpw_gr, mvpw_sd_gr, c(min, max), "Weights",
+                      "Standard deviation MVP weights", custom_theme_shiny)
+    align_plots(gg1, gg2, align = "h")
+  })
+  
+  output$sdMVPWeightsPlot = renderPlot({
+    ggdraw(sdMVPWeightsPlot_react()[[1]])
+  })
+  
+  output$sdMVPGroupsWeightsPlot = renderPlot({
+    ggdraw(sdMVPWeightsPlot_react()[[2]])
+  })
+  
+  sdTPWeightsPlot_react = reactive({
+    r = r_react(); gr = gr_react()
+    tpw_r = tp_weights(cov_mat(r), mean_returns(r)); tpw_gr = tp_weights(cov_mat(gr), mean_returns(gr))
+    tpw_sd_r = bootstrap_r_react()$tp_weights_sd; tpw_sd_gr = bootstrap_gr_react()$tp_weights_sd
+    min = min(c(tpw_r - tpw_sd_r, tpw_gr - tpw_sd_gr))
+    max = max(c(tpw_r + tpw_sd_r, tpw_gr + tpw_sd_gr))
+    gg1 = gg_errorbar(colnames(r[-1]), tpw_r, tpw_sd_r, c(min, max), "Weights",
+                      "Standard deviation TP weights", custom_theme_shiny)
+    gg2 = gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(min, max), "Weights",
+                      "Standard deviation TP weights", custom_theme_shiny)
+    align_plots(gg1, gg2, align = "h")
+  })
+  
+  output$sdTPWeightsPlot = renderPlot({
+    ggdraw(sdTPWeightsPlot_react()[[1]])
+  })
+  
+  output$sdTPGroupsWeightsPlot = renderPlot({
+    ggdraw(sdTPWeightsPlot_react()[[2]])
+  })
+  
+  output$effFrontierBootstrap = renderPlot({
+    if (input$intervalButton == "1d") {fxlim = 1; fylim = 1}
+    if (input$intervalButton == "1wk") {fxlim = 2; fylim = 4}
+    if (input$intervalButton == "1mo") {fxlim = 3; fylim = 15}
+    suppressMessages(
+      suppressWarnings(print(
+        gg_bootstrap_ef(bootstrap_r_react()$samples_ef_points, fxlim, fylim, 1.5,
+                        "Bootstrap efficient frontiers", custom_theme_shiny))))
+  })
+  
+  cross_validation_sets_r_react = reactive({
+    cross_validation_sets(r_react())
+  })
+  
+  cross_validation_sets_gr_react = reactive({
+    cross_validation_sets(gr_react())
+  })
+  
+  output$returnShrinking = renderPlot({
+    os_r_sr = out_of_sample_vec(cross_validation_sets_r_react(), seq(0, 1, 0.01),
+                                interval = input$intervalButton)
+    os_gr_sr = out_of_sample_vec(cross_validation_sets_gr_react(), seq(0, 1, 0.01),
+                                 interval = input$intervalButton)
+    gg_shrinking2D(os_r_sr, os_gr_sr, "SMI", "Groups", "Return",
+                   "Sharpe ratio as a function of return shrinkage factor", custom_theme_shiny)
+  })
+  
+  output$correlationShrinking = renderPlot({
+    os_r_scor = out_of_sample_vec(cross_validation_sets_r_react(), 0, seq(0, 1, 0.01),
+                                  interval = input$intervalButton)
+    os_gr_scor = out_of_sample_vec(cross_validation_sets_gr_react(), 0, seq(0, 1, 0.01),
+                                   interval = input$intervalButton)
+    gg_shrinking2D(os_r_scor, os_gr_scor, "SMI", "Groups", "Correlation",
+                   "Sharpe ratio as a function of return shrinkage factor", custom_theme_shiny)
+  })
+  
 }
 
 shinyApp(ui, server)

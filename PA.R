@@ -3,12 +3,5 @@ library(ggrepel)
 library(dplyr)
 library(ggcorrplot)
 
-# Get code directory
-dir = "."
-# Load data and functions
-load(paste0(dir, "/Data/returns_1d.Rda"))
-R.utils::sourceDirectory(paste0(dir, "/Code"), modifiedOnly = F)
-
-
-stocks
-groups
+load("./Data/returns_1d.Rda")
+R.utils::sourceDirectory("./Code", modifiedOnly = F)

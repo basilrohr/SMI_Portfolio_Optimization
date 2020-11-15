@@ -100,30 +100,38 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                            column(4,
                                   tabsetPanel(
                                     tabPanel("Mean return and volatility",
-                                             dataTableOutput("SMI_groups_mu_sd", width = "90%")),
+                                             dataTableOutput("gr_mr_vol", width = "90%")),
                                     tabPanel("Correlation", br(),
-                                             plotOutput("SMI_groups_cor", height = "500px")))))),
+                                             plotOutput("gr_cor", height = "500px")))))),
                 tabPanel("Standard Errors",
                          fluidRow(
                            column(2,
-                                  strong("Standard error of return"),
-                                  uiOutput("sderrorreturnFormula"),
-                                  strong("Standard error of volatility"),
-                                  uiOutput("sderrorvolatilityFormula")),
+                                  strong("Standard error return"),
+                                  uiOutput("seReturnFormula"),
+                                  strong("Standard error volatility"),
+                                  uiOutput("seVolatilityFormula")),
                            column(10,
                                   tabsetPanel(
                                     tabPanel("Stocks", br(),
                                              fluidRow(
-                                               column(5,plotOutput("sderrorPlot")),
-                                               column(4,dataTableOutput("SMI_sd_se", width = "90%")))),
+                                               column(5, plotOutput("seReturnPlot")),
+                                               column(4, dataTableOutput("seVolatility", width = "90%")))),
                                     tabPanel("Groups", br(),
                                              fluidRow(
-                                               column(5,plotOutput("sderrorPlot_groups")),
-                                               column(4,dataTableOutput("SMI_sd_se_groups", width = "90%"))))))
-                           
-                           )),
+                                               column(5, plotOutput("seGroupsReturnPlot")),
+                                               column(4, dataTableOutput("seGroupsVolatility", width = "90%")))))))),
                 tabPanel("Markovitz Optimization",
                          fluidRow(
+                           column(8,
+                                  tabsetPanel(
+                                    tabPanel("Stocks", br(),
+                                             fluidRow(
+                                               column(6, plotOutput("sdMVPWeightsPlot") %>% withSpinner),
+                                               column(6, plotOutput("sdTPWeightsPlot") %>% withSpinner))),
+                                    tabPanel("Groups", br(),
+                                             fluidRow(
+                                               column(6, plotOutput("sdMVPGroupsWeightsPlot") %>% withSpinner),
+                                               column(6, plotOutput("sdTPGroupsWeightsPlot") %>% withSpinner))))),
                            column(4,
                                   plotOutput("effFrontierBootstrap") %>% withSpinner,
                                   actionButton("bootstrapButton", "Redo bootstrap")))),
@@ -150,33 +158,27 @@ server = function(input, output, session) {
     returns
   })
   
-  gr_react = reactive({
-    groups_returns(r_react())
-  })
-  
   g_react = reactive({
     req(input$stockGroups)
-    SMI_groups_names = c(input$group1Name, input$group2Name, input$group3Name, input$group4Name,
-                         input$group5Name, input$group6Name, input$group7Name, input$group8Name)
-    SMI_groups_names = trimws(SMI_groups_names, which = "both")
-    dupl = duplicated(SMI_groups_names)
-    
-    error_message = ""
-
-    SMI_groups = list()
-    indices = c()
+    groups_names = c(input$group1Name, input$group2Name, input$group3Name, input$group4Name,
+                     input$group5Name, input$group6Name, input$group7Name, input$group8Name)
+    dupl = duplicated(groups_names); error_message = ""
+    groups = list()
     for (i in 1:(length(input$stockGroups)-1)) {
       if (length(input$stockGroups[[i]]) >= 1) {
-        if (i %in% which(dupl)){
-          error_message = "Error: Identical Group names are not allowed"
-          next
+        if (i %in% which(dupl)) {
+          error_message = "Error: Identical group names are not allowed."
+          break
         }
-        SMI_groups[[SMI_groups_names[i]]] = input$stockGroups[[i]]
-        indices = c(indices, i)
+        groups[[groups_names[i]]] = input$stockGroups[[i]]
       }
     }
     output$errorGroupNames = renderText({error_message})
-    list(SMI_groups, SMI_groups_names[indices])
+    groups
+  })
+  
+  gr_react = reactive({
+    groups_returns(r_react(), g_react())
   })
   
   output$dataRange = renderText({
@@ -214,7 +216,7 @@ server = function(input, output, session) {
   output$returnPlot = renderPlot({
     ggplot(r_react()) +
       geom_line(aes_string(x = "Date", y = paste0("`", input$stockSelector, "`"))) +
-      labs(x = "Year", y = "Log return [%]", title = paste(input$stockSelector, "return")) +
+      labs(x = "Year", y = "Return [%]", title = paste(input$stockSelector, "return")) +
       scale_x_date(date_labels = "%Y", date_breaks = "2 years") +
       custom_theme_shiny
   })
@@ -261,135 +263,140 @@ server = function(input, output, session) {
       formatRound(columns = c(2:3), digits = 3)
   })
   
-  output$SMI_groups_cor = renderPlot({
+  output$gr_cor = renderPlot({
     gg_cor(cor_mat(gr_react()), 5, 15, "Correlation", custom_theme_shiny)
   })
   
-  output$sderrorreturnFormula = renderUI({
+  output$seReturnFormula = renderUI({
     withMathJax(helpText("$$\\sigma_{\\overline{R}} = \\frac{\\sigma}{\\sqrt{n}}$$"))
   })
   
-  output$sderrorvolatilityFormula = renderUI({
+  output$seVolatilityFormula = renderUI({
     withMathJax(helpText("$$\\sigma_{\\sigma} = \\sigma * \\frac{1}{\\sqrt{2 * (n - 1)}}$$"))
   })
   
-  sderrorplots = reactive({
-    out = constructor_react()
-    SMI_mu_sd = out$SMI_mu_sd
-    returns = out$returns
-    SMI_groups_returns = out$SMI_groups_returns
-    SMI_groups_mu_sd = out$SMI_groups_mu_sd
-    
-    se_mean_SMI = apply(returns[,-1], MARGIN = 2, FUN = se_mean)
-    se_mean_groups = apply(SMI_groups_returns[,-1], MARGIN = 2, FUN = se_mean)
-    
-    min = min(c(SMI_mu_sd$`Mean return [%]` - se_mean_SMI,
-                SMI_groups_mu_sd$`Mean return [%]` - se_mean_groups))
-    max = max(c(SMI_mu_sd$`Mean return [%]` + se_mean_SMI,
-                SMI_groups_mu_sd$`Mean return [%]` + se_mean_groups))
-    
-    gg1 = gg_errorbar(SMI_mu_sd$Stock, SMI_mu_sd$`Mean return [%]`, se_mean_SMI, c(min, max), 90, "Return in [%]",
-                title = "Mean return with standard error by stock",
-                custom_theme_shiny)
-    gg2 = gg_errorbar(SMI_groups_mu_sd$Group, SMI_groups_mu_sd$`Mean return [%]`, se_mean_groups, c(min, max), 90,
-                "Return in [%]", title = "Mean return with standard error by group",
-                custom_theme_shiny)
-    align_plots(gg1, gg2, align="h")
+  seReturnPlot_react = reactive({
+    r = r_react(); gr = gr_react()
+    mr = mean_returns(r); gmr = mean_returns(gr)
+    se_r = apply(r[,-1], 2, se_mean); se_gr = apply(gr[,-1], 2, se_mean)
+    min = min(c(mr - se_r, gmr - se_gr)); max = max(c(mr + se_r, gmr + se_gr))
+    gg1 = gg_errorbar(colnames(r[-1]), mr, se_r, c(min, max), "Return [%]", 
+                      "Standard error return", custom_theme_shiny)
+    gg2 = gg_errorbar(colnames(gr[-1]), gmr, se_gr, c(min, max), "Return [%]",
+                      "Standard error return", custom_theme_shiny)
+    align_plots(gg1, gg2, align = "h")
   })
   
-  output$sderrorPlot = renderPlot({
-    ggdraw(sderrorplots()[[1]])
-    
+  output$seReturnPlot = renderPlot({
+    ggdraw(seReturnPlot_react()[[1]])
   })
   
-  output$sderrorPlot_groups = renderPlot({
-    ggdraw(sderrorplots()[[2]])
-    
+  output$seGroupsReturnPlot = renderPlot({
+    ggdraw(seReturnPlot_react()[[2]])
   })
   
-  output$SMI_sd_se = renderDataTable({
-    out = constructor_react()
-    returns = out$returns
-    SMI_mu_sd = out$SMI_mu_sd
-    
-    se_sd_SMI = as.vector(apply(returns[,-1], MARGIN = 2, FUN = se_sd))
-    se_sd_SMI = data.frame(SMI_mu_sd$Stock, se_sd_SMI)
-    colnames(se_sd_SMI) = c("Stock", "Standard Error in [%]")
-    
-    se_sd_SMI %>%
-      datatable(rownames = NULL, options = list(dom = "tip", pageLength = 10)) %>%
-      formatRound(columns = 2, digits = 3)
+  output$seVolatility = renderDataTable({
+    r = r_react()
+    se_volr = data.frame(colnames(r[-1]), apply(r[,-1], 2, se_sd))
+    se_volr %>% datatable(colnames = c("Stock", "Standard error volatility [%]"), rownames = NULL,
+                          options = list(dom = "tip", pageLength = 10)) %>%
+      formatRound(columns = 2, digits = 5)
   })
   
-  output$SMI_sd_se_groups = renderDataTable({
-    out = constructor_react()
-    SMI_groups_returns = out$SMI_groups_returns
-    SMI_groups_mu_sd = out$SMI_groups_mu_sd
-    
-    se_sd_groups = as.vector(apply(SMI_groups_returns[,-1], MARGIN = 2, FUN = se_sd))
-    se_sd_groups = data.frame(SMI_groups_mu_sd$Group, se_sd_groups)
-    colnames(se_sd_groups) = c("Group", "Standard Error in [%]")
-    
-    se_sd_groups %>%
-      datatable(rownames = NULL, options = list(dom = "tip", pageLength = 10)) %>%
-      formatRound(columns = 2, digits = 3)
+  output$seGroupsVolatility = renderDataTable({
+    gr = gr_react()
+    se_volgr = data.frame(colnames(gr[-1]), apply(gr[,-1], 2, se_sd))
+    se_volgr %>% datatable(colnames = c("Group", "Standard error volatility [%]"), rownames = NULL,
+                           options = list(dom = "t")) %>%
+      formatRound(columns = 2, digits = 5)
   })
   
-  bootstrap_react_SMI = reactive({
+  bootstrap_r_react = reactive({
     input$bootstrapButton
-    bootstrap(constructor_react()$returns)
+    bootstrap(r_react())
   })
   
-  bootstrap_react_SMI_groups = reactive({
+  bootstrap_gr_react = reactive({
     input$bootstrapButton
-    bootstrap(constructor_react()$SMI_groups_returns)
+    bootstrap(gr_react())
+  })
+  
+  sdMVPWeightsPlot_react = reactive({
+    r = r_react(); gr = gr_react()
+    mvpw_r = mvp_weights(cov_mat(r)); mvpw_gr = mvp_weights(cov_mat(gr))
+    mvpw_sd_r = bootstrap_r_react()$mvp_weights_sd; mvpw_sd_gr = bootstrap_gr_react()$mvp_weights_sd
+    min = min(c(mvpw_r - mvpw_sd_r, mvpw_gr - mvpw_sd_gr))
+    max = max(c(mvpw_r + mvpw_sd_r, mvpw_gr + mvpw_sd_gr))
+    gg1 = gg_errorbar(colnames(r[-1]), mvpw_r, mvpw_sd_r, c(min, max), "Weights",
+                      "Standard deviation MVP weights", custom_theme_shiny)
+    gg2 = gg_errorbar(colnames(gr[-1]), mvpw_gr, mvpw_sd_gr, c(min, max), "Weights",
+                      "Standard deviation MVP weights", custom_theme_shiny)
+    align_plots(gg1, gg2, align = "h")
+  })
+  
+  output$sdMVPWeightsPlot = renderPlot({
+    ggdraw(sdMVPWeightsPlot_react()[[1]])
+  })
+  
+  output$sdMVPGroupsWeightsPlot = renderPlot({
+    ggdraw(sdMVPWeightsPlot_react()[[2]])
+  })
+  
+  sdTPWeightsPlot_react = reactive({
+    r = r_react(); gr = gr_react()
+    tpw_r = tp_weights(cov_mat(r), mean_returns(r)); tpw_gr = tp_weights(cov_mat(gr), mean_returns(gr))
+    tpw_sd_r = bootstrap_r_react()$tp_weights_sd; tpw_sd_gr = bootstrap_gr_react()$tp_weights_sd
+    min = min(c(tpw_r - tpw_sd_r, tpw_gr - tpw_sd_gr))
+    max = max(c(tpw_r + tpw_sd_r, tpw_gr + tpw_sd_gr))
+    gg1 = gg_errorbar(colnames(r[-1]), tpw_r, tpw_sd_r, c(min, max), "Weights",
+                      "Standard deviation TP weights", custom_theme_shiny)
+    gg2 = gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(min, max), "Weights",
+                      "Standard deviation TP weights", custom_theme_shiny)
+    align_plots(gg1, gg2, align = "h")
+  })
+  
+  output$sdTPWeightsPlot = renderPlot({
+    ggdraw(sdTPWeightsPlot_react()[[1]])
+  })
+  
+  output$sdTPGroupsWeightsPlot = renderPlot({
+    ggdraw(sdTPWeightsPlot_react()[[2]])
   })
   
   output$effFrontierBootstrap = renderPlot({
-    bs_out_SMI = bootstrap_react_SMI()
-    if (input$intervalButton == "1d") {xlim_sf = 1; ylim_sf = 1}
-    if (input$intervalButton == "1wk") {xlim_sf = 2; ylim_sf = 4}
-    if (input$intervalButton == "1mo") {xlim_sf = 3; ylim_sf = 15}
+    if (input$intervalButton == "1d") {fxlim = 1; fylim = 1}
+    if (input$intervalButton == "1wk") {fxlim = 2; fylim = 4}
+    if (input$intervalButton == "1mo") {fxlim = 3; fylim = 15}
     suppressMessages(
       suppressWarnings(print(
-        gg_bs_eff_frontier(bs_out_SMI, xlim_sf, ylim_sf, 1.5, "Bootstrap samples efficiency frontier",
-                           custom_theme_shiny))))
+        gg_bootstrap_ef(bootstrap_r_react()$samples_ef_points, fxlim, fylim, 1.5,
+                        "Bootstrap efficient frontiers", custom_theme_shiny))))
   })
   
-  slicer_react = reactive({
-    SMI_groups = SMI_groups()
-    slicer(returns(), SMI_stocks, SMI_groups[[2]], SMI_groups[[1]])
+  cross_validation_sets_r_react = reactive({
+    cross_validation_sets(r_react())
   })
   
-  out_of_sample_react = reactive({
-    out_of_sample(slicer_react(), input$returnShrinkingSlider, input$correlationShrinkingSlider,
-                  interval = input$intervalButton)
-  })
-  
-  output$sharpeRatioSlider = renderText({
-    line1 = paste0("Out of sample SMI sharpe ratio: ",
-                   round(out_of_sample_react()$sr_os_SMI, 3))
-    line2 = paste0("Out of sample SMI groups sharpe ratio: ",
-                   round(out_of_sample_react()$sr_os_SMI_groups, 3))
-    HTML(paste(line1, line2, sep = "<br/>"))
+  cross_validation_sets_gr_react = reactive({
+    cross_validation_sets(gr_react())
   })
   
   output$returnShrinking = renderPlot({
-    gg_shrinking2D(slicer_react(), r = T, title = "Shrinking of return",
-                   theme = custom_theme_shiny, interval = input$intervalButton)
+    os_r_sr = out_of_sample_vec(cross_validation_sets_r_react(), seq(0, 1, 0.01),
+                                interval = input$intervalButton)
+    os_gr_sr = out_of_sample_vec(cross_validation_sets_gr_react(), seq(0, 1, 0.01),
+                                 interval = input$intervalButton)
+    gg_shrinking2D(os_r_sr, os_gr_sr, "SMI", "Groups", "Return",
+                   "Sharpe ratio as a function of return shrinkage factor", custom_theme_shiny)
   })
   
   output$correlationShrinking = renderPlot({
-    gg_shrinking2D(slicer_react(), cor = T, title = "Shrinking of correlation",
-                   theme = custom_theme_shiny, interval = input$intervalButton)
-  })
-  
-  sr_os = reactive({
-    out_of_sample(slicer_react())
-  })
-  
-  sr_is = reactive({
-    in_sample(constructor_react())
+    os_r_scor = out_of_sample_vec(cross_validation_sets_r_react(), 0, seq(0, 1, 0.01),
+                                  interval = input$intervalButton)
+    os_gr_scor = out_of_sample_vec(cross_validation_sets_gr_react(), 0, seq(0, 1, 0.01),
+                                   interval = input$intervalButton)
+    gg_shrinking2D(os_r_scor, os_gr_scor, "SMI", "Groups", "Correlation",
+                   "Sharpe ratio as a function of return shrinkage factor", custom_theme_shiny)
   })
   
 }
