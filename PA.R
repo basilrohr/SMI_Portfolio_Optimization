@@ -8,3 +8,7 @@ dir = "."
 # Load data and functions
 load(paste0(dir, "/Data/returns_1d.Rda"))
 R.utils::sourceDirectory(paste0(dir, "/Code"), modifiedOnly = F)
+
+
+stocks
+groups

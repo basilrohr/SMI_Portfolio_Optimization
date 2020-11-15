@@ -8,11 +8,8 @@ library(DT)
 library(shinycssloaders)
 library(cowplot)
 
-# Load functions
-dir = "."
-sourceDirectory(paste0(dir, "/Functions"), modifiedOnly = F)
+sourceDirectory("./Code", modifiedOnly = F)
 
-# Create user interface
 ui = navbarPage("Robust Methods of Portfolio Optimization",
                 tabPanel("Overview",
                          fluidRow(
@@ -28,7 +25,7 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                   selectInput(
                                     "stockSelector",
                                     "Plots",
-                                    SMI_stocks),
+                                    stocks),
                                   strong("Return"),
                                   uiOutput("returnFormula")),
                            column(5,
@@ -48,11 +45,11 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                            column(5,
                                   tabsetPanel(
                                     tabPanel("Mean return and volatility",
-                                             dataTableOutput("SMI_mu_sd", width = "90%")),
+                                             dataTableOutput("r_mr_vol", width = "90%")),
                                     tabPanel("Correlation", br(),
-                                             plotOutput("SMI_cor", height = "600px")),
+                                             plotOutput("r_cor", height = "600px")),
                                     tabPanel("Risk-free rate",
-                                             dataTableOutput("Rf", width = "90%")))))),
+                                             dataTableOutput("rf", width = "90%")))))),
                 tabPanel("Groups",
                          fluidRow(
                            column(8,
@@ -64,19 +61,19 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                     add_rank_list(
                                       input_id = "rankList1",
                                       text = textInput("group1Name", NULL, value = "Consumer", width = "100%"),
-                                      labels = get(SMI_groups_names[1])),
+                                      labels = groups[[1]]),
                                     add_rank_list(
                                       input_id = "rankList2",
                                       text = textInput("group2Name", NULL, value = "Finance", width = "100%"),
-                                      labels = get(SMI_groups_names[2])),
+                                      labels = groups[[2]]),
                                     add_rank_list(
                                       input_id = "rankList3",
                                       text = textInput("group3Name", NULL, value = "Industrial", width = "100%"),
-                                      labels = get(SMI_groups_names[3])),
+                                      labels = groups[[3]]),
                                     add_rank_list(
                                       input_id = "rankList4",
                                       text = textInput("group4Name", NULL, value = "Pharma", width = "100%"),
-                                      labels = get(SMI_groups_names[4])),
+                                      labels = groups[[4]]),
                                     add_rank_list(
                                       input_id = "rankList5",
                                       text = textInput("group5Name", NULL, value = "Group 5", width = "100%"),
@@ -141,20 +138,23 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                            column(12,
                                   img(src=paste0("Logo_ZHAW.jpg"), height = "200px")))))
 
-# Define functionality
 server = function(input, output, session) {
   
-  df = reactive({
-    load(paste0(dir, "/Data/data_", input$intervalButton, ".Rda"))
+  df_react = reactive({
+    load(paste0("./Data/data_", input$intervalButton, ".Rda"))
     df
   })
   
-  SMI_returns = reactive({
-    load(paste0(dir, "/Data/SMI_returns_", input$intervalButton, ".Rda"))
-    SMI_returns
+  r_react = reactive({
+    load(paste0("./Data/returns_", input$intervalButton, ".Rda"))
+    returns
   })
   
-  SMI_groups = reactive({
+  gr_react = reactive({
+    groups_returns(r_react())
+  })
+  
+  g_react = reactive({
     req(input$stockGroups)
     SMI_groups_names = c(input$group1Name, input$group2Name, input$group3Name, input$group4Name,
                          input$group5Name, input$group6Name, input$group7Name, input$group8Name)
@@ -179,30 +179,17 @@ server = function(input, output, session) {
     list(SMI_groups, SMI_groups_names[indices])
   })
   
-  constructor_react = reactive({
-    SMI_groups = SMI_groups()
-    constructor(SMI_returns(), SMI_stocks, SMI_groups[[2]], SMI_groups[[1]])
-  })
-  
   output$dataRange = renderText({
-    paste0("Data ranges from ", format(df()[,1][1], "%d.%m.%Y"), " to ",
-           format(df()[,1][nrow(df())], "%d.%m.%Y"), ".")
+    paste0("Data ranges from ", format(df_react()[,1][1], "%d.%m.%Y"), " to ",
+           format(df_react()[,1][nrow(df_react())], "%d.%m.%Y"), ".")
   })
   
   output$returnFormula = renderUI({
     withMathJax(helpText("$$R = R_{ln} - R_f = ln\\left(\\frac{x_t}{x_{t-1}}\\right) - R_f$$"))
   })
   
-  output$sderrorreturnFormula = renderUI({
-    withMathJax(helpText("$$\\sigma_{\\overline{R}} = \\frac{\\sigma}{\\sqrt{n}}$$"))
-  })
-  
-  output$sderrorvolatilityFormula = renderUI({
-    withMathJax(helpText("$$\\sigma_{\\sigma} = \\sigma * \\frac{1}{\\sqrt{2 * (n - 1)}}$$"))
-  })
-  
   output$stockPlot = renderPlot({
-    ggplot(df()) +
+    ggplot(df_react()) +
       geom_line(aes_string(x = "Date", y = paste0("`", input$stockSelector, "`"))) +
       labs(x = "Year", y = "Price [CHF]", title = paste(input$stockSelector, "stock price")) +
       scale_x_date(date_labels = "%Y", date_breaks = "2 years") +
@@ -211,7 +198,7 @@ server = function(input, output, session) {
   
   output$stockPlotHoverInfo = renderUI({
     hover = input$stockPlotHover
-    point = nearPoints(df(), hover, threshold = 5, maxpoints = 1, addDist = T)
+    point = nearPoints(df_react(), hover, threshold = 5, maxpoints = 1, addDist = T)
     if (nrow(point) == 0) {return(NULL)}
     left_pct = (hover$x - hover$domain$left) / (hover$domain$right - hover$domain$left)
     top_pct = (hover$domain$top - hover$y) / (hover$domain$top - hover$domain$bottom)
@@ -225,7 +212,7 @@ server = function(input, output, session) {
   })
   
   output$returnPlot = renderPlot({
-    ggplot(constructor_react()$SMI_returns) +
+    ggplot(r_react()) +
       geom_line(aes_string(x = "Date", y = paste0("`", input$stockSelector, "`"))) +
       labs(x = "Year", y = "Log return [%]", title = paste(input$stockSelector, "return")) +
       scale_x_date(date_labels = "%Y", date_breaks = "2 years") +
@@ -234,7 +221,7 @@ server = function(input, output, session) {
   
   output$returnPlotHoverInfo = renderUI({
     hover = input$returnPlotHover
-    point = nearPoints(constructor_react()$SMI_returns, hover, threshold = 5, maxpoints = 1, addDist = T)
+    point = nearPoints(r_react(), hover, threshold = 5, maxpoints = 1, addDist = T)
     if (nrow(point) == 0) {return(NULL)}
     left_pct = (hover$x - hover$domain$left) / (hover$domain$right - hover$domain$left)
     top_pct = (hover$domain$top - hover$y) / (hover$domain$top - hover$domain$bottom)
@@ -247,42 +234,53 @@ server = function(input, output, session) {
       p(HTML(paste0(point$Date, "<br/>", round(point[input$stockSelector], 3)), "%")))
   })
   
-  output$SMI_mu_sd = renderDataTable({
-    constructor_react()$SMI_mu_sd %>%
-      datatable(rownames = NULL, options = list(dom = "tip", pageLength = 10)) %>%
+  output$r_mr_vol = renderDataTable({
+    r = r_react()
+    r_mr_vol = data.frame(colnames(r[-1]), mean_returns(r), volatilities(cov_mat(r)))
+    r_mr_vol %>% datatable(colnames = c("Stock","Return [%]", "Volatility [%]"), rownames = NULL,
+                           options = list(dom = "tip", pageLength = 10)) %>%
       formatRound(columns = c(2:3), digits = 3)
   })
   
-  output$SMI_cor = renderPlot({
-    gg_cor(cor(constructor_react()$SMI_returns[,-1]), 3, 12, "Correlation", custom_theme_shiny)
+  output$r_cor = renderPlot({
+    gg_cor(cor_mat(r_react()), 3, 12, "Correlation", custom_theme_shiny)
   })
   
-  output$Rf = renderDataTable({
-    load(paste0(dir, "/Data/Rf_1d.Rda"))
-    Rf = data.frame(names(Rf), Rf * 260)
-    colnames(Rf) = c("Year", "Risk-free rate [%]")
-    Rf %>% datatable(rownames = NULL, options = list(dom = "tip", pageLength = 10)) %>%
-      formatRound(columns = 2, digits = 3)
+  output$rf = renderDataTable({
+    load("./Data/rf_1d.Rda")
+    ann_rf = data.frame(names(rf), round(rf * 252, 3))
+    ann_rf %>% datatable(colnames = c("Year", "Rate [%]"), rownames = NULL,
+                         options = list(dom = "tip", pageLength = 10))
   })
   
-  output$SMI_groups_mu_sd = renderDataTable({
-    constructor_react()$SMI_groups_mu_sd %>%
-      datatable(rownames = NULL, options = list(dom = "t")) %>%
+  output$gr_mr_vol = renderDataTable({
+    gr = gr_react()
+    gr_mr_vol = data.frame(colnames(gr[-1]), mean_returns(gr), volatilities(cov_mat(gr)))
+    gr_mr_vol %>% datatable(colnames = c("Group","Return [%]", "Volatility [%]"), rownames = NULL,
+                            options = list(dom = "t")) %>%
       formatRound(columns = c(2:3), digits = 3)
   })
   
   output$SMI_groups_cor = renderPlot({
-    gg_cor(cor(constructor_react()$SMI_groups_returns[,-1]), 5, 15, "Correlation", custom_theme_shiny)
+    gg_cor(cor_mat(gr_react()), 5, 15, "Correlation", custom_theme_shiny)
+  })
+  
+  output$sderrorreturnFormula = renderUI({
+    withMathJax(helpText("$$\\sigma_{\\overline{R}} = \\frac{\\sigma}{\\sqrt{n}}$$"))
+  })
+  
+  output$sderrorvolatilityFormula = renderUI({
+    withMathJax(helpText("$$\\sigma_{\\sigma} = \\sigma * \\frac{1}{\\sqrt{2 * (n - 1)}}$$"))
   })
   
   sderrorplots = reactive({
     out = constructor_react()
     SMI_mu_sd = out$SMI_mu_sd
-    SMI_returns = out$SMI_returns
+    returns = out$returns
     SMI_groups_returns = out$SMI_groups_returns
     SMI_groups_mu_sd = out$SMI_groups_mu_sd
     
-    se_mean_SMI = apply(SMI_returns[,-1], MARGIN = 2, FUN = se_mean)
+    se_mean_SMI = apply(returns[,-1], MARGIN = 2, FUN = se_mean)
     se_mean_groups = apply(SMI_groups_returns[,-1], MARGIN = 2, FUN = se_mean)
     
     min = min(c(SMI_mu_sd$`Mean return [%]` - se_mean_SMI,
@@ -311,10 +309,10 @@ server = function(input, output, session) {
   
   output$SMI_sd_se = renderDataTable({
     out = constructor_react()
-    SMI_returns = out$SMI_returns
+    returns = out$returns
     SMI_mu_sd = out$SMI_mu_sd
     
-    se_sd_SMI = as.vector(apply(SMI_returns[,-1], MARGIN = 2, FUN = se_sd))
+    se_sd_SMI = as.vector(apply(returns[,-1], MARGIN = 2, FUN = se_sd))
     se_sd_SMI = data.frame(SMI_mu_sd$Stock, se_sd_SMI)
     colnames(se_sd_SMI) = c("Stock", "Standard Error in [%]")
     
@@ -339,7 +337,7 @@ server = function(input, output, session) {
   
   bootstrap_react_SMI = reactive({
     input$bootstrapButton
-    bootstrap(constructor_react()$SMI_returns)
+    bootstrap(constructor_react()$returns)
   })
   
   bootstrap_react_SMI_groups = reactive({
@@ -360,7 +358,7 @@ server = function(input, output, session) {
   
   slicer_react = reactive({
     SMI_groups = SMI_groups()
-    slicer(SMI_returns(), SMI_stocks, SMI_groups[[2]], SMI_groups[[1]])
+    slicer(returns(), SMI_stocks, SMI_groups[[2]], SMI_groups[[1]])
   })
   
   out_of_sample_react = reactive({

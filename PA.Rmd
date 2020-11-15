@@ -64,9 +64,7 @@ The reason for using logarithmic returns is that the numbers take smaller values
 
 ```{r tabplot1}
 ann_rf = data.frame(names(rf), round(rf * 252, 3), row.names = NULL)
-
-kable(ann_rf, caption = "Average overnight risk-free return per year in \\%", 
-      booktabs = T, linesep = "", col.names = c("Year", "Rate [%]"))
+kable(ann_rf, col.names = c("Year", "Rate [%]"), caption = "Average overnight risk-free return per year in \\%", booktabs = T, linesep = "")
 ```
 
 ## Volatility (standard deviation)
@@ -85,9 +83,7 @@ Volatility describes the risk of a stock or market index and is a statistical me
 ```{r tabplot2}
 r = returns
 r_mr_vol = data.frame(colnames(r[-1]), mean_returns(r), volatilities(cov_mat(r)), row.names = NULL)
-
-kable(r_mr_vol, caption = "SMI with expected return and volatility", digits = 3, 
-      col.names = c("Stock","Return [%]", "Volatility [%]"), booktabs = T, linesep = "")
+kable(r_mr_vol, col.names = c("Stock","Return [%]", "Volatility [%]"), caption = "SMI with expected return and volatility", digits = 3, booktabs = T, linesep = "")
 ```
 
 ## Covariance and correlation
@@ -179,8 +175,7 @@ This method is not mathematical in nature but a simple intuitive decision based 
 ```{r tabplot3}
 gr = groups_returns(returns, groups)
 gr_mr_vol = data.frame(colnames(gr[-1]), mean_returns(gr), volatilities(cov_mat(gr)), row.names = NULL)
-
-kable(gr_mr_vol, caption = "groups with expected return and volatility", col.names = c("Group","Return [%]", "Volatility [%]"),  digits = 3, booktabs = T, linesep = "")
+kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption = "groups with expected return and volatility", digits = 3, booktabs = T, linesep = "")
 ```
 
 It can already be seen that the values of volatility are lower overall than those of the individual shares, which leads to a higher Sharpe ratio as shown in table \@ref(tab:tabplot4). The Sharpe ratio of groups increased significantly compared to the Sharpe Ratio for the SMI. 
