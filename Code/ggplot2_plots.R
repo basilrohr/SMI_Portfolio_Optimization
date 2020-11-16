@@ -54,7 +54,7 @@ gg_shrinking2D = function(x1, x2, x1_name, x2_name, xlab, title = NULL, theme = 
               color = "black", hjust = ifelse(seq[which.max(x2)] < 2/3, 0, 1),
               vjust = -2/3) +
     labs(x = paste0(xlab, " shrinking factor"), y = "Sharpe ratio", title = title, color = NULL) +
-    lims(y = c(0, 1)) +
+    lims(y = c(-0.25, 1)) +
     scale_color_manual(values = c("black", "orangered3")) +
     theme
   gg
