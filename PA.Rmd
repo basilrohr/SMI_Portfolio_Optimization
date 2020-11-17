@@ -615,8 +615,8 @@ The formula for the correlation shrinking factor is shown in \@ref(eq:shrinkCor)
 The Sharpe ratio can be visualized as a function of the shrinking factor. Figure \@ref(fig:gg20) shows such a plot for the return shrinking factor. The global maxima are highlighted with points and their coordinates. It can be seen that the highest Sharpe ratio for the SMI is achieved with a shrinking factor of about two thirds. For the groups on the other hand shrinking does not lead to an improvement of the Sharpe ratio, as the highest Sharpe ratio is achieved at shrinking factor of zero which means that the returns are not altered. For the SMI it is visible that close to the shrinking factor one the line is interrupted. This implies that the corresponding Sharpe ratio is below zero which is not shown in the plot. These outliers are caused by extreme portfolio weights which are obtained at these shrinking factors. Extreme portfolio weights are obtained through near-singularity of the covariance matrix.
 
 ```{r gg20, fig.cap = 'Sharpe ratio as a function of return shrinking factor',fig.height = 3}
-os_r_sr = out_of_sample_vec(sets_r, seq(0, 1, 0.01))
-os_gr_sr = out_of_sample_vec(sets_gr, seq(0, 1, 0.01))
+os_r_sr = unlist(out_of_sample_vec(sets_r, seq(0, 1, 0.01)))
+os_gr_sr = unlist(out_of_sample_vec(sets_gr, seq(0, 1, 0.01)))
 
 gg_shrinking2D(os_r_sr, os_gr_sr, "SMI", "Groups", "Return", theme = custom_theme_markdown)
 ```
@@ -624,8 +624,8 @@ gg_shrinking2D(os_r_sr, os_gr_sr, "SMI", "Groups", "Return", theme = custom_them
 Figure \@ref(fig:gg21) shows the same plot for the correlation shrinking factor. The highest Sharpe ratio for the SMI is achieved with a shrinking factor of about one third and for the groups of close to one.
 
 ```{r gg21, fig.cap = 'Sharpe ratio as a function of correlation shrinking factor', fig.height = 3}
-os_r_scor = out_of_sample_vec(sets_r, 0, seq(0, 1, 0.01))
-os_gr_scor = out_of_sample_vec(sets_gr, 0, seq(0, 1, 0.01))
+os_r_scor = unlist(out_of_sample_vec(sets_r, 0, seq(0, 1, 0.01)))
+os_gr_scor = unlist(out_of_sample_vec(sets_gr, 0, seq(0, 1, 0.01)))
 
 gg_shrinking2D(os_r_scor, os_gr_scor, "SMI", "Groups", "Correlation", theme = custom_theme_markdown)
 ```

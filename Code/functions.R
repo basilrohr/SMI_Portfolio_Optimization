@@ -126,4 +126,4 @@ out_of_sample = function(sets, sfr = 0, sfcor = 1, interval = "1d", set = NULL) 
   }
 }
 
-out_of_sample_vec = Vectorize(out_of_sample, vectorize.args = c("sfr", "sfcor"))
+out_of_sample_vec = Vectorize(out_of_sample, vectorize.args = c("sfr", "sfcor"), SIMPLIFY = F)
