@@ -106,7 +106,7 @@ cross_validation_sets = function(returns, n = 5) {
   list(training_sets = training_sets, test_sets = test_sets)
 }
 
-out_of_sample = function(sets, sfr = 0, sfcor = 1, interval = "1d", set = NULL) {
+out_of_sample = function(sets, sfr = 1, sfcor = 1, interval = "1d", set = NULL) {
   if(is.null(set)) {seq = seq_along(sets[[1]])} else {seq = set}
   weighted_returns = c()
   for (i in seq) {
