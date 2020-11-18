@@ -10,45 +10,30 @@ R.utils::sourceDirectory("./Code", modifiedOnly = F)
 order = match(unlist(groups), stocks)
 
 r = returns
-# r = returns[sample(nrow(returns), replace = T),]
+#r = returns[sample(nrow(returns), replace = T),]
 gr = groups_returns(r, groups)
 is_r = in_sample(r)
 sets_r = cross_validation_sets(r)
 sets_gr = cross_validation_sets(gr)
 os_r = out_of_sample(sets_r)
 
-# sets_tpw = matrix(ncol = 5, nrow = 20)
-# for (i in 1:5) {
-#   sets_tpw[,i] = out_of_sample(sets_r, set = i)$tp_weights
-# }
-# df = data.frame(order = factor(stocks[order], levels = stocks[order]), sets_tpw[order,])
-# alpha = 0.2
-# ggplot(df) + geom_line(aes(x = order, y = X1, group = 1, col = "Model 1"), alpha = alpha) +
-#   geom_point(aes(x = order, y = X1, group = 1, col = "Model 1")) +
-#   geom_line(aes(x = order, y = X2, group = 2, col = "Model 2"), alpha = alpha) +
-#   geom_point(aes(x = order, y = X2, group = 2, col = "Model 2")) +
-#   geom_line(aes(x = order, y = X3, group = 3, col = "Model 3"), alpha = alpha) +
-#   geom_point(aes(x = order, y = X3, group = 3, col = "Model 3")) +
-#   geom_line(aes(x = order, y = X4, group = 4, col = "Model 4"), alpha = alpha) +
-#   geom_point(aes(x = order, y = X4, group = 4, col = "Model 4")) +
-#   geom_line(aes(x = order, y = X5, group = 5, col = "Model 5"), alpha = alpha) +
-#   geom_point(aes(x = order, y = X5, group = 5, col = "Model 5")) +
-#   labs(x = NULL, y = "Weight", color = NULL) +
-#   scale_color_manual(values = c("Model 1" = "cornflowerblue", "Model 2" = "orangered3",
-#                                 "Model 3" = "lightblue4", "Model 4" = "forestgreen",
-#                                 "Model 5" = "tan2")) +
-#   theme(axis.text.x = element_text(angle = 90)) +
-#   guides(fill=guide_legend(ncol = 5)) +
-#   theme(legend.position = "bottom")
-# 
-# os_r_sr = unlist(out_of_sample_vec(sets_r, seq(0, 1, 0.01)))
-# os_gr_sr = unlist(out_of_sample_vec(sets_gr, seq(0, 1, 0.01)))
-# gg_shrinking2D(os_r_sr, os_gr_sr, "SMI", "Groups", "Return") +
-#   geom_vline(xintercept = seq(0, 1, 0.01)[89])
-# 
-# os_r_scor = unlist(out_of_sample_vec(sets_r, 1, seq(0, 1, 0.01)))
-# os_gr_scor = unlist(out_of_sample_vec(sets_gr, 1, seq(0, 1, 0.01)))
-# gg_shrinking2D(os_r_scor, os_gr_scor, "SMI", "Groups", "Correlation")
+os_r_sr = unlist(out_of_sample_vec(sets_r, seq(0, 1, 0.01)))
+os_gr_sr = unlist(out_of_sample_vec(sets_gr, seq(0, 1, 0.01)))
+gg_shrinking2D(os_r_sr, os_gr_sr, "SMI", "Groups", "Return", theme = custom_theme_markdown)
+
+
+# Erkenntnisse:
+# -  wenn man Returns max. shrinkt (faktor 0), dann sind TP weights = MVP weights
+#    was Sinn macht, weil dann alle Returns gleich sind und man so quasi nur nach
+#    Volatilität das Portfolio zusammenstellt
+# -  wenn zwei Aktien eine Cor von 1 bzw. -1 haben wird die Matrix singulär (dh det = 0) oder anders
+#    gesagt lässt sich eine Aktie als Linearkombination einer anderen darstellen,
+#    Cor nahe bei 1 bzw. -1 sind aus Computer rechnerischer Sicht auch schon heikel,
+#    singulär bedeutet dass sie nicht invertiert werden kann -> markovitz optim geht nicht
+
+
+a = cbind(c(1,2,-3), c(-1,-2,3),c(-4,10,-6))
+
 
 
 #sets_r[[1]][[1]]$mean_returns = sets_r[[1]][[1]]$mean_returns - mean(sets_r[[1]][[1]]$mean_returns)
@@ -57,7 +42,7 @@ os_r = out_of_sample(sets_r)
 n = 20
 start = -1
 stop = 1
-### Weights (max bei Shrinking Faktor 0.89 in Set 3)
+### Weights (max bei Shrinking Faktor 0.12 in Set 3 (also Zeile 13 in Output))
 t1 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 1)
 out1 = t(sapply(t1, function(x){return(x$tp_weights)}))
 t2 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 2)
@@ -162,3 +147,5 @@ r2 = sets_r[[1]][[2]]$mean_returns
 r3 = sets_r[[1]][[3]]$mean_returns
 r4 = sets_r[[1]][[4]]$mean_returns
 r5 = sets_r[[1]][[5]]$mean_returns
+
+(- rowSums(m3) %*% rep(mean(r3), 20)) / (rowSums(m3) %*% r3 - rowSums(m3) %*% rep(mean(r3), 20))

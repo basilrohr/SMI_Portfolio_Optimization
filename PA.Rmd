@@ -587,7 +587,7 @@ One method for improving the out of sample Sharpe ratio is shrinking. This appro
 The formula for the return shrinking factor is shown in \@ref(eq:shrinkR). When the shrinking factor is set to zero, the returns are not altered and remain the same. When increasing the shrinking factor from zero up to one, the returns converge towards their mean value.
 
 \begin{equation}
-R_{i}(\lambda) = (1 - \lambda)*R_{i} + \lambda * \overline{R}
+R_{i}(\lambda) = \lambda*R_{i} + (1 - \lambda) * \overline{R}
   \label{eq:shrinkR}
 \end{equation}
 
