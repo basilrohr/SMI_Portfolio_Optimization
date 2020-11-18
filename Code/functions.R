@@ -114,7 +114,7 @@ out_of_sample = function(sets, sfr = 0, sfcor = 1, interval = "1d", set = NULL) 
     corm = cov2cor(covm); diag(corm) = 0
     scorm = diag(nrow(corm)) + sfcor * corm
     scovm = diag(volatilities(covm)) %*% scorm %*% diag(volatilities(covm))
-    smr = (1-sfr) * mr + sfr * mean(mr)
+    smr = sfr * mr + (1-sfr) * mean(mr)
     tpw = tp_weights(scovm, smr)
     weighted_returns_set = c(as.matrix(sets[[2]][[i]]$returns[-1]) %*% tpw)
     weighted_returns = c(weighted_returns, weighted_returns_set)
