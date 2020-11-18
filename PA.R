@@ -148,3 +148,6 @@ m2 = solve(out_of_sample(sets_r, set = 2)$shrinking_cov_mat)
 m3 = solve(out_of_sample(sets_r, set = 3)$shrinking_cov_mat)
 m4 = solve(out_of_sample(sets_r, set = 4)$shrinking_cov_mat)
 m5 = solve(out_of_sample(sets_r, set = 5)$shrinking_cov_mat)
+
+
+print("test")
