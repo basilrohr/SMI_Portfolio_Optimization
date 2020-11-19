@@ -382,19 +382,19 @@ server = function(input, output, session) {
   })
   
   output$returnShrinking = renderPlot({
-    os_r_sr = out_of_sample_vec(cross_validation_sets_r_react(), seq(0, 1, 0.01),
-                                interval = input$intervalButton)
-    os_gr_sr = out_of_sample_vec(cross_validation_sets_gr_react(), seq(0, 1, 0.01),
-                                 interval = input$intervalButton)
+    os_r_sr = unlist(out_of_sample_vec(cross_validation_sets_r_react(), seq(0, 1, 0.01),
+                                       interval = input$intervalButton))
+    os_gr_sr = unlist(out_of_sample_vec(cross_validation_sets_gr_react(), seq(0, 1, 0.01),
+                                        interval = input$intervalButton))
     gg_shrinking2D(os_r_sr, os_gr_sr, "SMI", "Groups", "Return",
                    "Sharpe ratio as a function of return shrinkage factor", custom_theme_shiny)
   })
   
   output$correlationShrinking = renderPlot({
-    os_r_scor = out_of_sample_vec(cross_validation_sets_r_react(), 0, seq(0, 1, 0.01),
-                                  interval = input$intervalButton)
-    os_gr_scor = out_of_sample_vec(cross_validation_sets_gr_react(), 0, seq(0, 1, 0.01),
-                                   interval = input$intervalButton)
+    os_r_scor = unlist(out_of_sample_vec(cross_validation_sets_r_react(), 1, seq(0, 1, 0.01),
+                                  interval = input$intervalButton))
+    os_gr_scor = unlist(out_of_sample_vec(cross_validation_sets_gr_react(), 1, seq(0, 1, 0.01),
+                                          interval = input$intervalButton))
     gg_shrinking2D(os_r_scor, os_gr_scor, "SMI", "Groups", "Correlation",
                    "Sharpe ratio as a function of return shrinkage factor", custom_theme_shiny)
   })

@@ -23,6 +23,7 @@ gg_shrinking2D(os_r_sr, os_gr_sr, "SMI", "Groups", "Return", theme = custom_them
 
 
 # Erkenntnisse:
+# -  Normalverteilung wird vorausgesetzt, nochmals nachlesen in Breymann Folien
 # -  wenn man Returns max. shrinkt (faktor 0), dann sind TP weights = MVP weights
 #    was Sinn macht, weil dann alle Returns gleich sind und man so quasi nur nach
 #    Volatilität das Portfolio zusammenstellt
