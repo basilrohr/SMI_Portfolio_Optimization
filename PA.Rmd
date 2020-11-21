@@ -43,11 +43,12 @@ These estimates are subject to estimation errors, especially when they are based
 To overcome these problems, several approaches have been proposed. This includes Bayesian approaches, including shrinking Estimators for historical returns, volatilites and correlations. It also includes resampling/bootstrapping approaches, where expected returns, volatilites and correlations are modelled as random variables.
 We will analyze a variety of such approaches, identify those that add most value in the context of investment management, and combine/improve them. The goal is a recommended methodology for computing the strategic asset allocation of pension funds and other institutional investors.
 
+Lange, min. eine halbe Seite
+
 \newpage
 
-# Swiss Market Index
-The Swiss Market Index or (SMI) is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. The SMI covers approximately 80% of the total capitalization of the Swiss stock market. It is also a price index, which means that dividends are not included in the index. The SMI is always reviewed twice a year and, if necessary, reassembled. In our case, we use the composition per end of 2018. The reason for the 2018 composition is, that enough historical data for all those companies is available.     
-For the calculations of the daily logarithmic return \@ref(eq:LogR) and volatility \@ref(eq:Volatility) we use historical data from `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The results are shown in table \@ref(tab:tabplot2). [1] [2]
+# Data
+For this paper historical data from the Swiss Market Index or (SMI) were used, the data are from the period from `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. The SMI covers approximately 80% of the total capitalization of the Swiss stock market. It is also a price index, which means that dividends are not included in the index. The SMI is always reviewed twice a year and, if necessary, reassembled. In our case, we use the composition per end of 2018. The reason for the 2018 composition is, that enough historical data for all those companies is available. The results shown in table \@ref(tab:tabplot2) are calculated with following two equations, daily logarithmic return \@ref(eq:LogR) and volatility \@ref(eq:Volatility). [1] [2]
 
 ## Logarithmic return
 The reason for using logarithmic returns is that the numbers take smaller values than discrete returns. Due to smaller values there is also a smaller variance, which influences fitting positively. As well historical daily data is used for the calculation of the logarithmic return. For later calculations the risk-free return has to be subtracted from the returns. For the sake of simplicity the risk-free rate is already deducted now. For the risk-free return $R_{f}$, shown in table \@ref(tab:tabplot1), the LIBOR interest rate is commonly used. Due to several negative incidents in the past the Swiss Average Rate Overnight (SARON) is used for the time period 2014-2020. SARON is a rate that is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [3] [4]
@@ -117,7 +118,9 @@ gg_cor(cor_mat(r), 2, 8, theme = custom_theme_markdown)
 
 \newpage
 
-## T-statistic {#t-statistic}
+## Statistical key numbers
+
+### T-statistic {#t-statistic}
 \begin{equation}
   t = \frac{\rho_{i,j}*\sqrt{n-2}}{\sqrt{1 - \rho_{i,j}^2}}
   \label{sec2}
@@ -144,66 +147,9 @@ The students t-distribution with `r nrow(r)` degrees of freedom tells us that th
 Since the P-value is smaller than 0.05, we can reject the null hypothesis. There is sufficient statistical evidence at the $\alpha$ = 0.05 level to conclude that there is a significant linear relationship between `r mincorname[1]` and
 `r mincorname[2]`. 
 
-## Sharpe ratio
-The Sharpe ratio measures the performance of an investment which means the return of an investment compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the risk-adjusted return. In practice, the value of the Sharpe Ratio is not only positively received. In this paper, however, we will rely on the Sharpe ratio because it is a key figure by which performance can be measured. It is calculated by the average return earned in excess of the risk-free rate per unit of volatility. In this case it is the natural logarithmic return per day $R$ divided by $\sigma$. $R$ is already calculated in equation \@ref(eq:LogR). [6] [7]
+### Standard error of expected return
+In statistics the standard deviation of the sampling distribution is known as the standard error and it provides a statement about the quality of the estimated parameter. The more individual values there are, the smaller is the standard error, and the more accurately the unknown parameter can be estimated. The standard error for the expected return and the volatility are explained in the following two chapters.
 
-\begin{equation}
-  Sharpe ratio = \frac{R_{ln} - R_{f}}{\sigma} = \frac{R}{\sigma}
-  \label{eq:sharperatio}
-\end{equation}
-
-<p> *$R$ = natural logarithmic return per day* <p>
-<p> *$R_{ln}$ = mean logarithmic return* <p>
-<p> *$R_{f}$ = risk-free rate of return* <p>
-<p> *$\sigma_{i}$ = volatility of return* <p>
-
-Before any weighting of a portfolio is optimized, the Sharpe ratio of the SMI is calculated. This is done by weighting all stocks equally, 1/20 each, and then applying the weightings to the actual returns of the historical data. This results in a Sharpe ratio of XX. Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. As mentioned above, the Sharpe ratio is used as a measure of the optimization and robustness. A robust optimization leads to a lower volatility which results in a higher Sharpe ratio. The higher the value the better the optimization.
-
-\newpage
-
-# Grouping
-A first way to increase the Sharpe ratio is to create groups. Grouping the stocks also reduces the standard errors, which will be described in more detail later in chapter [Standard error]. 
-Naturally there are different approaches how many groups and how exactly the composition of such groups should be created. In a first approach we formed four groups, which differ in their industries:
-
-<p> *Consumer: Adecco, Nestle, Richemont, Swatch, Swisscom* <p>
-<p> *Finance: Credit Suisse, Julius Baer, Swiss Life, Swiss Re, UBS, Zurich Insurance* <p>
-<p> *Industrial: ABB, Geberit, Givaudan, Lafarge Holcim, SGS* <p>
-<p> *Pharma: Lonza, Novartis, Roche, Sika* <p>
-
-This method is not mathematical in nature but a simple intuitive decision based on the perception of these companies. Within the grouping, each share is equally weighted. This combination results in the following values for the mean return and volatility of each group as shown in table \@ref(tab:tabplot3).
-
-```{r tabplot3}
-gr = groups_returns(returns, groups)
-gr_mr_vol = data.frame(colnames(gr[-1]), mean_returns(gr), volatilities(cov_mat(gr)), row.names = NULL)
-kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption = "groups with expected return and volatility", digits = 3, booktabs = T, linesep = "")
-```
-
-It can already be seen that the values of volatility are lower overall than those of the individual shares, which leads to a higher Sharpe ratio as shown in table \@ref(tab:tabplot4). The Sharpe ratio of groups increased significantly compared to the Sharpe Ratio for the SMI. 
-In the matrix below, the correlation of the individual groups is shown. As the returns are averaged within the groups, the values of the individual groups converge, resulting in a larger correlation coefficient.
-
-```{r, fig.cap = "Groups correlation", fig.height = 6}
-gg_cor(cor_mat(gr), 4, 12, theme = custom_theme_markdown)
-```
-
-```{r tabplot4}
-weights_SMI = rep(1/20, 20)
-test1 = as.matrix(r[,-1]) %*% weights_SMI
-sr_SMI = ann_sharpe_ratio(mean(test1) / sd(test1), "1d")
-
-weights_groups = rep(1/4, 4)
-test2 = as.matrix(gr[,-1]) %*% weights_groups
-sr_groups = ann_sharpe_ratio(mean(test2) / sd(test2), "1d")
-
-t4 = data.frame(t(c(sr_SMI, sr_groups)))
- 
-kable(t4, caption = "sharp ratio",  
-      booktabs = T, linesep = "", col.names = c("Sharpe ratio of SMI", "Sharpe ratio of groups"))
-```
-
-# Standard error
-In statistics the standard deviation of the sampling distribution is known as the standard error and it provides a statement about the quality of the estimated parameter. The more individual values there are, the smaller is the standard error, and the more accurately the unknown parameter can be estimated.
-
-## Standard error of expected return
 \begin{equation}
   \sigma_{\overline{R}} = \frac{\sigma}{\sqrt{n}}
   \label{eq:ser}
@@ -213,29 +159,19 @@ In statistics the standard deviation of the sampling distribution is known as th
 <p> *$\sigma$ = standard deviation of sample* <p>
 <p> *$n$ = sample size* <p>
 
-```{r}
-mr = mean_returns(r); gmr = mean_returns(gr)
-se_r = apply(r[,-1], 2, se_mean); se_gr = apply(gr[,-1], 2, se_mean)
-min = min(c(mr - se_r, gmr - se_gr)); max = max(c(mr + se_r, gmr + se_gr))
-order = match(unlist(groups), stocks)
-gg1 = gg_errorbar(factor(stocks[order], levels = stocks[order]), mr[order], se_r[order], c(min, max), "Return [%]", theme = custom_theme_markdown)
-gg2 = gg_errorbar(colnames(gr[-1]), gmr, se_gr, c(min, max), "Return [%]", theme = custom_theme_markdown)
-plots12 = align_plots(gg1, gg2, align = "h")
+```{r gg1, fig.cap = 'Expected mean return with standard error', fig.height = 4}
+mr = mean_returns(r)
+se_r = apply(r[,-1], 2, se_mean)
+min = min(mr - se_r); max = max(mr + se_r)
+gg_errorbar(stocks, mr, se_r, c(min, max), "Return [%]", theme = custom_theme_markdown)
 ```
 
-```{r gg1, fig.cap = 'Expected mean return with standard error by stock', fig.height = 4}
-ggdraw(plots12[[1]])
-```
-
-```{r gg2, fig.cap = 'Expected mean return with standard error by group', fig.height = 4}
-ggdraw(plots12[[2]])
-```
 
 As can be seen, the standard error of expected mean return by groups do not show larger values as for example the individual shares *Sika* or *Geberit* do. Due to averaging returns the impact of the outliers is stabilized, therefore the standard error declines when grouping individual stocks.
 
 \newpage
 
-## Standard error of volatility (standard deviation)
+### Standard error of volatility (standard deviation)
 This formula is an approximation for the standard error of volatility, which is appropriate for n > 10. [8]
 
 \begin{equation}
@@ -251,17 +187,13 @@ As shown in table \@ref(tab:tabplot5) respectively table \@ref(tab:tabplot6) the
 
 ```{r tabplot5}
 se_volr = data.frame(colnames(r[-1]), apply(r[,-1], 2, se_sd), row.names = NULL)
-kable(se_volr, col.names = c("Stock", "Standard error [%]"), caption = "Standard error of volatility by SMI", digits = 5, booktabs = T, linesep = "")
-```
-
-```{r tabplot6}
-se_volgr = data.frame(colnames(gr[-1]), apply(gr[,-1], 2, se_sd), row.names = NULL)
-kable(se_volgr, col.names = c("Group", "Standard error [%]"), caption = "Standard error of volatility by group", digits = 5, booktabs = T, linesep = "")
+kable(se_volr, col.names = c("Stock", "Standard error [%]"), caption = "Standard error of volatility", digits = 5, 
+      booktabs = T, linesep = "")
 ```
 
 \newpage
 
-# Markovitz Model
+# Review of classical markovitz optimization
 Modern portfolio theory is a theory that deals with the construction of portfolios to maximize the expected return based on a given market risk. Markowitz' portfolio theory shows that efficient risk reduction is only possible if the extent of the correlation of the individual investments is taken into account when putting together the portfolio. Risk reduction through risk diversification is a key finding of the aforementioned portfolio theory. Harry Markowitz pioneered this theory in his article "Portfolio Selection”. The main point is that the risk and return characteristics of an investment should not be considered in isolation, but should be evaluated according to how the investment affects the risk and return of the overall portfolio. It is shown that an investor can construct a portfolio of multiple assets that maximizes returns for a given level of risk. Similarly, an investor can construct a portfolio with the lowest possible risk at a desired level of expected return. Based on statistical measures such as volatility and correlation, the performance of an individual investment is less important than how it affects the portfolio as a whole. [5] 
 
 The return, volatility and covariance matrix is known. The portfolio volatility is accordingly given as a function of the covariance matrix and the weight vector and it can be minimized as much as desired by sufficient diversification. Also the sum of all weights equals 1. The portfolio weights being searched for are described by the vector $\vec{w} = (w_{1}, \dots, w_{n})$. The weights that are calculated are those weights that match the portfolio with minimal volatility (variance) to a given expected portfolio return $R_{p}$. This is a linear optimization problem, as well a formulation of the fundamental problem of balancing return and risk. Furthermore, negative weightings are defined as short sales. [9]
@@ -309,6 +241,9 @@ The disappearance of the gradient is the necessary condition for a minimum. This
 
 \newpage
 
+## Problem
+Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+
 ## Minimum variance portfolio 
 The Minimum Variance Portfolio, or MVP for short, describes the portfolio of all possible weightings with the minimum volatility. Since only the volatility is minimized, constraint II. is not included in the equation.
 
@@ -324,18 +259,11 @@ The Minimum Variance Portfolio, or MVP for short, describes the portfolio of all
 ```{r tabplot7}
 mvpw_r = data.frame(colnames(r[-1]), mvp_weights(cov_mat(r)))
 
-kable(mvpw_r, caption = "Weights of MVP by stocks", digits = 3, 
+kable(mvpw_r, caption = "Weights of MVP", digits = 3, 
       col.names = c("Stock", "Weight"), booktabs = T, linesep = "")
 ```
 
 It is clear to see that returns which have a negative value also have a negative weighting. In practice, this would lead to a short selling.
-
-```{r tabplot8}
-mvpw_gr = data.frame(colnames(gr[-1]), mvp_weights(cov_mat(gr)))
-
-kable(mvpw_gr, caption = "Weights of MVP by group", digits = 3, 
-      col.names = c("Group", "Weight"), booktabs = T, linesep = "")
-```
 
 ## Tangency portfolio 
 The tangency portfolio results from the tangent of the capital market line and the efficient frontier, which will be shown more detailed in chapter [Efficient Frontier]. The capital market line is an important component of the Capital Asset Pricing Model. The slope of the capital market line indicates how much more return is expected per additional volatility, therefore a steeper slope of the capital market line gives a better Sharpe ratio. This is exactly the situation when the capital market line is tangential to the efficient frontier. Therefore, the best possible diversified portfolio results from the weightings of the tangency portfolio. 
@@ -369,16 +297,8 @@ R_{P}(\sigma_{P}) = R_{f} + \frac{R_{tp} - R_{f}}{\sigma_{tp}} * \sigma_{P}
 ```{r tabplot9}
 tpw_r = data.frame(colnames(r[-1]), tp_weights(cov_mat(r), mean_returns(r)))
 
-kable(tpw_r, caption = "Weights of tangency portfolio by SMI", digits = 3, 
+kable(tpw_r, caption = "Weights of tangency portfolio", digits = 3, 
       col.names = c("Stock", "Weight"), booktabs = T, linesep = "")
-```
-
-
-```{r tabplot10}
-tpw_gr = data.frame(colnames(gr[-1]), tp_weights(cov_mat(gr), mean_returns(gr)))
-
-kable(tpw_gr, caption = "Weights of tangency portfolio by group", digits = 3, 
-      col.names = c("Group", "Weight"), booktabs = T, linesep = "")
 ```
 
 \newpage
@@ -417,45 +337,75 @@ R_{P} = \vec{w}^T * \vec{R}
 
 ```{r gg3, fig.cap = 'Bootstrap samples efficiency frontier', fig.height = 6}
 cm = cov_mat(r); mr = mean_returns(r)
-gcm = cov_mat(gr); gmr = mean_returns(gr)
+
 efw_r = ef_weights(mvp_weights(cm), tp_weights(cm, mr), seq(-2, 2, 0.1))
 efp_r = ef_points(efw_r, cm, mr)
-efw_gr = ef_weights(mvp_weights(gcm), tp_weights(gcm, gmr), seq(-2, 2, 0.1))
-efp_gr = ef_points(efw_gr, gcm, gmr)
 
-efp = data.frame(n = c(stocks, names(groups)), vol = c(volatilities(cm), volatilities(gcm)), mr = c(mr, gmr), row.names = NULL)
-
-g = c()
-for (i in efp$n) {
-  g = c(g, names(which(unlist(groups) == i)))
-}
-efp$g = c(substr(g, 1, nchar(g)-1), names(groups))
+efp = data.frame(n = stocks, vol = volatilities(cm), mr = mr, row.names = NULL)
 
 suppressMessages(suppressWarnings(print(ggplot() +
-  geom_path(aes(x = efp_r[,1], y = efp_r[,2]), alpha = 0.5) +
-  geom_point(aes(x = mvp_point(efp_r)[1], y = mvp_point(efp_r)[2], color = "MVP")) +
-  geom_point(aes(x = tp_point(efp_r)[1], y = tp_point(efp_r)[2], color = "TP")) +
-  geom_text(aes(x = tp_point(efp_r)[1], y = tp_point(efp_r)[2], label = "SMI"),
-            vjust = -2) +
-  geom_path(aes(x = efp_gr[,1], y = efp_gr[,2]), alpha = 0.5) +
-  geom_point(aes(x = mvp_point(efp_gr)[1], y = mvp_point(efp_gr)[2], color = "MVP")) +
-  geom_point(aes(x = tp_point(efp_gr)[1], y = tp_point(efp_gr)[2], color = "TP")) +
-  geom_text(aes(x = tp_point(efp_gr)[1], y = tp_point(efp_gr)[2], label = "Groups"),
-            vjust = -2) +
-  geom_text_repel(data = efp, aes(x = vol, y = mr, label = n, color = g), size = 3) +
-  lims(x = c(0, 3), y = c(-0.1, 0.2)) +
-  labs(x = "Volatility [%]", y = "Expected return [%]", color = NULL) +
-  scale_color_manual(values = c("MVP" = "cornflowerblue", "TP" = "orangered3",
-                                "Consumer" = "lightblue4", "Industrial" = "forestgreen",
-                                "Pharma" = "tan2", "Finance" = "firebrick2")) +
-  guides(fill=guide_legend(ncol = 2)) +
-  theme(legend.position = "bottom") +
-  custom_theme_markdown)))
+ geom_path(aes(x = efp_r[,1], y = efp_r[,2]), alpha = 0.5) +
+ geom_point(aes(x = mvp_point(efp_r)[1], y = mvp_point(efp_r)[2], color = "MVP")) +
+ geom_point(aes(x = tp_point(efp_r)[1], y = tp_point(efp_r)[2], color = "TP")) +
+ geom_text_repel(data = efp, aes(x = vol, y = mr, label = n), size = 3) +
+ lims(x = c(0, 3), y = c(-0.1, 0.2)) +
+ labs(x = "Volatility [%]", y = "Expected return [%]", color = NULL) +
+ scale_color_manual(values = c("MVP" = "cornflowerblue", "TP" = "orangered3")) +
+ guides(fill=guide_legend(ncol = 2)) +
+ theme(legend.position = "bottom") +
+ custom_theme_markdown)))
 ```
 
 In figure \@ref(fig:gg3) it is clearly visible that the SMI shows a significantly higher return with almost the same volatility and vice versa. This leads to a larger in sample Sharpe ratio of the SMI compared to the groups. The reason for a higher in sample Sharpe ratio of the individual stocks is due to the higher amount of data. There are 20 stocks in the SMI for which the weighting can be optimized, but only four in the grouping. However, it will become apparent in chapter \@ref(cross) that this no longer applies to the out of sample Sharpe ratio, which in our case is much more important than the in sample.
 
-# Bootstrap
+\newpage
+
+## Sharpe ratio
+The Sharpe ratio measures the performance of an investment which means the return of an investment compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the risk-adjusted return. In practice, the value of the Sharpe Ratio is not only positively received. In this paper, however, we will rely on the Sharpe ratio because it is a key figure by which performance can be measured. It is calculated by the average return earned in excess of the risk-free rate per unit of volatility. In this case it is the natural logarithmic return per day $R$ divided by $\sigma$. $R$ is already calculated in equation \@ref(eq:LogR). [6] [7]
+
+\begin{equation}
+  Sharpe ratio = \frac{R_{ln} - R_{f}}{\sigma} = \frac{R}{\sigma}
+  \label{eq:sharperatio}
+\end{equation}
+
+<p> *$R$ = natural logarithmic return per day* <p>
+<p> *$R_{ln}$ = mean logarithmic return* <p>
+<p> *$R_{f}$ = risk-free rate of return* <p>
+<p> *$\sigma_{i}$ = volatility of return* <p>
+
+Before any weighting of a portfolio is optimized, the Sharpe ratio of the SMI is calculated. This is done by weighting all stocks equally, 1/20 each, and then applying the weightings to the actual returns of the historical data. This results in a Sharpe ratio of XX. Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. As mentioned above, the Sharpe ratio is used as a measure of the optimization and robustness. A robust optimization leads to a lower volatility which results in a higher Sharpe ratio. The higher the value the better the optimization.
+
+# Methodology
+
+
+## Grouping
+A first way to increase the Sharpe ratio is to create groups. Grouping the stocks also reduces the standard errors, which will be described in more detail later in chapter [Standard error]. 
+Naturally there are different approaches how many groups and how exactly the composition of such groups should be created. In a first approach we formed four groups, which differ in their industries:
+
+<p> *Consumer: Adecco, Nestle, Richemont, Swatch, Swisscom* <p>
+<p> *Finance: Credit Suisse, Julius Baer, Swiss Life, Swiss Re, UBS, Zurich Insurance* <p>
+<p> *Industrial: ABB, Geberit, Givaudan, Lafarge Holcim, SGS* <p>
+<p> *Pharma: Lonza, Novartis, Roche, Sika* <p>
+
+This method is not mathematical in nature but a simple intuitive decision based on the perception of these companies. Within the grouping, each share is equally weighted. This combination results in the following values for the mean return and volatility of each group as shown in table \@ref(tab:tabplot3).
+
+```{r tabplot3}
+gr = groups_returns(returns, groups)
+gr_mr_vol = data.frame(colnames(gr[-1]), mean_returns(gr), volatilities(cov_mat(gr)), row.names = NULL)
+kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption = "groups with expected return and volatility", digits = 3, booktabs = T, linesep = "")
+```
+
+It can already be seen that the values of volatility are lower overall than those of the individual shares, which leads to a higher Sharpe ratio as shown in table \@ref(tab:tabplot4). The Sharpe ratio of groups increased significantly compared to the Sharpe Ratio for the SMI. 
+In the matrix below, the correlation of the individual groups is shown. As the returns are averaged within the groups, the values of the individual groups converge, resulting in a larger correlation coefficient.
+
+```{r, fig.cap = "Groups correlation", fig.height = 6}
+gg_cor(cor_mat(gr), 4, 12, theme = custom_theme_markdown)
+```
+
+\newpage
+
+
+## Bootstrap
 In this part a bootstrap process was made to analyze the robustness of the tangency portfolio weights when resampling all historical returns.
 
 All dates from the historical data were sampled in the same dimension, with replacing included. Which means that certain dates can occur multiple times. From each sampled date, the corresponding returns of each stock are added to the new data, consequently maintaining the daily differences between stocks. If replacing would not be included in the sampling method, the correlation matrix would remain constant to the one of the original data.
@@ -468,46 +418,6 @@ suppressMessages(suppressWarnings(print(gg_bootstrap_ef(bs_r$samples_ef_points, 
 ```
 
 In figure \@ref(fig:gg4) all bootstrap samples can be seen with their minimum variance portfolio, tangency portfolio and their efficiency frontier. Noticeable is the variance of the tangency portfolio in comparison to the minimum variance portfolio. This is due to the high standard errors of returns. Since the return is included in the calculation of the TP, but not in the MVP, a larger deviation can be seen.
-
-```{r}
-mvpw_r = mvp_weights(cov_mat(r)); mvpw_gr = mvp_weights(cov_mat(gr))
-mvpw_sd_r = bs_r$mvp_weights_sd; mvpw_sd_gr = bs_gr$mvp_weights_sd
-min = min(c(mvpw_r - mvpw_sd_r, mvpw_gr - mvpw_sd_gr))
-max = max(c(mvpw_r + mvpw_sd_r, mvpw_gr + mvpw_sd_gr))
-gg3 = gg_errorbar(factor(stocks[order], levels = stocks[order]), mvpw_r[order], mvpw_sd_r[order], c(min, max), "Weights", theme = custom_theme_markdown)
-gg4 = gg_errorbar(colnames(gr[-1]), mvpw_gr, mvpw_sd_gr, c(min, max), "Weights", theme = custom_theme_markdown)
-plots34 = align_plots(gg3, gg4, align = "h")
-```
-
-```{r gg5, fig.cap = 'MVP weights with standard error by SMI', fig.height = 4}
-ggdraw(plots34[[1]])
-```
-
-```{r gg6, fig.cap = 'MVP weights with standard error by group', fig.height = 4}
-ggdraw(plots34[[2]])
-```
-
-Figure \@ref(fig:gg5) and figure \@ref(fig:gg6) illustrate the MVP mean weights and their standard error over the 100 bootstrap samples of 20 stocks, respectively of the groups. In comparison in figure \@ref(fig:gg7) and figure \@ref(fig:gg8) the same is depicted with the tangency portfolio. As mentioned before and obvious to see is that TP weights have a higher standard deviation than MVP weights, as it was seen before. Here the standard deviation was computed with the 84-Quantil minus the 50-Quantil.
-
-```{r}
-tpw_r = tp_weights(cov_mat(r), mean_returns(r)); tpw_gr = tp_weights(cov_mat(gr), mean_returns(gr))
-tpw_sd_r = bs_r$tp_weights_sd; tpw_sd_gr = bs_gr$tp_weights_sd
-min = min(c(tpw_r - tpw_sd_r, tpw_gr - tpw_sd_gr))
-max = max(c(tpw_r + tpw_sd_r, tpw_gr + tpw_sd_gr))
-gg5 = gg_errorbar(factor(stocks[order], levels = stocks[order]), tpw_r[order], tpw_sd_r[order], c(min, max), "Weights", theme = custom_theme_markdown)
-gg6 = gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(min, max), "Weights", theme = custom_theme_markdown)
-plots56 = align_plots(gg5, gg6, align = "h")
-```
-
-```{r gg7, fig.cap = 'tangency portfolio weights with standard error by SMI', fig.height = 4}
-ggdraw(plots56[[1]])
-```
-
-```{r gg8, fig.cap = 'Tangency portfolio weights with standard error by group', fig.height = 4}
-ggdraw(plots56[[2]])
-```
-
-The TP weights of two individual stocks is illustrated in \@ref(fig:gg9). Generally the weight of the tangency portfolio spreads stongly.
 
 ```{r gg9, fig.cap = 'Sample tangency portfolio stock weights', fig.height = 3}
 # stock1 = "ABB"
@@ -522,7 +432,7 @@ The TP weights of two individual stocks is illustrated in \@ref(fig:gg9). Genera
 
 \newpage
 
-# Cross validation {#cross}
+## Cross validation {#cross}
 This chapter describes the methodology to measure the performance of the Markovitz model.
 
 The measure is the previously described Sharpe ratio and in particular the out of sample Sharpe ratio is of interest. Out of sample means that the model is not tested on the data which created it but on an independent dataset instead. Contrary, in sample means that the model is tested on the data which created it. A widely used method for out of sample testing is the so-called cross validation.
@@ -580,10 +490,10 @@ ggplot(df) + geom_line(aes(x = order, y = X1, group = 1, col = "Model 1"), alpha
 
 \newpage
 
-# Shrinkage
+## Shrinkage
 One method for improving the out of sample Sharpe ratio is shrinking. This approach focuses on altering the returns and correlation prior to the optimization with the goal to obtain a better model in regard to the out of sample Sharpe ratio.
 
-## Shrinking factor for return
+### Shrinking factor for return
 The formula for the return shrinking factor is shown in \@ref(eq:shrinkR). When the shrinking factor is set to zero, the returns are not altered and remain the same. When increasing the shrinking factor from zero up to one, the returns converge towards their mean value.
 
 \begin{equation}
@@ -596,7 +506,7 @@ R_{i}(\lambda) = \lambda*R_{i} + (1 - \lambda) * \overline{R}
 <p> *$R_{i}$ = return of stock i* <p>
 <p> *$\overline{R}$ = mean return of all stocks* <p>
 
-## Shrinking factor for correlation
+### Shrinking factor for correlation
 The formula for the correlation shrinking factor is shown in \@ref(eq:shrinkCor). The reason for shrinking the correlation instead of the covariance is that the former is standardized and therefore more suitable. When the shrinking factor is set to one, the correlation is not altered and remains the same. When decreasing the shrinking factor from one to zero, the correlation converges towards zero. This means that all entries of the correlation matrix are equal to zero except the diagonal, which is by definition always equal to one.
 
 \begin{equation}
@@ -608,8 +518,6 @@ The formula for the correlation shrinking factor is shown in \@ref(eq:shrinkCor)
 <p> *$\epsilon$ = shrinking factor* <p>
 <p> *$I_{i,j}$ = identity matrix* <p>
 <p> *$\tilde{\rho_{i,j}}$ = correlation matrix with diagonal zero* <p>
-
-## Achievable Sharpe ratios
 
 ### Shrinking factors analyzed separately
 The Sharpe ratio can be visualized as a function of the shrinking factor. Figure \@ref(fig:gg20) shows such a plot for the return shrinking factor. The global maxima are highlighted with points and their coordinates. It can be seen that the highest Sharpe ratio for the SMI is achieved with a shrinking factor of about two thirds. For the groups on the other hand shrinking does not lead to an improvement of the Sharpe ratio, as the highest Sharpe ratio is achieved at shrinking factor of zero which means that the returns are not altered. For the SMI it is visible that close to the shrinking factor one the line is interrupted. This implies that the corresponding Sharpe ratio is below zero which is not shown in the plot. These outliers are caused by extreme portfolio weights which are obtained at these shrinking factors. Extreme portfolio weights are obtained through near-singularity of the covariance matrix.
@@ -665,6 +573,81 @@ t20 = data.frame(c(is_r, is_gr),
 kable(t20, caption = "Sharpe ratio",  digits = 3,
        booktabs = T, linesep = "", col.names = c("In sample", "Out of sample", "Out of sample shrinking"))
 ```
+
+\newpage
+
+# Results
+
+
+
+
+## I.
+
+```{r tabplot4}
+weights_SMI = rep(1/20, 20)
+test1 = as.matrix(r[,-1]) %*% weights_SMI
+sr_SMI = ann_sharpe_ratio(mean(test1) / sd(test1), "1d")
+
+weights_groups = rep(1/4, 4)
+test2 = as.matrix(gr[,-1]) %*% weights_groups
+sr_groups = ann_sharpe_ratio(mean(test2) / sd(test2), "1d")
+
+t4 = data.frame(t(c(sr_SMI, sr_groups)))
+ 
+kable(t4, caption = "sharp ratio",  
+      booktabs = T, linesep = "", col.names = c("Sharpe ratio of SMI", "Sharpe ratio of groups"))
+```
+
+
+## II.
+
+```{r}
+mvpw_r = mvp_weights(cov_mat(r)); mvpw_gr = mvp_weights(cov_mat(gr))
+mvpw_sd_r = bs_r$mvp_weights_sd; mvpw_sd_gr = bs_gr$mvp_weights_sd
+min = min(c(mvpw_r - mvpw_sd_r, mvpw_gr - mvpw_sd_gr))
+max = max(c(mvpw_r + mvpw_sd_r, mvpw_gr + mvpw_sd_gr))
+gg3 = gg_errorbar(factor(stocks[order], levels = stocks[order]), mvpw_r[order], mvpw_sd_r[order], c(min, max), "Weights", theme = custom_theme_markdown)
+gg4 = gg_errorbar(colnames(gr[-1]), mvpw_gr, mvpw_sd_gr, c(min, max), "Weights", theme = custom_theme_markdown)
+plots34 = align_plots(gg3, gg4, align = "h")
+```
+
+```{r gg5, fig.cap = 'MVP weights with standard error by SMI', fig.height = 4}
+ggdraw(plots34[[1]])
+```
+
+```{r gg6, fig.cap = 'MVP weights with standard error by group', fig.height = 4}
+ggdraw(plots34[[2]])
+```
+
+Figure \@ref(fig:gg5) and figure \@ref(fig:gg6) illustrate the MVP mean weights and their standard error over the 100 bootstrap samples of 20 stocks, respectively of the groups. In comparison in figure \@ref(fig:gg7) and figure \@ref(fig:gg8) the same is depicted with the tangency portfolio. As mentioned before and obvious to see is that TP weights have a higher standard deviation than MVP weights, as it was seen before. Here the standard deviation was computed with the 84-Quantil minus the 50-Quantil.
+
+```{r}
+tpw_r = tp_weights(cov_mat(r), mean_returns(r)); tpw_gr = tp_weights(cov_mat(gr), mean_returns(gr))
+tpw_sd_r = bs_r$tp_weights_sd; tpw_sd_gr = bs_gr$tp_weights_sd
+min = min(c(tpw_r - tpw_sd_r, tpw_gr - tpw_sd_gr))
+max = max(c(tpw_r + tpw_sd_r, tpw_gr + tpw_sd_gr))
+gg5 = gg_errorbar(factor(stocks[order], levels = stocks[order]), tpw_r[order], tpw_sd_r[order], c(min, max), "Weights", theme = custom_theme_markdown)
+gg6 = gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(min, max), "Weights", theme = custom_theme_markdown)
+plots56 = align_plots(gg5, gg6, align = "h")
+```
+
+```{r gg7, fig.cap = 'tangency portfolio weights with standard error by SMI', fig.height = 4}
+ggdraw(plots56[[1]])
+```
+
+```{r gg8, fig.cap = 'Tangency portfolio weights with standard error by group', fig.height = 4}
+ggdraw(plots56[[2]])
+```
+
+The TP weights of two individual stocks is illustrated in \@ref(fig:gg9). Generally the weight of the tangency portfolio spreads stongly.
+
+## III.
+
+
+
+# Conclusion
+
+
 
 \newpage
 
