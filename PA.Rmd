@@ -335,7 +335,7 @@ R_{P} = \vec{w}^T * \vec{R}
 <p> *$\Sigma$ = covariance matrix* <p>
 
 
-```{r gg3, fig.cap = 'Bootstrap samples efficiency frontier', fig.height = 6}
+```{r gg3, fig.cap = 'Efficient frontier with stocks', fig.height = 5}
 cm = cov_mat(r); mr = mean_returns(r)
 
 efw_r = ef_weights(mvp_weights(cm), tp_weights(cm, mr), seq(-2, 2, 0.1))
@@ -344,6 +344,7 @@ efp_r = ef_points(efw_r, cm, mr)
 efp = data.frame(n = stocks, vol = volatilities(cm), mr = mr, row.names = NULL)
 
 suppressMessages(suppressWarnings(print(ggplot() +
+ geom_abline(intercept = 0, slope = tp_point(efp_r)[2]/tp_point(efp_r)[1], alpha = 0.6, col = "burlywood4") +
  geom_path(aes(x = efp_r[,1], y = efp_r[,2]), alpha = 0.5) +
  geom_point(aes(x = mvp_point(efp_r)[1], y = mvp_point(efp_r)[2], color = "MVP")) +
  geom_point(aes(x = tp_point(efp_r)[1], y = tp_point(efp_r)[2], color = "TP")) +
@@ -445,27 +446,20 @@ knitr::include_graphics("./www/Cross_validation.jpg")
 
 In the case of the Markovitz model, this means that the returns, volatility and covariance of the training sets are used to calculate the weights which are then applied to the testing set returns. By the end of the cross validation, one can combine all five testing sets into one time series which equals the length of the original one, but is out of sample. This out of sample time series is used to calculate the Sharpe ratio. As a comparison, the in sample Sharpe ratio is also calculated as shown in table \@ref(tab:tabplot11).
 
-```{r tabplot11}
+As one might expect, the optimization performs better in sample and therefore the in sample Sharpe ratio is higher than the out of sample Sharpe ratio.
+
+```{r gg99, fig.cap = "Tangency portfolio weights by model", fig.height = 5}
 is_r = in_sample(r); is_gr = in_sample(gr)
 sets_r = cross_validation_sets(r); sets_gr = cross_validation_sets(gr)
 os_r = out_of_sample(sets_r); os_gr = out_of_sample(sets_gr)
 
-t11 = data.frame(c(is_r, is_gr), c(os_r, os_gr), row.names = c("SMI", "Groups"))
-
-kable(t11, caption = "Sharpe ratio",  digits = 3, 
-       booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
-```
-
-As one might expect, the optimization performs better in sample and therefore the in sample Sharpe ratio is higher than the out of sample Sharpe ratio.
-
-```{r gg99, fig.cap = "Tangency portfolio weights by model", fig.height = 5}
 sets_tpw = matrix(ncol = 5, nrow = 20)
 
 for (i in 1:5) {
   sets_tpw[,i] = out_of_sample(sets_r, set = i)$tp_weights
 }
 
-df = data.frame(order = factor(stocks[order], levels = stocks[order]), sets_tpw[order,])
+df = data.frame(order = stocks, sets_tpw)
 
 alpha = 0.2
 ggplot(df) + geom_line(aes(x = order, y = X1, group = 1, col = "Model 1"), alpha = alpha) +
@@ -598,7 +592,12 @@ kable(t4, caption = "sharp ratio",
       booktabs = T, linesep = "", col.names = c("Sharpe ratio of SMI", "Sharpe ratio of groups"))
 ```
 
+```{r tabplot11}
+t11 = data.frame(c(is_r, is_gr), c(os_r, os_gr), row.names = c("SMI", "Groups"))
 
+kable(t11, caption = "Sharpe ratio",  digits = 3, 
+       booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
+```
 ## II.
 
 ```{r}
@@ -606,7 +605,7 @@ mvpw_r = mvp_weights(cov_mat(r)); mvpw_gr = mvp_weights(cov_mat(gr))
 mvpw_sd_r = bs_r$mvp_weights_sd; mvpw_sd_gr = bs_gr$mvp_weights_sd
 min = min(c(mvpw_r - mvpw_sd_r, mvpw_gr - mvpw_sd_gr))
 max = max(c(mvpw_r + mvpw_sd_r, mvpw_gr + mvpw_sd_gr))
-gg3 = gg_errorbar(factor(stocks[order], levels = stocks[order]), mvpw_r[order], mvpw_sd_r[order], c(min, max), "Weights", theme = custom_theme_markdown)
+gg3 = gg_errorbar(stocks, mvpw_r, mvpw_sd_r, c(min, max), "Weights", theme = custom_theme_markdown)
 gg4 = gg_errorbar(colnames(gr[-1]), mvpw_gr, mvpw_sd_gr, c(min, max), "Weights", theme = custom_theme_markdown)
 plots34 = align_plots(gg3, gg4, align = "h")
 ```
@@ -626,7 +625,7 @@ tpw_r = tp_weights(cov_mat(r), mean_returns(r)); tpw_gr = tp_weights(cov_mat(gr)
 tpw_sd_r = bs_r$tp_weights_sd; tpw_sd_gr = bs_gr$tp_weights_sd
 min = min(c(tpw_r - tpw_sd_r, tpw_gr - tpw_sd_gr))
 max = max(c(tpw_r + tpw_sd_r, tpw_gr + tpw_sd_gr))
-gg5 = gg_errorbar(factor(stocks[order], levels = stocks[order]), tpw_r[order], tpw_sd_r[order], c(min, max), "Weights", theme = custom_theme_markdown)
+gg5 = gg_errorbar(stocks, tpw_r, tpw_sd_r, c(min, max), "Weights", theme = custom_theme_markdown)
 gg6 = gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(min, max), "Weights", theme = custom_theme_markdown)
 plots56 = align_plots(gg5, gg6, align = "h")
 ```
