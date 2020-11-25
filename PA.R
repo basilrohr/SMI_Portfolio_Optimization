@@ -12,6 +12,14 @@ cor = cor_mat(returns)
 d = dist(cor)
 heatmap(as.matrix(d), symm = T)
 
+par(mfrow = c(1,3))
+hcsing = hclust(d, method = "single")
+hcave = hclust(d, method = "average")
+hccom = hclust(d, method = "complete")
+plot(hcsing, main = "Single")
+plot(hcave, main = "Average")
+plot(hccom, main = "Complete")
+
 
 order = match(unlist(groups), stocks)
 
