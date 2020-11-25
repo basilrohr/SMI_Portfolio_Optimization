@@ -7,6 +7,12 @@ library(ggpubr)
 load("./Data/returns_1d.Rda")
 R.utils::sourceDirectory("./Code", modifiedOnly = F)
 
+
+cor = cor_mat(returns)
+d = dist(cor)
+heatmap(as.matrix(d), symm = T)
+
+
 order = match(unlist(groups), stocks)
 
 r = returns
