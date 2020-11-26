@@ -3,14 +3,31 @@ library(ggrepel)
 library(dplyr)
 library(ggcorrplot)
 library(ggpubr)
+library(car)
+library(qqplotr)
+library(cluster)
 
 load("./Data/returns_1d.Rda")
 R.utils::sourceDirectory("./Code", modifiedOnly = F)
 
 
+par(mfrow = c(4,5))
+for (i in 2:21) {
+  qqPlot(returns[,i], main = colnames(returns)[i])
+}
+par(mfrow = c(1,1))
+qqPlot(returns[,"Swisscom"], main = colnames(returns)["Swisscom"])
+set.seed(123)
+qqPlot(rnorm(1000), distribution = "norm")
+ggplot(mapping = aes(sample = returns[,"Swisscom"])) + stat_qq() + stat_qq_line(color = "orangered3") + custom_theme_shiny
+
+
+
 cor = cor_mat(returns)
 d = dist(cor)
 heatmap(as.matrix(d), symm = T)
+
+heatmap(cor, symm = T)
 
 par(mfrow = c(1,3))
 hcsing = hclust(d, method = "single")
@@ -19,6 +36,30 @@ hccom = hclust(d, method = "complete")
 plot(hcsing, main = "Single")
 plot(hcave, main = "Average")
 plot(hccom, main = "Complete")
+
+par(mfrow = c(1,1))
+x.ss = rep(NA, 16)
+for (i in 1:16) {
+  kmi = kmeans(cor, centers = i, nstart = 11)
+  x.ss[i] = sum(kmi$withinss)
+}
+plot(x.ss, type = "b")
+
+km = kmeans(cor, centers = 2, nstart = 11)$cluster
+
+clusplot(cor, km, diss = F, shade = T, labels = 3, main = "k-means")
+
+
+
+x.pam2 = rep(NA,16)
+for (i in 2:16) {
+  pami <- pam(cor, k = i, diss = F)
+  x.pam2[i] <- pami$silinfo$avg.width
+}
+# x.pam ist mit x.pam2 identisch
+plot(x.pam2, type = "b")
+
+
 
 
 order = match(unlist(groups), stocks)

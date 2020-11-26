@@ -244,6 +244,10 @@ The disappearance of the gradient is the necessary condition for a minimum. This
 ## Problem
 Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
 
+```{r}
+ggplot(mapping = aes(sample = r[,"Swisscom"])) + stat_qq() + stat_qq_line(color = "orangered3") + custom_theme_markdown
+```
+
 ## Minimum variance portfolio 
 The Minimum Variance Portfolio, or MVP for short, describes the portfolio of all possible weightings with the minimum volatility. Since only the volatility is minimized, constraint II. is not included in the equation.
 
