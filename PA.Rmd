@@ -411,7 +411,7 @@ In this part a bootstrap process was made to analyze the robustness of the tange
 
 All dates from the historical data were sampled in the same dimension, with replacing included. Which means that certain dates can occur multiple times. From each sampled date, the corresponding returns of each stock are added to the new data, consequently maintaining the daily differences between stocks. If replacing would not be included in the sampling method, the correlation matrix would remain constant to the one of the original data.
 
-One Bootstrap sample contains a different data, with which a new mean return of each stock and group and the corresponding covariance matrix is calculated. Those two variables are needed as input in the optimization function to calculate minimum variance portfolio, tangency portfolio of the 20 stocks and the four groups. With 100 bootstrap samples, 100 MVP’s and TP’s can be compared and analyzed. Additionally, the standard deviation of the weights over those number of bootstrap samples can be studied.
+One Bootstrap sample contains a different data, with which a new mean return of each stock and group and the corresponding covariance matrix is calculated. Those two variables are needed as input in the optimization function to calculate minimum variance portfolio, tangency portfolio of the 20 stocks and the four groups. With 100 bootstrap samples, 100 MVP’s and TP’s can be compared and analyzed. Additionally, the standard deviation of the weights over those number of bootstrap samples can be studied. The standard deviation is computed with the 84-Quantil minus the 50-Quantil to achieve a more robust result, because this calculation is less vulnerable to outliers.
 
 ```{r gg4, fig.cap = 'Bootstrap samples efficiency frontier', fig.height = 3.8}
 bs_r = bootstrap(r); bs_gr = bootstrap(gr)
@@ -484,7 +484,7 @@ ggplot(df) + geom_line(aes(x = order, y = X1, group = 1, col = "Model 1"), alpha
 
 \newpage
 
-## Shrinkage
+## Shrinkage {shrink}
 One method for improving the out of sample Sharpe ratio is shrinking. This approach focuses on altering the returns and correlation prior to the optimization with the goal to obtain a better model in regard to the out of sample Sharpe ratio.
 
 ### Shrinking factor for return
@@ -571,11 +571,11 @@ kable(t20, caption = "Sharpe ratio",  digits = 3,
 \newpage
 
 # Results
-
-
+In the results the different approaches of the mentioned methodology is described. The first section is about the outcome of grouping and shrinkage measured with sharpe ratio and the second section about the result of the sampling method with bootstrapping.
 
 
 ## I.
+The two tables below visualize the different sharpe ratio outcome. Firstly the table \@ref(tab:tabplot4) displays the sharpe ratio of SMI and Group returns when all have an equal weight and only the method of grouping is applied. Also no optimization is used. The second table \@ref(tab:tabplot11) displays the results of the shrinkage section \@ref(shrink) with markovitz optimization and grouping.
 
 ```{r tabplot4}
 weights_SMI = rep(1/20, 20)
@@ -591,6 +591,7 @@ t4 = data.frame(t(c(sr_SMI, sr_groups)))
 kable(t4, caption = "sharp ratio",  
       booktabs = T, linesep = "", col.names = c("Sharpe ratio of SMI", "Sharpe ratio of groups"))
 ```
+If no method is applied the sharpe ratio is very low. The first observation which can be made is, that the grouping method leads to a better sharpe ratio and therefore the method proves its worth if no optimization is performed.
 
 ```{r tabplot11}
 t11 = data.frame(c(is_r, is_gr), c(os_r, os_gr), row.names = c("SMI", "Groups"))
@@ -598,7 +599,12 @@ t11 = data.frame(c(is_r, is_gr), c(os_r, os_gr), row.names = c("SMI", "Groups"))
 kable(t11, caption = "Sharpe ratio",  digits = 3, 
        booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
 ```
+
+
+
 ## II.
+
+In the following four illustrations the results of the bootstrap can be seen. In all four graphics the mean weights and the standard deviation over the 100 samples are shown. Figure \@ref(fig:gg5) and figure \@ref(fig:gg6) visualize the MVP weights by all 20 stocks and by group. In comparison to figure \@ref(fig:gg7) and figure \@ref(fig:gg8) where the same is depicted with the tangency portfolio.
 
 ```{r}
 mvpw_r = mvp_weights(cov_mat(r)); mvpw_gr = mvp_weights(cov_mat(gr))
@@ -618,8 +624,6 @@ ggdraw(plots34[[1]])
 ggdraw(plots34[[2]])
 ```
 
-Figure \@ref(fig:gg5) and figure \@ref(fig:gg6) illustrate the MVP mean weights and their standard error over the 100 bootstrap samples of 20 stocks, respectively of the groups. In comparison in figure \@ref(fig:gg7) and figure \@ref(fig:gg8) the same is depicted with the tangency portfolio. As mentioned before and obvious to see is that TP weights have a higher standard deviation than MVP weights, as it was seen before. Here the standard deviation was computed with the 84-Quantil minus the 50-Quantil.
-
 ```{r}
 tpw_r = tp_weights(cov_mat(r), mean_returns(r)); tpw_gr = tp_weights(cov_mat(gr), mean_returns(gr))
 tpw_sd_r = bs_r$tp_weights_sd; tpw_sd_gr = bs_gr$tp_weights_sd
@@ -638,7 +642,8 @@ ggdraw(plots56[[1]])
 ggdraw(plots56[[2]])
 ```
 
-The TP weights of two individual stocks is illustrated in \@ref(fig:gg9). Generally the weight of the tangency portfolio spreads stongly.
+
+As it is obvious to see and also visualized in figure \@ref(fig:gg9), is that TP weights have a higher standard deviation than MVP weights. That means the TP is more sensible to changes of returns than the MVP is. If the equation \@ref(eq:mvpanlytic) of MVP and the equation \@ref(eq:tananlytic) of TP are considered, the MVP does not depend on the returns directly. Consequently different returns samples have not a large impact on the MVP. The small differences arise from the varying covariance matrix. But it can also be noticed that this matrix has not large deviations following the standard deviation of the MVP. Therefore bootsptrap sampling of the returns does not influence the covariance matrix as much as the returns itself.
 
 ## III.
 
