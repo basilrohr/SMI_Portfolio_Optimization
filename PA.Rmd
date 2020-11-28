@@ -27,6 +27,7 @@ library(knitr)
 library(ggplot2)
 library(ggcorrplot)
 library(cowplot)
+library(ggpubr)
 library(ggrepel)
 library(dplyr)
 library(grid)
@@ -258,7 +259,7 @@ The Minimum Variance Portfolio, or MVP for short, describes the portfolio of all
 
 \begin{equation}
 \vec{w}_{mvp} = \frac{1}{\vec{1}^T\Sigma^{-1}\vec{1}}*\Sigma^{-1}\vec{1}
-  \label{eq:mvpanlytic}
+  \label{eq:mvpw}
 \end{equation}
 
 <p> *$\vec{w}_{mvp}$ = weights* <p>
@@ -294,7 +295,7 @@ R_{P}(\sigma_{P}) = R_{f} + \frac{R_{tp} - R_{f}}{\sigma_{tp}} * \sigma_{P}
 *Tangency Portfolio:*
 \begin{equation}
 \vec{w}_{tp} = \frac{1}{\vec{1}\Sigma^{-1}(\vec{R}-R_{f}\vec{1})}*\Sigma^{-1}(\vec{R}-R_{f}\vec{1})
-  \label{eq:tananlytic}
+  \label{eq:tpw}
 \end{equation}
 
 <p> *$\vec{w}_{tp}$ = weights* <p>
@@ -429,17 +430,6 @@ suppressMessages(suppressWarnings(print(gg_bootstrap_ef(bs_r$samples_ef_points, 
 
 In figure \@ref(fig:gg4) all bootstrap samples can be seen with their minimum variance portfolio, tangency portfolio and their efficiency frontier. Noticeable is the variance of the tangency portfolio in comparison to the minimum variance portfolio. This is due to the high standard errors of returns. Since the return is included in the calculation of the TP, but not in the MVP, a larger deviation can be seen.
 
-```{r gg9, fig.cap = 'Sample tangency portfolio stock weights', fig.height = 3}
-# stock1 = "ABB"
-# stock2 = "Adecco"
-# 
-# ggplot(bs_out_SMI$sample_weights_tp) +
-#   geom_point(aes_string(x = paste0("`", stock1, "`"), y = paste0("`", stock2, "`")),
-#              color = "orangered3") +
-#   labs(x = stock1, y = stock2) +
-#   custom_theme_markdown
-```
-
 \newpage
 
 ## Cross validation {#cross}
@@ -452,7 +442,7 @@ In this case, the data set is split into five sections and consequentially five 
 knitr::include_graphics("./www/Cross_validation.jpg")
 ```
 
-In the case of the Markovitz model, the mean returns and covariance matrix of the training set are used to calculate the asset weights. These weights are then applied to the test set asset returns according to equation \@ref(eq:weightedreturn).
+In the case of the Markovitz model, the mean returns and covariance matrix of the training set are used to calculate the asset weights. These weights are then applied to the test set asset returns according to \@ref(eq:weightedreturn).
 
 \begin{equation}
 R_{i,w} = \vec{w}^\intercal * \vec{R_i}
@@ -465,9 +455,9 @@ R_{i,w} = \vec{w}^\intercal * \vec{R_i}
 
 At the end of the cross validation, all five test sets are combined into one time series consisting of the daily weighted returns and equaling the length of the original data set. This time series is completely out of sample and is used to calculate the Sharpe ratio and hence measure the performance of the model.
 
-It is to note that the training and test sets of the five sections vary significantly in some cases. To give one cause for this, the financial crisis from 2007–2008 can be looked at. During this period, most assets yielded negative returns. For example, model 3 in figure \@ref(fig:crossvalidation) includes this time period as part of the test set and model 4 of the training set. This results in fluctuating asset weights across the five models which are illustrated in figure \@ref(fig:gg99).
+It is to note that the training and test sets of the five sections vary significantly in some cases. To give one cause for this, the financial crisis from 2007–2008 can be looked at. During this period, most assets yielded negative returns. For example, model 3 in figure \@ref(fig:crossvalidation) includes this time period as part of the test set and model 4 of the training set. This results in fluctuating asset weights across the five models which are illustrated in figure \@ref(fig:tpwbymodel).
 
-```{r gg99, fig.cap = "Tangency portfolio weights by model", fig.height = 5}
+```{r tpwbymodel, fig.cap = "Tangency portfolio weights by model", fig.height = 5}
 is_r = in_sample(r); is_gr = in_sample(gr)
 sets_r = cross_validation_sets(r); sets_gr = cross_validation_sets(gr)
 os_r = out_of_sample(sets_r); os_gr = out_of_sample(sets_gr)
@@ -497,30 +487,103 @@ ggplot(df) +
 
 Stocks like *Julius Baer* and *Sika* have similar weights across all models while *Lonza* for example varies significantly.
 
-\newpage
-
 ## Shrinkage {#shrink}
-One method for improving the out of sample Sharpe ratio is shrinking. This approach focuses on altering the returns and correlation prior to the optimization with the goal to obtain a better model in regard to the out of sample Sharpe ratio.
 
-### Shrinking factor for return
-The formula for the return shrinking factor is shown in \@ref(eq:shrinkR). When the shrinking factor is set to zero, the returns are not altered and remain the same. When increasing the shrinking factor from zero up to one, the returns converge towards their mean value.
+Shrinkage is an approach with the goal to increase the out of sample Sharpe ratio by altering the inputs of the Markovitz optimization, namely the mean returns and covariance matrix.
+
+### Shrinkage of mean returns
+
+The mean returns shrinkage factor is calculated as in \@ref(eq:shrinkr).
 
 \begin{equation}
-R_{i}(\lambda) = \lambda*R_{i} + (1 - \lambda) * \overline{R}
-  \label{eq:shrinkR}
+\vec{R}(\lambda) = \lambda*\vec{R} + (1 - \lambda) * \vec{\overline{R}}
+\label{eq:shrinkr}
 \end{equation}
 
-<p> *$R_{i}(\lambda)$ = return of stock i as a function of $\lambda$* <p>
-<p> *$\lambda$ = shrinking factor* <p>
-<p> *$R_{i}$ = return of stock i* <p>
-<p> *$\overline{R}$ = mean return of all stocks* <p>
+<p> *$\vec{R}(\lambda)$ = mean returns as a function of $\lambda$* <p>
+<p> *$\lambda$ = shrinkage factor* <p>
+<p> *$\vec{R}$ = mean returns* <p>
+<p> *$\vec{\overline{R}}$ = mean of mean returns* <p>
 
-### Shrinking factor for correlation
-The formula for the correlation shrinking factor is shown in \@ref(eq:shrinkCor). The reason for shrinking the correlation instead of the covariance is that the former is standardized and therefore more suitable. When the shrinking factor is set to one, the correlation is not altered and remains the same. When decreasing the shrinking factor from one to zero, the correlation converges towards zero. This means that all entries of the correlation matrix are equal to zero except the diagonal, which is by definition always equal to one.
+When the shrinkage factor $\lambda$ is set to one, the mean returns remain unchanged. When it is decreased from one towards zero, the mean returns converge towards their mean value. Once the shrinkage factor $\lambda$ is zero and therefore all mean returns are equal, the tangency portfolio \@ref(eq:tpw) obtains the same asset weights as the minimum variance portfolio \@ref(eq:mvpw).
+
+There is an important constraint in mean returns shrinkage. Take the scaling factor of the tangency portfolio \@ref(eq:tpw) and replace $\vec{R}$ with \@ref(eq:shrinkr) as in \@ref(eq:tpwsf).
+
+\begin{equation}
+\vec{w}_{tp,sf} = \frac{1}{\vec{1}\Sigma^{-1}(\lambda*\vec{R} + (1 - \lambda) * \vec{\overline{R}})}
+\label{eq:tpwsf}
+\end{equation}
+
+It is clear that for some value of $\lambda$ the denominator becomes zero. Computationally, it is already problematic if the denominator is close to zero. When setting the denominator equal to zero, the value of $\lambda$ at the zero crossing can be calculated as in \@ref(eq:lambdazero).
+
+\begin{equation}
+\lambda = \frac{-\vec{1}\Sigma^{-1}\vec{\overline{R}}}{\vec{1}\Sigma^{-1}\vec{R} - \vec{1}\Sigma^{-1}\vec{\overline{R}})}
+\label{eq:lambdazero}
+\end{equation}
+
+If the zero crossing is in the shrinkage interval of $[0, 1]$ this results in extreme asset weights. As the denominator approaches zero, the scaling factor becomes very large which carries over to the weights. To illustrate this effect, the weights of the five cross validation models from figure \@ref(fig:crossvalidation) are plotted as a function of $\lambda$ in figure \@ref(fig:tpwshrinkbymodel).
+
+```{r tpwshrinkbymodel, fig.cap = "Tangency portfolio weights by model as a function of $\\lambda$", fig.height = 5}
+n = ncol(r[-1]); start = 0; stop = 1; size = 0.2
+t1 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 1)
+out1 = t(sapply(t1, function(x){return(x$tp_weights)}))
+t2 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 2)
+out2 = t(sapply(t2, function(x){return(x$tp_weights)}))
+t3 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 3)
+out3 = t(sapply(t3, function(x){return(x$tp_weights)}))
+t4 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 4)
+out4 = t(sapply(t4, function(x){return(x$tp_weights)}))
+t5 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 5)
+out5 = t(sapply(t5, function(x){return(x$tp_weights)}))
+m3 = solve(sets_r[[1]][[3]]$cov_mat); r3 = sets_r[[1]][[3]]$mean_returns
+denom_zero = (- rowSums(m3) %*% rep(mean(r3), n)) / (rowSums(m3) %*% r3 - rowSums(m3) %*% rep(mean(r3), n))
+gg1 = gg2 = gg3 = gg4 = gg5 = ggplot() + scale_x_continuous(breaks = c(0, 0.5, 1)) + custom_theme_markdown
+for (i in 1:20) {gg1 = gg1 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out1[,i]), size = size)}
+gg1 = gg1 + labs(x = expression(lambda), y = "Weight", title = "Model 1")
+for (i in 1:20) {gg2 = gg2 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out2[,i]), size = size)}
+gg2 = gg2 + labs(x = expression(lambda), y = "Weight", title = "Model 2")
+for (i in 1:20) {gg3 = gg3 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out3[,i]), size = size)}
+gg3 = gg3 + geom_vline(xintercept = denom_zero, color = "orangered3") + labs(x = expression(lambda), y = "Weight", title = "Model 3")
+for (i in 1:20) {gg4 = gg4 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out4[,i]), size = size)}
+gg4 = gg4 + labs(x = expression(lambda), y = "Weight", title = "Model 4")
+for (i in 1:20) {gg5 = gg5 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out5[,i]), size = size)}
+gg5 = gg5 + labs(x = expression(lambda), y = "Weight", title = "Model 5")
+ggarrange(gg1, gg2, gg3, gg4, gg5)
+```
+
+Model three shows such extreme asset weights. The asymptote is visualized as a vertical red line. These extreme weights influence the out of sample time series and consequentially also the out of sample Sharpe ratio. The other four models do show asset weights in a normal scale.
+
+The scaling factor as a function of $\lambda$ is shown in \@ref(fig:tpwsfshrinkbymodel).
+
+```{r tpwsfshrinkbymodel, fig.cap = "Tangency portfolio weights scaling factor by model as a function of $\\lambda$", fig.height = 5}
+t1 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 1)
+out1 = t(sapply(t1, function(x){return(1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns))}))
+t2 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 2)
+out2 = t(sapply(t2, function(x){return(1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns))}))
+t3 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 3)
+out3 = t(sapply(t3, function(x){return(1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns))}))
+t4 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 4)
+out4 = t(sapply(t4, function(x){return(1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns))}))
+t5 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 5)
+out5 = t(sapply(t5, function(x){return(1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns))}))
+gg1 = gg2 = gg3 = gg4 = gg5 = ggplot() + expand_limits(y = 0) + scale_x_continuous(breaks = c(0, 0.5, 1)) +  custom_theme_markdown
+gg1 = gg1 + geom_line(aes(x = seq(start, stop, 0.01), y = out1[1,]), size = size) + labs(x = expression(lambda), y = "Scaling factor", title = "Model 1")
+gg2 = gg2 + geom_line(aes(x = seq(start, stop, 0.01), y = out2[1,]), size = size) + labs(x = expression(lambda), y = "Scaling factor", title = "Model 2")
+gg3 = gg3 + geom_line(aes(x = seq(start, stop, 0.01), y = out3[1,]), size = size) + geom_vline(xintercept = denom_zero, color = "orangered3") + labs(x = expression(lambda), y = "Scaling factor", title = "Model 3")
+gg4 = gg4 + geom_line(aes(x = seq(start, stop, 0.01), y = out4[1,]), size = size) + labs(x = expression(lambda), y = "Scaling factor", title = "Model 4")
+gg5 = gg5 + geom_line(aes(x = seq(start, stop, 0.01), y = out5[1,]), size = size) + labs(x = expression(lambda), y = "Scaling factor", title = "Model 5")
+ggarrange(gg1, gg2, gg3, gg4, gg5)
+```
+
+The zero crossing of the scaling factor in model three can be seen clearly. When working with mean return shrinkage one has to be aware of this behavior.
+
+### Shrinking of correlation matrix
+
+The correlation matrix shrinkage factor is calculated as in \@ref(eq:shrinkcor).
 
 \begin{equation}
 \rho_{i,j} (\epsilon) = I_{i,j} + \epsilon * \tilde{\rho_{i,j}}
-  \label{eq:shrinkCor}
+\label{eq:shrinkcor}
 \end{equation}
 
 <p> *$\rho_{i,j} (\epsilon)$ = correlation coefficient as a function of $\epsilon$* <p>
@@ -528,60 +591,8 @@ The formula for the correlation shrinking factor is shown in \@ref(eq:shrinkCor)
 <p> *$I_{i,j}$ = identity matrix* <p>
 <p> *$\tilde{\rho_{i,j}}$ = correlation matrix with diagonal zero* <p>
 
-### Shrinking factors analyzed separately
-The Sharpe ratio can be visualized as a function of the shrinking factor. Figure \@ref(fig:gg20) shows such a plot for the return shrinking factor. The global maxima are highlighted with points and their coordinates. It can be seen that the highest Sharpe ratio for the SMI is achieved with a shrinking factor of about two thirds. For the groups on the other hand shrinking does not lead to an improvement of the Sharpe ratio, as the highest Sharpe ratio is achieved at shrinking factor of zero which means that the returns are not altered. For the SMI it is visible that close to the shrinking factor one the line is interrupted. This implies that the corresponding Sharpe ratio is below zero which is not shown in the plot. These outliers are caused by extreme portfolio weights which are obtained at these shrinking factors. Extreme portfolio weights are obtained through near-singularity of the covariance matrix.
 
-```{r gg20, fig.cap = 'Sharpe ratio as a function of return shrinking factor',fig.height = 3}
-os_r_sr = unlist(out_of_sample_vec(sets_r, seq(0, 1, 0.01)))
-os_gr_sr = unlist(out_of_sample_vec(sets_gr, seq(0, 1, 0.01)))
-
-gg_shrinking2D(os_r_sr, os_gr_sr, "SMI", "Groups", "Return", theme = custom_theme_markdown)
-```
-
-Figure \@ref(fig:gg21) shows the same plot for the correlation shrinking factor. The highest Sharpe ratio for the SMI is achieved with a shrinking factor of about one third and for the groups of close to one.
-
-```{r gg21, fig.cap = 'Sharpe ratio as a function of correlation shrinking factor', fig.height = 3}
-os_r_scor = unlist(out_of_sample_vec(sets_r, 1, seq(0, 1, 0.01)))
-os_gr_scor = unlist(out_of_sample_vec(sets_gr, 1, seq(0, 1, 0.01)))
-
-gg_shrinking2D(os_r_scor, os_gr_scor, "SMI", "Groups", "Correlation", theme = custom_theme_markdown)
-```
-
-It can be concluded that for the SMI shrinking does make a noticeable difference in regard of increasing the Sharpe ratio. It is to note that the shrinking factors of the return and correlation are equal in regard of the deviation from the original values. The optimal return shrinking factor is about two thirds (no shrinking at value 0) and the one of the correlation about one third (no shrinking at value 1) which is in both cases a deviation of about two thirds from the original values.
-
-In the case of the groups shrinking does not have proven to make a noticeable impact. Shrinking the returns does worsen the Sharpe ratio and Shrinking the correlation does only make a slight difference.
-The conclusion of the SMI above also holds true here, as both shrinking factors deviate approximately the same from their original values, which in this case is no or almost no deviation.
-
-### Shrinking factors analyzed simultaneously
-A further visualization is a three dimensional plot where the Sharpe ratio is plotted as a function of both shrinking coefficients. The points of the maxima and their values are also displayed.
-
-Figure \@ref(fig:gg22) shows such a plot for the SMI. The outliers where the Sharpe ratio drops below zero can also be seen in this plot in the top left corner, although only on the lower third of the correlation shrinking factor. The highest Sharpe ratio is achieved at a correlation shrinking factor of about one third again but a return shrinking factor of zero meaning the original values are used. Varying both shrinking factors together yields the same Sharpe ratio as in \@ref(fig:gg21) where only the correlation shrinking factor is varied. Noticeable is that the major part of the plot area has Sharpe ratios which are very close to each other.
-
-```{r gg22, fig.cap = 'SMI Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
-grid = expand.grid(seq(0, 1, by = 0.05), seq(0, 1, by = 0.05))
-os_r_sr_scor = unlist(out_of_sample_vec(sets_r, grid[,1], grid[,2]))
-
-gg_shrinking3D(grid, os_r_sr_scor, theme = custom_theme_markdown)
-```
-
-Figure \@ref(fig:gg23) shows the three dimensional plot for the groups. Here, a much smaller fraction of the plot area shows Sharpe ratios which are similarly high. The highest Sharpe ratio is achieved at a correlation shrinking factor of close to one and a return shrinking factor of zero. Varying both shrinking factors toghether yields also the same Sharpe ratio as in \@ref(fig:gg21) were only the correlation shrinking factor is varied.
-
-```{r gg23, fig.cap = 'Groups Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
-os_gr_sr_scor = unlist(out_of_sample_vec(sets_gr, grid[,1], grid[,2]))
-
-gg_shrinking3D(grid, os_gr_sr_scor, theme = custom_theme_markdown)
-```
-
-To conclude these results, it can be said that shrinking of the correlation has a greater impact than shrinking of the return and can result in higher Sharpe ratios, although not in all cases. Table \@ref(tab:tabplot20) provides an overview.
-
-```{r tabplot20}
-t20 = data.frame(c(is_r, is_gr),
-                 c(os_r, os_gr),
-                 c(max(os_r_sr_scor), max(os_gr_sr_scor)), row.names = c("SMI", "Groups"))
-
-kable(t20, caption = "Sharpe ratio",  digits = 3,
-       booktabs = T, linesep = "", col.names = c("In sample", "Out of sample", "Out of sample shrinking"))
-```
+The formula for the correlation shrinking factor is shown in \@ref(eq:shrinkcor). The reason for shrinking the correlation instead of the covariance is that the former is standardized and therefore more suitable. When the shrinking factor is set to one, the correlation is not altered and remains the same. When decreasing the shrinking factor from one to zero, the correlation converges towards zero. This means that all entries of the correlation matrix are equal to zero except the diagonal, which is by definition always equal to one.
 
 \newpage
 
@@ -637,9 +648,64 @@ gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(min, max), "Weights", theme =
 ```
 
 
-As it is obvious to see and also visualized in figure \@ref(fig:gg9), is that TP weights have a higher standard deviation than MVP weights. That means the TP is more sensible to changes of returns than the MVP is. If the equation \@ref(eq:mvpanlytic) of MVP and the equation \@ref(eq:tananlytic) of TP are considered, the MVP does not depend on the returns directly. Consequently different returns samples have not a large impact on the MVP. The small differences arise from the varying covariance matrix. But it can also be noticed that this matrix has not large deviations following the standard deviation of the MVP. Therefore bootsptrap sampling of the returns does not influence the covariance matrix as much as the returns itself.
+As it is obvious to see and also visualized in figure \@ref(fig:gg4), is that TP weights have a higher standard deviation than MVP weights. That means the TP is more sensible to changes of returns than the MVP is. If the equation \@ref(eq:mvpw) of MVP and the equation \@ref(eq:tpw) of TP are considered, the MVP does not depend on the returns directly. Consequently different returns samples have not a large impact on the MVP. The small differences arise from the varying covariance matrix. But it can also be noticed that this matrix has not large deviations following the standard deviation of the MVP. Therefore bootsptrap sampling of the returns does not influence the covariance matrix as much as the returns itself.
 
 ## III.
+
+### Shrinking factors analyzed separately
+The Sharpe ratio can be visualized as a function of the shrinking factor. Figure \@ref(fig:gg20) shows such a plot for the return shrinking factor. The global maxima are highlighted with points and their coordinates. It can be seen that the highest Sharpe ratio for the SMI is achieved with a shrinking factor of about two thirds. For the groups on the other hand shrinking does not lead to an improvement of the Sharpe ratio, as the highest Sharpe ratio is achieved at shrinking factor of zero which means that the returns are not altered. For the SMI it is visible that close to the shrinking factor one the line is interrupted. This implies that the corresponding Sharpe ratio is below zero which is not shown in the plot. These outliers are caused by extreme portfolio weights which are obtained at these shrinking factors. Extreme portfolio weights are obtained through near-singularity of the covariance matrix.
+
+```{r gg20, fig.cap = 'Sharpe ratio as a function of return shrinking factor',fig.height = 3}
+os_r_sr = unlist(out_of_sample_vec(sets_r, seq(0, 1, 0.01)))
+os_gr_sr = unlist(out_of_sample_vec(sets_gr, seq(0, 1, 0.01)))
+
+gg_shrinking2D(os_r_sr, os_gr_sr, "SMI", "Groups", "Return", theme = custom_theme_markdown)
+```
+
+Figure \@ref(fig:gg21) shows the same plot for the correlation shrinking factor. The highest Sharpe ratio for the SMI is achieved with a shrinking factor of about one third and for the groups of close to one.
+
+```{r gg21, fig.cap = 'Sharpe ratio as a function of correlation shrinking factor', fig.height = 3}
+os_r_scor = unlist(out_of_sample_vec(sets_r, 1, seq(0, 1, 0.01)))
+os_gr_scor = unlist(out_of_sample_vec(sets_gr, 1, seq(0, 1, 0.01)))
+
+gg_shrinking2D(os_r_scor, os_gr_scor, "SMI", "Groups", "Correlation", theme = custom_theme_markdown)
+```
+
+It can be concluded that for the SMI shrinking does make a noticeable difference in regard of increasing the Sharpe ratio. It is to note that the shrinking factors of the return and correlation are equal in regard of the deviation from the original values. The optimal return shrinking factor is about two thirds (no shrinking at value 0) and the one of the correlation about one third (no shrinking at value 1) which is in both cases a deviation of about two thirds from the original values.
+
+In the case of the groups shrinking does not have proven to make a noticeable impact. Shrinking the returns does worsen the Sharpe ratio and Shrinking the correlation does only make a slight difference.
+The conclusion of the SMI above also holds true here, as both shrinking factors deviate approximately the same from their original values, which in this case is no or almost no deviation.
+
+### Shrinking factors analyzed simultaneously
+A further visualization is a three dimensional plot where the Sharpe ratio is plotted as a function of both shrinking coefficients. The points of the maxima and their values are also displayed.
+
+Figure \@ref(fig:gg22) shows such a plot for the SMI. The outliers where the Sharpe ratio drops below zero can also be seen in this plot in the top left corner, although only on the lower third of the correlation shrinking factor. The highest Sharpe ratio is achieved at a correlation shrinking factor of about one third again but a return shrinking factor of zero meaning the original values are used. Varying both shrinking factors together yields the same Sharpe ratio as in \@ref(fig:gg21) where only the correlation shrinking factor is varied. Noticeable is that the major part of the plot area has Sharpe ratios which are very close to each other.
+
+```{r gg22, fig.cap = 'SMI Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
+grid = expand.grid(seq(0, 1, by = 0.05), seq(0, 1, by = 0.05))
+os_r_sr_scor = unlist(out_of_sample_vec(sets_r, grid[,1], grid[,2]))
+
+gg_shrinking3D(grid, os_r_sr_scor, theme = custom_theme_markdown)
+```
+
+Figure \@ref(fig:gg23) shows the three dimensional plot for the groups. Here, a much smaller fraction of the plot area shows Sharpe ratios which are similarly high. The highest Sharpe ratio is achieved at a correlation shrinking factor of close to one and a return shrinking factor of zero. Varying both shrinking factors toghether yields also the same Sharpe ratio as in \@ref(fig:gg21) were only the correlation shrinking factor is varied.
+
+```{r gg23, fig.cap = 'Groups Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
+os_gr_sr_scor = unlist(out_of_sample_vec(sets_gr, grid[,1], grid[,2]))
+
+gg_shrinking3D(grid, os_gr_sr_scor, theme = custom_theme_markdown)
+```
+
+To conclude these results, it can be said that shrinking of the correlation has a greater impact than shrinking of the return and can result in higher Sharpe ratios, although not in all cases. Table \@ref(tab:tabplot20) provides an overview.
+
+```{r tabplot20}
+t20 = data.frame(c(is_r, is_gr),
+                 c(os_r, os_gr),
+                 c(max(os_r_sr_scor), max(os_gr_sr_scor)), row.names = c("SMI", "Groups"))
+
+kable(t20, caption = "Sharpe ratio",  digits = 3,
+       booktabs = T, linesep = "", col.names = c("In sample", "Out of sample", "Out of sample shrinking"))
+```
 
 
 

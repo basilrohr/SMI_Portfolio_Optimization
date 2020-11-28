@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.11.7)  28 NOV 2020 13:35
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.11.7)  28 NOV 2020 21:30
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -702,11 +702,11 @@ File: ./www/Cross_validation.jpg Graphic file (type jpg)
 <use ./www/Cross_validation.jpg>
 Package pdftex.def Info: ./www/Cross_validation.jpg  used on input line 693.
 (pdftex.def)             Requested size: 232.97899pt x 148.55766pt.
-<PA_files/figure-latex/gg99-1.pdf, id=279, 469.755pt x 361.35pt>
-File: PA_files/figure-latex/gg99-1.pdf Graphic file (type pdf)
-<use PA_files/figure-latex/gg99-1.pdf>
-Package pdftex.def Info: PA_files/figure-latex/gg99-1.pdf  used on input line 7
-15.
+<PA_files/figure-latex/tpwbymodel-1.pdf, id=279, 469.755pt x 361.35pt>
+File: PA_files/figure-latex/tpwbymodel-1.pdf Graphic file (type pdf)
+<use PA_files/figure-latex/tpwbymodel-1.pdf>
+Package pdftex.def Info: PA_files/figure-latex/tpwbymodel-1.pdf  used on input 
+line 715.
 (pdftex.def)             Requested size: 245.24167pt x 188.64743pt.
 
 Underfull \vbox (badness 10000) has occurred while \output is active []
@@ -722,139 +722,160 @@ l.718
                                                   
 l.718 
        <./PA_files/figure-latex/gg4-1.pdf> <./www/Cross_validation.jpg>]
-<PA_files/figure-latex/gg20-1.pdf, id=304, 469.755pt x 216.81pt>
-File: PA_files/figure-latex/gg20-1.pdf Graphic file (type pdf)
-<use PA_files/figure-latex/gg20-1.pdf>
-Package pdftex.def Info: PA_files/figure-latex/gg20-1.pdf  used on input line 7
-71.
-(pdftex.def)             Requested size: 245.24167pt x 113.18845pt.
+<PA_files/figure-latex/tpwshrinkbymodel-1.pdf, id=309, 469.755pt x 361.35pt>
+File: PA_files/figure-latex/tpwshrinkbymodel-1.pdf Graphic file (type pdf)
+<use PA_files/figure-latex/tpwshrinkbymodel-1.pdf>
+Package pdftex.def Info: PA_files/figure-latex/tpwshrinkbymodel-1.pdf  used on 
+input line 764.
+(pdftex.def)             Requested size: 245.24167pt x 188.64743pt.
+<PA_files/figure-latex/tpwsfshrinkbymodel-1.pdf, id=311, 469.755pt x 361.35pt>
+File: PA_files/figure-latex/tpwsfshrinkbymodel-1.pdf Graphic file (type pdf)
+<use PA_files/figure-latex/tpwsfshrinkbymodel-1.pdf>
+Package pdftex.def Info: PA_files/figure-latex/tpwsfshrinkbymodel-1.pdf  used o
+n input line 774.
+(pdftex.def)             Requested size: 245.24167pt x 188.64743pt.
 [9pdfTeX warning (ext4): destination with the same identifier (name{figure.8}) 
 has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.774 
-       <./PA_files/figure-latex/gg99-1.pdf>]
-<PA_files/figure-latex/gg21-1.pdf, id=325, 469.755pt x 216.81pt>
-File: PA_files/figure-latex/gg21-1.pdf Graphic file (type pdf)
-<use PA_files/figure-latex/gg21-1.pdf>
-Package pdftex.def Info: PA_files/figure-latex/gg21-1.pdf  used on input line 7
-79.
-(pdftex.def)             Requested size: 245.24167pt x 113.18845pt.
-<PA_files/figure-latex/gg22-1.pdf, id=328, 469.755pt x 289.08pt>
-File: PA_files/figure-latex/gg22-1.pdf Graphic file (type pdf)
-<use PA_files/figure-latex/gg22-1.pdf>
-Package pdftex.def Info: PA_files/figure-latex/gg22-1.pdf  used on input line 7
-97.
-(pdftex.def)             Requested size: 245.24167pt x 150.91794pt.
-<PA_files/figure-latex/gg23-1.pdf, id=331, 469.755pt x 289.08pt>
-File: PA_files/figure-latex/gg23-1.pdf Graphic file (type pdf)
-<use PA_files/figure-latex/gg23-1.pdf>
-Package pdftex.def Info: PA_files/figure-latex/gg23-1.pdf  used on input line 8
-05.
-(pdftex.def)             Requested size: 245.24167pt x 150.91794pt.
-
-Overfull \hbox (8.47708pt too wide) in paragraph at lines 815--823
- [][] 
- []
-
-[10pdfTeX warning (ext4): destination with the same identifier (name{figure.9})
- has been already used, duplicate ignored
+l.792 \emph{\(\epsilon\) = shrinking factor}
+                                            pdfTeX warning (ext4): destination 
+with the same identifier (name{figure.9}) has been already used, duplicate igno
+red
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.825 \newpage
-              pdfTeX warning (ext4): destination with the same identifier (name
-{figure.10}) has been already used, duplicate ignored
+l.792 \emph{\(\epsilon\) = shrinking factor}
+                                            pdfTeX warning (ext4): destination 
+with the same identifier (name{figure.10}) has been already used, duplicate ign
+ored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.825 \newpage
-              pdfTeX warning (ext4): destination with the same identifier (name
-{figure.11}) has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  
-l.825 \newpage
-              pdfTeX warning (ext4): destination with the same identifier (name
-{figure.12}) has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  
-l.825 \newpage
-              pdfTeX warning (ext4): destination with the same identifier (name
-{table.7}) has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  
-l.825 \newpage
-               <./PA_files/figure-latex/gg20-1.pdf> <./PA_files/figure-latex/gg
-21-1.pdf> <./PA_files/figure-latex/gg22-1.pdf> <./PA_files/figure-latex/gg23-1.
-pdf>]
-<PA_files/figure-latex/gg5-1.pdf, id=377, 469.755pt x 289.08pt>
+l.792 \emph{\(\epsilon\) = shrinking factor}
+                                             <./PA_files/figure-latex/tpwbymode
+l-1.pdf> <./PA_files/figure-latex/tpwshrinkbymodel-1.pdf> <./PA_files/figure-la
+tex/tpwsfshrinkbymodel-1.pdf>]
+<PA_files/figure-latex/gg5-1.pdf, id=348, 469.755pt x 289.08pt>
 File: PA_files/figure-latex/gg5-1.pdf Graphic file (type pdf)
 <use PA_files/figure-latex/gg5-1.pdf>
-Package pdftex.def Info: PA_files/figure-latex/gg5-1.pdf  used on input line 85
-0.
+Package pdftex.def Info: PA_files/figure-latex/gg5-1.pdf  used on input line 82
+5.
 (pdftex.def)             Requested size: 245.24167pt x 150.91794pt.
-<PA_files/figure-latex/gg7-1.pdf, id=378, 469.755pt x 289.08pt>
+<PA_files/figure-latex/gg7-1.pdf, id=349, 469.755pt x 289.08pt>
 File: PA_files/figure-latex/gg7-1.pdf Graphic file (type pdf)
 <use PA_files/figure-latex/gg7-1.pdf>
-Package pdftex.def Info: PA_files/figure-latex/gg7-1.pdf  used on input line 85
-6.
+Package pdftex.def Info: PA_files/figure-latex/gg7-1.pdf  used on input line 83
+1.
 (pdftex.def)             Requested size: 245.24167pt x 150.91794pt.
-<PA_files/figure-latex/gg6-1.pdf, id=383, 469.755pt x 289.08pt>
+<PA_files/figure-latex/gg6-1.pdf, id=354, 469.755pt x 289.08pt>
 File: PA_files/figure-latex/gg6-1.pdf Graphic file (type pdf)
 <use PA_files/figure-latex/gg6-1.pdf>
-Package pdftex.def Info: PA_files/figure-latex/gg6-1.pdf  used on input line 88
-0.
+Package pdftex.def Info: PA_files/figure-latex/gg6-1.pdf  used on input line 85
+5.
 (pdftex.def)             Requested size: 245.24167pt x 150.91794pt.
-<PA_files/figure-latex/gg8-1.pdf, id=384, 469.755pt x 289.08pt>
-File: PA_files/figure-latex/gg8-1.pdf Graphic file (type pdf)
-<use PA_files/figure-latex/gg8-1.pdf>
-Package pdftex.def Info: PA_files/figure-latex/gg8-1.pdf  used on input line 88
-6.
-(pdftex.def)             Requested size: 245.24167pt x 150.91794pt.
-
-LaTeX Warning: Reference `fig:gg9' on page 11 undefined on input line 890.
-
-[11pdfTeX warning (ext4): destination with the same identifier (name{table.8}) 
+[10pdfTeX warning (ext4): destination with the same identifier (name{table.7}) 
 has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.898 \newpage
-              pdfTeX warning (ext4): destination with the same identifier (name
-{figure.13}) has been already used, duplicate ignored
+l.858 
+      pdfTeX warning (ext4): destination with the same identifier (name{figure.
+11}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.898 \newpage
-              pdfTeX warning (ext4): destination with the same identifier (name
-{figure.14}) has been already used, duplicate ignored
+l.858 
+      pdfTeX warning (ext4): destination with the same identifier (name{figure.
+12}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.898 \newpage
+l.858 
+      pdfTeX warning (ext4): destination with the same identifier (name{table.8
+}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.858 
+       <./PA_files/figure-latex/gg5-1.pdf> <./PA_files/figure-latex/gg7-1.pdf>]
+<PA_files/figure-latex/gg8-1.pdf, id=378, 469.755pt x 289.08pt>
+File: PA_files/figure-latex/gg8-1.pdf Graphic file (type pdf)
+<use PA_files/figure-latex/gg8-1.pdf>
+Package pdftex.def Info: PA_files/figure-latex/gg8-1.pdf  used on input line 86
+1.
+(pdftex.def)             Requested size: 245.24167pt x 150.91794pt.
+<PA_files/figure-latex/gg20-1.pdf, id=383, 469.755pt x 216.81pt>
+File: PA_files/figure-latex/gg20-1.pdf Graphic file (type pdf)
+<use PA_files/figure-latex/gg20-1.pdf>
+Package pdftex.def Info: PA_files/figure-latex/gg20-1.pdf  used on input line 8
+77.
+(pdftex.def)             Requested size: 245.24167pt x 113.18845pt.
+<PA_files/figure-latex/gg21-1.pdf, id=385, 469.755pt x 216.81pt>
+File: PA_files/figure-latex/gg21-1.pdf Graphic file (type pdf)
+<use PA_files/figure-latex/gg21-1.pdf>
+Package pdftex.def Info: PA_files/figure-latex/gg21-1.pdf  used on input line 8
+85.
+(pdftex.def)             Requested size: 245.24167pt x 113.18845pt.
+<PA_files/figure-latex/gg22-1.pdf, id=388, 469.755pt x 289.08pt>
+File: PA_files/figure-latex/gg22-1.pdf Graphic file (type pdf)
+<use PA_files/figure-latex/gg22-1.pdf>
+Package pdftex.def Info: PA_files/figure-latex/gg22-1.pdf  used on input line 9
+03.
+(pdftex.def)             Requested size: 245.24167pt x 150.91794pt.
+[11pdfTeX warning (ext4): destination with the same identifier (name{figure.13}
+) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.906 
+      pdfTeX warning (ext4): destination with the same identifier (name{figure.
+14}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.906 
+      pdfTeX warning (ext4): destination with the same identifier (name{figure.
+15}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.906 
+      pdfTeX warning (ext4): destination with the same identifier (name{figure.
+16}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.906 
+       <./PA_files/figure-latex/gg6-1.pdf> <./PA_files/figure-latex/gg8-1.pdf> 
+<./PA_files/figure-latex/gg20-1.pdf> <./PA_files/figure-latex/gg21-1.pdf>]
+<PA_files/figure-latex/gg23-1.pdf, id=424, 469.755pt x 289.08pt>
+File: PA_files/figure-latex/gg23-1.pdf Graphic file (type pdf)
+<use PA_files/figure-latex/gg23-1.pdf>
+Package pdftex.def Info: PA_files/figure-latex/gg23-1.pdf  used on input line 9
+11.
+(pdftex.def)             Requested size: 245.24167pt x 150.91794pt.
+
+Overfull \hbox (8.47708pt too wide) in paragraph at lines 921--929
+ [][] 
+ []
+
+LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 9
+42.
+(c:/Users/pasca/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmr.fd
+File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
+)
+Underfull \hbox (badness 1448) in paragraph at lines 948--950
+[]\T1/lmr/m/n/8 [4] global-rates, CHF LI-BOR in-ter-est rate [on-line]. Avail-
+ []
+
+[12pdfTeX warning (ext4): destination with the same identifier (name{figure.17}
+) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.967 \newpage
+              pdfTeX warning (ext4): destination with the same identifier (name
+{figure.18}) has been already used, duplicate ignored
+<argument> ...shipout:D \box_use:N \l_shipout_box 
+                                                  
+l.967 \newpage
               pdfTeX warning (ext4): destination with the same identifier (name
 {table.9}) has been already used, duplicate ignored
 <argument> ...shipout:D \box_use:N \l_shipout_box 
                                                   
-l.898 \newpage
-              pdfTeX warning (ext4): destination with the same identifier (name
-{figure.15}) has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  
-l.898 \newpage
-              pdfTeX warning (ext4): destination with the same identifier (name
-{figure.16}) has been already used, duplicate ignored
-<argument> ...shipout:D \box_use:N \l_shipout_box 
-                                                  
-l.898 \newpage
-               <./PA_files/figure-latex/gg5-1.pdf> <./PA_files/figure-latex/gg7
--1.pdf> <./PA_files/figure-latex/gg6-1.pdf> <./PA_files/figure-latex/gg8-1.pdf>
-]
-LaTeX Font Info:    Trying to load font information for TS1+lmr on input line 9
-06.
-(c:/Users/pasca/AppData/Roaming/TinyTeX/texmf-dist/tex/latex/lm/ts1lmr.fd
-File: ts1lmr.fd 2009/10/30 v1.6 Font defs for Latin Modern
-)
-Underfull \hbox (badness 1448) in paragraph at lines 912--914
-[]\T1/lmr/m/n/8 [4] global-rates, CHF LI-BOR in-ter-est rate [on-line]. Avail-
- []
-
-(./PA.lof)
+l.967 \newpage
+               <./PA_files/figure-latex/gg22-1.pdf> <./PA_files/figure-latex/gg
+23-1.pdf>] (./PA.lof)
 \tf@lof=\write4
 \openout4 = `PA.lof'.
 
@@ -862,18 +883,20 @@ Underfull \hbox (badness 1448) in paragraph at lines 912--914
 \tf@lot=\write5
 \openout5 = `PA.lot'.
 
-[12] (./PA.aux)
+[13
+
+] (./PA.aux)
 Package rerunfilecheck Info: File `PA.out' has not changed.
-(rerunfilecheck)             Checksum: E414C0896A3D70DDACBA3FC87F84ABB9;4609.
+(rerunfilecheck)             Checksum: 64566E65D53CFDC3B41463BF6FE8F8D5;4594.
 
 LaTeX Warning: There were undefined references.
 
  ) 
 Here is how much of TeX's memory you used:
- 11290 strings out of 481466
- 166011 string characters out of 5920170
- 467863 words of memory out of 5000000
- 27676 multiletter control sequences out of 15000+600000
+ 11310 strings out of 481466
+ 166729 string characters out of 5920170
+ 468381 words of memory out of 5000000
+ 27689 multiletter control sequences out of 15000+600000
  581253 words of font info for 65 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
  66i,8n,72p,1209b,328s stack positions out of 5000i,500n,10000p,200000b,80000s
@@ -898,10 +921,10 @@ pData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy6.pfb><c:/Users/pasc
 a/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy8.pfb><c:/Users/
 pasca/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbols/ms
 am7.pfb>
-Output written on PA.pdf (12 pages, 675794 bytes).
+Output written on PA.pdf (13 pages, 736701 bytes).
 PDF statistics:
- 546 PDF objects out of 1000 (max. 8388607)
- 477 compressed objects within 5 object streams
- 124 named destinations out of 1000 (max. 500000)
- 321 words of extra memory for PDF output out of 10000 (max. 10000000)
+ 585 PDF objects out of 1000 (max. 8388607)
+ 510 compressed objects within 6 object streams
+ 129 named destinations out of 1000 (max. 500000)
+ 331 words of extra memory for PDF output out of 10000 (max. 10000000)
 
