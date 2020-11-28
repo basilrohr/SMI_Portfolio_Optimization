@@ -242,11 +242,14 @@ The disappearance of the gradient is the necessary condition for a minimum. This
 \newpage
 
 ## Problem
-Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem.
+Markowitz' optimization only works under certain assumptions and conditions. Apart from the assumptions concerning particular investors and the capital market, which will not be discussed here, there are also mathematical assumptions that must be made. First assumption is an approximate normal distribution of log-returns. Since it is a stock price over 20 years, it is almost impossible to describe the log-returns as normally distributed. In historical data over a long period of time there are strong stock price movements which can be clearly identified as outliers and therefore reject the assumption of an exact normal distribution. However, a quantile-quantile plot can be used to show that the majority of the data is normally distributed. The y-axis describes the quantiles of the data and the x-axis the quantiles of the normal distribution. The majority of the data is linear near the middle which speaks for a normal distribution. At both ends clear deviations and individual outliers are to be recognized, which is a strong indication of a heavy left tail. This behavior results from stronger stock price volatilities, as they occur for example in times of crisis and uncertain markets. 
 
-```{r}
+```{r gg98, fig.cap = 'Q-Q plot of daily log-returns for Swisscom', fig.height = 3}
 ggplot(mapping = aes(sample = r[,"Swisscom"])) + stat_qq() + stat_qq_line(color = "orangered3") + custom_theme_markdown
 ```
+
+A second condition applies to the linear relationship of the stocks. The log-returns cannot show a perfect correlation between themselves, neither negative nor positive. This is described by a correlation coefficient of -1 respectively 1. If the determinant is 0, the system cannot be solved exactly. This situation occurs if shares have a correlation coefficient of 1 or -1. The system must be uniquely solvable to form the inverse of the covariance matrix $\Sigma^{-1}$.
+
 
 ## Minimum variance portfolio 
 The Minimum Variance Portfolio, or MVP for short, describes the portfolio of all possible weightings with the minimum volatility. Since only the volatility is minimized, constraint II. is not included in the equation.
@@ -380,7 +383,7 @@ The Sharpe ratio measures the performance of an investment which means the retur
 
 Before any weighting of a portfolio is optimized, the Sharpe ratio of the SMI is calculated. This is done by weighting all stocks equally, 1/20 each, and then applying the weightings to the actual returns of the historical data. This results in a Sharpe ratio of XX. Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. As mentioned above, the Sharpe ratio is used as a measure of the optimization and robustness. A robust optimization leads to a lower volatility which results in a higher Sharpe ratio. The higher the value the better the optimization.
 
-# Methodology
+# Methodology {#methodology}
 
 
 ## Grouping
@@ -486,9 +489,11 @@ ggplot(df) + geom_line(aes(x = order, y = X1, group = 1, col = "Model 1"), alpha
   custom_theme_markdown
 ```
 
+The graph \@ref(fig:gg99) shows the tangency portfolio weights of the 20 stocks from the different models. It is clearly visible that certain stocks such as *Julius Baer*, *Givaudan* and *Sika* become very similar weights over the whole period, which is due to lower volatility and a high mean return during this specific time period. Some stocks, such as *Lonza*, have a much higher weighting in Model 3 than in Model 5, which shows that it had a higher mean return in the period of Model 3 than in the rest of the period and therefore was weighted more.
+
 \newpage
 
-## Shrinkage {shrink}
+## Shrinkage {#shrink}
 One method for improving the out of sample Sharpe ratio is shrinking. This approach focuses on altering the returns and correlation prior to the optimization with the goal to obtain a better model in regard to the out of sample Sharpe ratio.
 
 ### Shrinking factor for return
@@ -553,7 +558,7 @@ os_r_sr_scor = unlist(out_of_sample_vec(sets_r, grid[,1], grid[,2]))
 gg_shrinking3D(grid, os_r_sr_scor, theme = custom_theme_markdown)
 ```
 
-Figure \@ref(fig:gg23) shows the three dimensional plot for the groups. Here, a much smaller fraction of the plot area shows Sharpe ratios which are similarly high. The highest Sharpe ratio is achieved at a correlation shrinking factor of close to one and a return shrinking factor of zero. Varying both shrinking factors togehther yields also the same Sharpe ratio as in \@ref(fig:gg21) wher only the correlation shrinking factor is varied.
+Figure \@ref(fig:gg23) shows the three dimensional plot for the groups. Here, a much smaller fraction of the plot area shows Sharpe ratios which are similarly high. The highest Sharpe ratio is achieved at a correlation shrinking factor of close to one and a return shrinking factor of zero. Varying both shrinking factors toghether yields also the same Sharpe ratio as in \@ref(fig:gg21) were only the correlation shrinking factor is varied.
 
 ```{r gg23, fig.cap = 'Groups Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
 os_gr_sr_scor = unlist(out_of_sample_vec(sets_gr, grid[,1], grid[,2]))
@@ -575,75 +580,54 @@ kable(t20, caption = "Sharpe ratio",  digits = 3,
 \newpage
 
 # Results
-In the results the different approaches of the mentioned methodology is described. The first section is about the outcome of grouping and shrinkage measured with sharpe ratio and the second section about the result of the sampling method with bootstrapping.
-
+In this section the different approaches which were desribed in chapter methodology \@ref(methodology) are applied on the historical data. Section I. optimizes the entire SMI with 20 stocks. Section II. includes the optimization of the groups. Section III. applies the shrinkage.
 
 ## I.
-The two tables below visualize the different sharpe ratio outcome. Firstly the table \@ref(tab:tabplot4) displays the sharpe ratio of SMI and Group returns when all have an equal weight and only the method of grouping is applied. Also no optimization is used. The second table \@ref(tab:tabplot11) displays the results of the shrinkage section \@ref(shrink) with markovitz optimization and grouping.
 
-```{r tabplot4}
-weights_SMI = rep(1/20, 20)
-test1 = as.matrix(r[,-1]) %*% weights_SMI
-sr_SMI = ann_sharpe_ratio(mean(test1) / sd(test1), "1d")
-
-weights_groups = rep(1/4, 4)
-test2 = as.matrix(gr[,-1]) %*% weights_groups
-sr_groups = ann_sharpe_ratio(mean(test2) / sd(test2), "1d")
-
-t4 = data.frame(t(c(sr_SMI, sr_groups)))
- 
-kable(t4, caption = "sharp ratio",  
-      booktabs = T, linesep = "", col.names = c("Sharpe ratio of SMI", "Sharpe ratio of groups"))
-```
-If no method is applied the sharpe ratio is very low. The first observation which can be made is, that the grouping method leads to a better sharpe ratio and therefore the method proves its worth if no optimization is performed.
 
 ```{r tabplot11}
-t11 = data.frame(c(is_r, is_gr), c(os_r, os_gr), row.names = c("SMI", "Groups"))
+t11 = data.frame(is_r, os_r, row.names = "SMI")
 
 kable(t11, caption = "Sharpe ratio",  digits = 3, 
        booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
 ```
 
 
+```{r gg5, fig.cap = 'MVP weights with standard error', fig.height = 4}
+mvpw_r = mvp_weights(cov_mat(r)); mvpw_gr = mvp_weights(cov_mat(gr))
+mvpw_sd_r = bs_r$mvp_weights_sd; mvpw_sd_gr = bs_gr$mvp_weights_sd
+min = min(c(mvpw_r - mvpw_sd_r, mvpw_gr - mvpw_sd_gr))
+max = max(c(mvpw_r + mvpw_sd_r, mvpw_gr + mvpw_sd_gr))
+gg_errorbar(stocks, mvpw_r, mvpw_sd_r, c(min, max), "Weights", theme = custom_theme_markdown)
+```
+
+
+```{r gg7, fig.cap = 'tangency portfolio weights with standard error', fig.height = 4}
+tpw_r = tp_weights(cov_mat(r), mean_returns(r)); tpw_gr = tp_weights(cov_mat(gr), mean_returns(gr))
+tpw_sd_r = bs_r$tp_weights_sd; tpw_sd_gr = bs_gr$tp_weights_sd
+min = min(c(tpw_r - tpw_sd_r, tpw_gr - tpw_sd_gr))
+max = max(c(tpw_r + tpw_sd_r, tpw_gr + tpw_sd_gr))
+gg_errorbar(stocks, tpw_r, tpw_sd_r, c(min, max), "Weights", theme = custom_theme_markdown)
+```
 
 ## II.
 
 In the following four illustrations the results of the bootstrap can be seen. In all four graphics the mean weights and the standard deviation over the 100 samples are shown. Figure \@ref(fig:gg5) and figure \@ref(fig:gg6) visualize the MVP weights by all 20 stocks and by group. In comparison to figure \@ref(fig:gg7) and figure \@ref(fig:gg8) where the same is depicted with the tangency portfolio.
 
-```{r}
-mvpw_r = mvp_weights(cov_mat(r)); mvpw_gr = mvp_weights(cov_mat(gr))
-mvpw_sd_r = bs_r$mvp_weights_sd; mvpw_sd_gr = bs_gr$mvp_weights_sd
-min = min(c(mvpw_r - mvpw_sd_r, mvpw_gr - mvpw_sd_gr))
-max = max(c(mvpw_r + mvpw_sd_r, mvpw_gr + mvpw_sd_gr))
-gg3 = gg_errorbar(stocks, mvpw_r, mvpw_sd_r, c(min, max), "Weights", theme = custom_theme_markdown)
-gg4 = gg_errorbar(colnames(gr[-1]), mvpw_gr, mvpw_sd_gr, c(min, max), "Weights", theme = custom_theme_markdown)
-plots34 = align_plots(gg3, gg4, align = "h")
+```{r tabplot12}
+t12 = data.frame(is_gr, os_gr, row.names = "Groups")
+
+kable(t12, caption = "Sharpe ratio",  digits = 3, 
+       booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
 ```
 
-```{r gg5, fig.cap = 'MVP weights with standard error by SMI', fig.height = 4}
-ggdraw(plots34[[1]])
+```{r gg6, fig.cap = 'MVP weights with standard error', fig.height = 4}
+gg_errorbar(colnames(gr[-1]), mvpw_gr, mvpw_sd_gr, c(min, max), "Weights", theme = custom_theme_markdown)
 ```
 
-```{r gg6, fig.cap = 'MVP weights with standard error by group', fig.height = 4}
-ggdraw(plots34[[2]])
-```
-
-```{r}
-tpw_r = tp_weights(cov_mat(r), mean_returns(r)); tpw_gr = tp_weights(cov_mat(gr), mean_returns(gr))
-tpw_sd_r = bs_r$tp_weights_sd; tpw_sd_gr = bs_gr$tp_weights_sd
-min = min(c(tpw_r - tpw_sd_r, tpw_gr - tpw_sd_gr))
-max = max(c(tpw_r + tpw_sd_r, tpw_gr + tpw_sd_gr))
-gg5 = gg_errorbar(stocks, tpw_r, tpw_sd_r, c(min, max), "Weights", theme = custom_theme_markdown)
-gg6 = gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(min, max), "Weights", theme = custom_theme_markdown)
-plots56 = align_plots(gg5, gg6, align = "h")
-```
-
-```{r gg7, fig.cap = 'tangency portfolio weights with standard error by SMI', fig.height = 4}
-ggdraw(plots56[[1]])
-```
 
 ```{r gg8, fig.cap = 'Tangency portfolio weights with standard error by group', fig.height = 4}
-ggdraw(plots56[[2]])
+gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(min, max), "Weights", theme = custom_theme_markdown)
 ```
 
 
