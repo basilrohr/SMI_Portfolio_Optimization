@@ -250,6 +250,8 @@ ggplot(mapping = aes(sample = r[,"Swisscom"])) + stat_qq() + stat_qq_line(color 
 
 A second condition applies to the linear relationship of the stocks. The log-returns cannot show a perfect correlation between themselves, neither negative nor positive. This is described by a correlation coefficient of -1 respectively 1. If the determinant is 0, the system cannot be solved exactly. This situation occurs if shares have a correlation coefficient of 1 or -1. The system must be uniquely solvable to form the inverse of the covariance matrix $\Sigma^{-1}$.
 
+overfitting
+
 
 ## Minimum variance portfolio 
 The Minimum Variance Portfolio, or MVP for short, describes the portfolio of all possible weightings with the minimum volatility. Since only the volatility is minimized, constraint II. is not included in the equation.
@@ -441,55 +443,59 @@ In figure \@ref(fig:gg4) all bootstrap samples can be seen with their minimum va
 \newpage
 
 ## Cross validation {#cross}
-This chapter describes the methodology to measure the performance of the Markovitz model.
 
-The measure is the previously described Sharpe ratio and in particular the out of sample Sharpe ratio is of interest. Out of sample means that the model is not tested on the data which created it but on an independent dataset instead. Contrary, in sample means that the model is tested on the data which created it. A widely used method for out of sample testing is the so-called cross validation.
+Cross validation is a model validation technique for assessing how a model will generalize to an independent data set. The data set is split into a training set used to train the model and a test set to evaluate its performance. This procedure is replicated multiple times until all data was once in the test set.
 
-In our case, as shown in figure \@ref(fig:crossvalidation), historical data which ranges from 2001 to 2020 is split into five different sections and consequentially five different models will be developed. The red sections are the training sets and the blue ones the testing sets.
+In this case, the data set is split into five sections and consequentially five models are trained as depicted in figure \@ref(fig:crossvalidation). The gray sections are the training sets and the red ones the test sets.
 
-```{r crossvalidation, fig.cap = "Cross validation test and training sets", out.width = "95%"}
+```{r crossvalidation, fig.cap = "Cross validation training and test sets", out.width = "95%"}
 knitr::include_graphics("./www/Cross_validation.jpg")
 ```
 
-In the case of the Markovitz model, this means that the returns, volatility and covariance of the training sets are used to calculate the weights which are then applied to the testing set returns. By the end of the cross validation, one can combine all five testing sets into one time series which equals the length of the original one, but is out of sample. This out of sample time series is used to calculate the Sharpe ratio. As a comparison, the in sample Sharpe ratio is also calculated as shown in table \@ref(tab:tabplot11).
+In the case of the Markovitz model, the mean returns and covariance matrix of the training set are used to calculate the asset weights. These weights are then applied to the test set asset returns according to equation \@ref(eq:weightedreturn).
 
-As one might expect, the optimization performs better in sample and therefore the in sample Sharpe ratio is higher than the out of sample Sharpe ratio.
+\begin{equation}
+R_{i,w} = \vec{w}^\intercal * \vec{R_i}
+\label{eq:weightedreturn}
+\end{equation}
+
+<p> *$R_{i,w}$ = weighted return day i* <p>
+<p> *$\vec{w}$ = asset weights* <p>
+<p> *$\vec{R_i}$ = asset returns day i* <p>
+
+At the end of the cross validation, all five test sets are combined into one time series consisting of the daily weighted returns and equaling the length of the original data set. This time series is completely out of sample and is used to calculate the Sharpe ratio and hence measure the performance of the model.
+
+It is to note that the training and test sets of the five sections vary significantly in some cases. To give one cause for this, the financial crisis from 2007–2008 can be looked at. During this period, most assets yielded negative returns. For example, model 3 in figure \@ref(fig:crossvalidation) includes this time period as part of the test set and model 4 of the training set. This results in fluctuating asset weights across the five models which are illustrated in figure \@ref(fig:gg99).
 
 ```{r gg99, fig.cap = "Tangency portfolio weights by model", fig.height = 5}
 is_r = in_sample(r); is_gr = in_sample(gr)
 sets_r = cross_validation_sets(r); sets_gr = cross_validation_sets(gr)
 os_r = out_of_sample(sets_r); os_gr = out_of_sample(sets_gr)
-
-sets_tpw = matrix(ncol = 5, nrow = 20)
-
-for (i in 1:5) {
-  sets_tpw[,i] = out_of_sample(sets_r, set = i)$tp_weights
-}
-
-df = data.frame(order = stocks, sets_tpw)
-
+sets_tpw = matrix(ncol = length(sets_r[[1]]), nrow = ncol(r[-1]))
+for (i in 1:5) {sets_tpw[,i] = out_of_sample(sets_r, set = i)$tp_weights}
+df = data.frame(stocks = stocks, sets_tpw)
 alpha = 0.2
-ggplot(df) + geom_line(aes(x = order, y = X1, group = 1, col = "Model 1"), alpha = alpha) +
-  geom_point(aes(x = order, y = X1, group = 1, col = "Model 1")) +
-  geom_line(aes(x = order, y = X2, group = 2, col = "Model 2"), alpha = alpha) +
-  geom_point(aes(x = order, y = X2, group = 2, col = "Model 2")) +
-  geom_line(aes(x = order, y = X3, group = 3, col = "Model 3"), alpha = alpha) +
-  geom_point(aes(x = order, y = X3, group = 3, col = "Model 3")) +
-  geom_line(aes(x = order, y = X4, group = 4, col = "Model 4"), alpha = alpha) +
-  geom_point(aes(x = order, y = X4, group = 4, col = "Model 4")) +
-  geom_line(aes(x = order, y = X5, group = 5, col = "Model 5"), alpha = alpha) +
-  geom_point(aes(x = order, y = X5, group = 5, col = "Model 5")) +
+ggplot(df) +
+  geom_line(aes(x = stocks, y = X1, group = 1, col = "Model 1"), alpha = alpha) +
+  geom_point(aes(x = stocks, y = X1, group = 1, col = "Model 1")) +
+  geom_line(aes(x = stocks, y = X2, group = 2, col = "Model 2"), alpha = alpha) +
+  geom_point(aes(x = stocks, y = X2, group = 2, col = "Model 2")) +
+  geom_line(aes(x = stocks, y = X3, group = 3, col = "Model 3"), alpha = alpha) +
+  geom_point(aes(x = stocks, y = X3, group = 3, col = "Model 3")) +
+  geom_line(aes(x = stocks, y = X4, group = 4, col = "Model 4"), alpha = alpha) +
+  geom_point(aes(x = stocks, y = X4, group = 4, col = "Model 4")) +
+  geom_line(aes(x = stocks, y = X5, group = 5, col = "Model 5"), alpha = alpha) +
+  geom_point(aes(x = stocks, y = X5, group = 5, col = "Model 5")) +
   labs(x = NULL, y = "Weight", color = NULL) +
   scale_color_manual(values = c("Model 1" = "cornflowerblue", "Model 2" = "orangered3",
                                 "Model 3" = "lightblue4", "Model 4" = "forestgreen",
                                 "Model 5" = "tan2")) +
-  theme(axis.text.x = element_text(angle = 90)) +
-  guides(fill=guide_legend(ncol = 5)) +
-  theme(legend.position = "bottom") +
+  guides(fill = guide_legend(ncol = 5)) +
+  theme(axis.text.x = element_text(angle = 90), legend.position = "bottom") +
   custom_theme_markdown
 ```
 
-The graph \@ref(fig:gg99) shows the tangency portfolio weights of the 20 stocks from the different models. It is clearly visible that certain stocks such as *Julius Baer*, *Givaudan* and *Sika* become very similar weights over the whole period, which is due to lower volatility and a high mean return during this specific time period. Some stocks, such as *Lonza*, have a much higher weighting in Model 3 than in Model 5, which shows that it had a higher mean return in the period of Model 3 than in the rest of the period and therefore was weighted more.
+Stocks like *Julius Baer* and *Sika* have similar weights across all models while *Lonza* for example varies significantly.
 
 \newpage
 

@@ -119,7 +119,7 @@ out_of_sample = function(sets, sfr = 1, sfcor = 1, interval = "1d", set = NULL) 
     weighted_returns_set = c(as.matrix(sets[[2]][[i]]$returns[-1]) %*% tpw)
     weighted_returns = c(weighted_returns, weighted_returns_set)
   }
-  if(is.null(set)) {ann_sharpe_ratio(mean(weighted_returns) /sd(weighted_returns), interval)}
+  if(is.null(set)) {ann_sharpe_ratio(mean(weighted_returns) / sd(weighted_returns), interval)}
   else {
     list(sharpe_ratio = ann_sharpe_ratio(mean(weighted_returns) / sd(weighted_returns), interval),
          shrinking_cov_mat = scovm, shrinking_mean_returns = smr, tp_weights = tpw)
