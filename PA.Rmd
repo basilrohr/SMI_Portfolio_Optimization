@@ -525,18 +525,18 @@ If the zero crossing is in the shrinkage interval of $[0, 1]$ this results in ex
 
 ```{r tpwshrinkbymodel, fig.cap = "Tangency portfolio weights by model as a function of $\\lambda$", fig.height = 5}
 n = ncol(r[-1]); start = 0; stop = 1; size = 0.2
-t1 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 1)
-out1 = t(sapply(t1, function(x){return(x$tp_weights)}))
-t2 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 2)
-out2 = t(sapply(t2, function(x){return(x$tp_weights)}))
-t3 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 3)
-out3 = t(sapply(t3, function(x){return(x$tp_weights)}))
-t4 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 4)
-out4 = t(sapply(t4, function(x){return(x$tp_weights)}))
-t5 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 5)
-out5 = t(sapply(t5, function(x){return(x$tp_weights)}))
-m3 = solve(sets_r[[1]][[3]]$cov_mat); r3 = sets_r[[1]][[3]]$mean_returns
-denom_zero = (- rowSums(m3) %*% rep(mean(r3), n)) / (rowSums(m3) %*% r3 - rowSums(m3) %*% rep(mean(r3), n))
+s1 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 1)
+out1 = t(sapply(s1, function(x){x$tp_weights}))
+s2 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 2)
+out2 = t(sapply(s2, function(x){x$tp_weights}))
+s3 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 3)
+out3 = t(sapply(s3, function(x){x$tp_weights}))
+s4 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 4)
+out4 = t(sapply(s4, function(x){x$tp_weights}))
+s5 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 5)
+out5 = t(sapply(s5, function(x){x$tp_weights}))
+cm3 = solve(sets_r[[1]][[3]]$cov_mat); mr3 = sets_r[[1]][[3]]$mean_returns
+denom_zero = (-rowSums(cm3) %*% rep(mean(mr3), n)) / (rowSums(cm3) %*% mr3 - rowSums(cm3) %*% rep(mean(mr3), n))
 gg1 = gg2 = gg3 = gg4 = gg5 = ggplot() + scale_x_continuous(breaks = c(0, 0.5, 1)) + custom_theme_markdown
 for (i in 1:20) {gg1 = gg1 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out1[,i]), size = size)}
 gg1 = gg1 + labs(x = expression(lambda), y = "Weight", title = "Model 1")
@@ -556,16 +556,16 @@ Model three shows such extreme asset weights. The asymptote is visualized as a v
 The scaling factor as a function of $\lambda$ is shown in \@ref(fig:tpwsfshrinkbymodel).
 
 ```{r tpwsfshrinkbymodel, fig.cap = "Tangency portfolio weights scaling factor by model as a function of $\\lambda$", fig.height = 5}
-t1 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 1)
-out1 = t(sapply(t1, function(x){return(1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns))}))
-t2 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 2)
-out2 = t(sapply(t2, function(x){return(1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns))}))
-t3 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 3)
-out3 = t(sapply(t3, function(x){return(1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns))}))
-t4 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 4)
-out4 = t(sapply(t4, function(x){return(1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns))}))
-t5 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 5)
-out5 = t(sapply(t5, function(x){return(1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns))}))
+s1 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 1)
+out1 = t(sapply(s1, function(x){1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns)}))
+s2 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 2)
+out2 = t(sapply(s2, function(x){1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns)}))
+s3 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 3)
+out3 = t(sapply(s3, function(x){1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns)}))
+s4 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 4)
+out4 = t(sapply(s4, function(x){1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns)}))
+s5 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 5)
+out5 = t(sapply(s5, function(x){1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns)}))
 gg1 = gg2 = gg3 = gg4 = gg5 = ggplot() + expand_limits(y = 0) + scale_x_continuous(breaks = c(0, 0.5, 1)) +  custom_theme_markdown
 gg1 = gg1 + geom_line(aes(x = seq(start, stop, 0.01), y = out1[1,]), size = size) + labs(x = expression(lambda), y = "Scaling factor", title = "Model 1")
 gg2 = gg2 + geom_line(aes(x = seq(start, stop, 0.01), y = out2[1,]), size = size) + labs(x = expression(lambda), y = "Scaling factor", title = "Model 2")
@@ -577,7 +577,7 @@ ggarrange(gg1, gg2, gg3, gg4, gg5)
 
 The zero crossing of the scaling factor in model three can be seen clearly. When working with mean return shrinkage one has to be aware of this behavior.
 
-### Shrinking of correlation matrix
+### Shrinkage of correlation matrix
 
 The correlation matrix shrinkage factor is calculated as in \@ref(eq:shrinkcor).
 
