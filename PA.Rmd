@@ -417,11 +417,13 @@ gg_cor(cor_mat(gr), 4, 12, theme = custom_theme_markdown)
 
 
 ## Bootstrap
-In this part a bootstrap process was made to analyze the robustness of the tangency portfolio weights when resampling all historical returns.
+Bootstrapping is a statistical method of resampling. It allows to create a new sample with drawing from the existing sample. With 100 or more resampled data, each mean and variance of the samples can be analyzed. This method can be used to draw conclusion about a population from a sample.
+
+In this method a bootstrap process was made to analyze the robustness of the tangency portfolio weights when resampling all historical returns.
 
 All dates from the historical data were sampled in the same dimension, with replacing included. Which means that certain dates can occur multiple times. From each sampled date, the corresponding returns of each stock are added to the new data, consequently maintaining the daily differences between stocks. If replacing would not be included in the sampling method, the correlation matrix would remain constant to the one of the original data.
 
-One Bootstrap sample contains a different data, with which a new mean return of each stock and group and the corresponding covariance matrix is calculated. Those two variables are needed as input in the optimization function to calculate minimum variance portfolio, tangency portfolio of the 20 stocks and the four groups. With 100 bootstrap samples, 100 MVP’s and TP’s can be compared and analyzed. Additionally, the standard deviation of the weights over those number of bootstrap samples can be studied. The standard deviation is computed with the 84-Quantil minus the 50-Quantil to achieve a more robust result, because this calculation is less vulnerable to outliers.
+One Bootstrap sample contains a different data, with which a new mean return of each stock and group and the corresponding covariance matrix is calculated. Those two variables are needed as input in the optimization function to calculate minimum variance portfolio, tangency portfolio of the 20 stocks and the four groups. With 100 bootstrap samples, 100 MVP’s and TP’s can be compared and analyzed. Additionally, the standard deviation of the resulting weights over those number of bootstrap samples can be studied. The standard deviation is computed with the 84-Quantil minus the 50-Quantil to achieve a more robust result, because this calculation is less vulnerable to outliers.
 
 ```{r gg4, fig.cap = 'Bootstrap samples efficiency frontier', fig.height = 3.8}
 bs_r = bootstrap(r); bs_gr = bootstrap(gr)
@@ -597,9 +599,9 @@ The formula for the correlation shrinking factor is shown in \@ref(eq:shrinkcor)
 \newpage
 
 # Results
-In this section the different approaches which were desribed in chapter methodology \@ref(methodology) are applied on the historical data. Section I. optimizes the entire SMI with 20 stocks. Section II. includes the optimization of the groups. Section III. applies the shrinkage.
+In this section the different approaches which were described in chapter \@ref(methodology) methodology are applied on the historical data. Section I. optimizes the entire SMI with 20 stocks. Section II. includes the optimization of the groups. Section III. applies the shrinkage.
 
-## I.
+## I. {#resi}
 
 
 ```{r tabplot11}
@@ -608,9 +610,11 @@ t11 = data.frame(is_r, os_r, row.names = "SMI")
 kable(t11, caption = "Sharpe ratio",  digits = 3, 
        booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
 ```
+The table \@ref(tab:tabplot11) describes the results of the cross-validation (\@ref(cross)) method of 20 stocks. As it can be seen and might be expected the in-sample performs much better than the out-of-sample. This is related to the fact that in-sample considers all the data for an optimization. Contrary to the out-of-sample where only four-fifths of the data is included in the optimisation. If a stock behaves differently in this one test section compared to the 4 training sections flowing into the optimisation, this stock can be easily over- or underfitted. This leads to a worse sharpe ratio than the in-sample one. The consequences that can be drawn from this insight is, that firstly the in-sample sharpe ratio should always be higher than the out-of-sample sharpe ratio. Secondly, if the two sharpe ratio differ clearly, the returns of each model differ as well. That means if we have similar returns over 20 years, in- and out-of-sample sharpe ratio should be closer together, which is not the case here.
 
+<p> In the following two illustrations part of the bootstrap results can be seen. In the graphics the mean weights and the standard deviation over the 100 samples are shown. Figure \@ref(fig:mvpse) shows the MVP weights of the 20 stocks and figure \@ref(fig:tpse) the TP weights.<p>
 
-```{r gg5, fig.cap = 'MVP weights with standard error', fig.height = 4}
+```{r mvpse, fig.cap = 'MVP weights with standard error', fig.height = 4}
 mvpw_r = mvp_weights(cov_mat(r)); mvpw_gr = mvp_weights(cov_mat(gr))
 mvpw_sd_r = bs_r$mvp_weights_sd; mvpw_sd_gr = bs_gr$mvp_weights_sd
 min = min(c(mvpw_r - mvpw_sd_r, mvpw_gr - mvpw_sd_gr))
@@ -619,7 +623,7 @@ gg_errorbar(stocks, mvpw_r, mvpw_sd_r, c(min, max), "Weights", theme = custom_th
 ```
 
 
-```{r gg7, fig.cap = 'tangency portfolio weights with standard error', fig.height = 4}
+```{r tpse, fig.cap = 'tangency portfolio weights with standard error', fig.height = 4}
 tpw_r = tp_weights(cov_mat(r), mean_returns(r)); tpw_gr = tp_weights(cov_mat(gr), mean_returns(gr))
 tpw_sd_r = bs_r$tp_weights_sd; tpw_sd_gr = bs_gr$tp_weights_sd
 min = min(c(tpw_r - tpw_sd_r, tpw_gr - tpw_sd_gr))
@@ -629,26 +633,27 @@ gg_errorbar(stocks, tpw_r, tpw_sd_r, c(min, max), "Weights", theme = custom_them
 
 ## II.
 
-In the following four illustrations the results of the bootstrap can be seen. In all four graphics the mean weights and the standard deviation over the 100 samples are shown. Figure \@ref(fig:gg5) and figure \@ref(fig:gg6) visualize the MVP weights by all 20 stocks and by group. In comparison to figure \@ref(fig:gg7) and figure \@ref(fig:gg8) where the same is depicted with the tangency portfolio.
-
 ```{r tabplot12}
 t12 = data.frame(is_gr, os_gr, row.names = "Groups")
 
 kable(t12, caption = "Sharpe ratio",  digits = 3, 
        booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
 ```
+Here in table \@ref(tab:tabplot12) the sharpe ratio of in-and out-of-sample of the formed groups are presented. The first observation is, that the in-sample value has become smaller after this method was applied. The reason for this is, that there are less parameters to optimize with the grouping method. Instead of 20 different stocks there are now only 4 stocks respectively groups which can be optimized. That means with less parameters or data, less portfolio variations can be made to find the best possible optimization.
+However, the out-of-sample sharpe ratio has increased. This is because with forming groups, stock returns of companies within the group are being averaged. Consequently, the group return is more stable over the time period. As described more detailed in results \@ref(resi), this leads to a better performance respectively a better sharpe ratio. Therefore, also in- and out-of-sample are here closer together.
 
-```{r gg6, fig.cap = 'MVP weights with standard error', fig.height = 4}
+Below the second part of bootstrapping results is depicted. As mentioned in section \@ref(resi), the same is shown for the groups. Figure \@ref(fig:mvpsegr) illustrates the MVP weights and figure \@ref(fig:tpsegr) the TP weights.
+```{r mvpsegr, fig.cap = 'MVP weights with standard error', fig.height = 4}
 gg_errorbar(colnames(gr[-1]), mvpw_gr, mvpw_sd_gr, c(min, max), "Weights", theme = custom_theme_markdown)
 ```
 
 
-```{r gg8, fig.cap = 'Tangency portfolio weights with standard error by group', fig.height = 4}
+```{r tpsegr, fig.cap = 'Tangency portfolio weights with standard error by group', fig.height = 4}
 gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(min, max), "Weights", theme = custom_theme_markdown)
 ```
 
 
-As it is obvious to see and also visualized in figure \@ref(fig:gg4), is that TP weights have a higher standard deviation than MVP weights. That means the TP is more sensible to changes of returns than the MVP is. If the equation \@ref(eq:mvpw) of MVP and the equation \@ref(eq:tpw) of TP are considered, the MVP does not depend on the returns directly. Consequently different returns samples have not a large impact on the MVP. The small differences arise from the varying covariance matrix. But it can also be noticed that this matrix has not large deviations following the standard deviation of the MVP. Therefore bootsptrap sampling of the returns does not influence the covariance matrix as much as the returns itself.
+As it is obvious to see and also visualized in figure \@ref(fig:gg4), is that TP weights have a higher standard deviation than MVP weights. That means the TP is more sensible to changes of returns than the MVP is. If the equation \@ref(eq:mvpw) of MVP and the equation \@ref(eq:tpw) of TP are considered, the MVP does not depend on the returns directly. Consequently different returns samples have not a large impact on the MVP. The small differences arise from the varying covariance matrix. But it can also be noticed that this matrix has not large deviations following the standard deviation of the MVP. Therefore bootstrap sampling of the returns does not influence the covariance matrix as much as the returns itself.
 
 ## III.
 
