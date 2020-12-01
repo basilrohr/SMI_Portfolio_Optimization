@@ -16,6 +16,8 @@ cor = cor_mat(returns)
 d = dist(cor)
 heatmap(as.matrix(d), symm = T)
 
+sqrt(sum((cor[1,] - cor[2,])^2))
+
 heatmap(cor, symm = T)
 
 par(mfrow = c(1,3))
@@ -26,10 +28,11 @@ plot(hcsing, main = "Single")
 plot(hcave, main = "Average")
 plot(hccom, main = "Complete")
 
-
-
-
-
+a = cbind(c(1,5),
+          c(8,4))
+adist = dist(a)
+as.matrix(adist)
+cor(a)
 
 
 r = returns
