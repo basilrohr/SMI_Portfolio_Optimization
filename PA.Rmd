@@ -71,7 +71,7 @@ kable(ann_rf, col.names = c("Year", "Rate [%]"), caption = "Average overnight ri
 ```
 
 ## Volatility (standard deviation)
-Volatility describes the risk of a stock or market index and is a statistical measure of the dispersion of the calculated logarithmic returns (\@ref(eq:LogR)). In general, the higher the volatility, the riskier the security.
+Volatility describes the risk of a stock or market index and is a statistical measure of the dispersion of the calculated logarithmic returns \@ref(eq:LogR). In general, the higher the volatility, the riskier the security.
 
 \begin{equation}
   \sigma = \sqrt{\frac{\Sigma(R_{i} - \overline{R})^2}{n}}
