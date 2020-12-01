@@ -33,29 +33,28 @@ gg_bootstrap_ef = function(ef, fxlim = 1, fylim = 1, size = 0.5, title = NULL, t
   gg
 }
 
-gg_shrinking2D = function(x1, x2, x1_name, x2_name, xlab, title = NULL, theme = NULL) {
+gg_shrinking2D = function(x1, x2, x3, x1_name, x2_name, x3_name, xlab, title = NULL, theme = NULL) {
   seq = seq(0, 1, length = length(x1))
-  gg = ggplot() + geom_line(aes(x = seq, y = x1, color = x1_name)) +
-    geom_line(aes(x = seq, y = x2, color = x2_name)) +
+  gg = ggplot() +
+    geom_line(aes(x = seq, y = x1, color = paste0(x1_name, "\nMax(", format(round(seq[which.max(x1)], 2), nsmall = 2),
+                                                  "/", format(round(max(x1), 2), nsmall = 2), ")"))) +
+    geom_line(aes(x = seq, y = x2, color = paste0(x2_name, "\nMax(", format(round(seq[which.max(x2)], 2), nsmall = 2),
+                                                  "/", format(round(max(x2), 2), nsmall = 2), ")"))) +
+    geom_line(aes(x = seq, y = x3, color = paste0(x3_name, "\nMax(", format(round(seq[which.max(x3)], 2), nsmall = 2),
+                                                  "/", format(round(max(x3), 2), nsmall = 2), ")"))) +
     geom_segment(aes(x = seq[which.max(x1)], y = -Inf, xend = seq[which.max(x1)],
-                     yend = max(x1)), color = "orangered3", linetype = 2) +
-    geom_point(aes(x = seq[which.max(x1)], y = max(x1)), color = "orangered3") +
-    geom_text(aes(x = seq[which.max(x1)], y = max(x1),
-                  label = paste0("x = ", format(round(seq[which.max(x1)], 2), nsmall = 2),
-                                 "\ny = ", format(round(max(x1), 2), nsmall = 2))),
-              color = "black", hjust = ifelse(seq[which.max(x1)] < 2/3, 0, 1),
-              vjust = -2/3) +
+                     yend = max(x1)), color = "cornflowerblue", linetype = 2) +
+    geom_point(aes(x = seq[which.max(x1)], y = max(x1)), color = "cornflowerblue") +
     geom_segment(aes(x = seq[which.max(x2)], y = -Inf, xend = seq[which.max(x2)],
-                     yend = max(x2)), color = "black", linetype = 2) +
-    geom_point(aes(x = seq[which.max(x2)], y = max(x2)), color = "black") +
-    geom_text(aes(x = seq[which.max(x2)], y = max(x2),
-                  label = paste0("x = ", format(round(seq[which.max(x2)], 2), nsmall = 2),
-                                 "\ny = ", format(round(max(x2), 2), nsmall = 2))),
-              color = "black", hjust = ifelse(seq[which.max(x2)] < 2/3, 0, 1),
-              vjust = -2/3) +
+                     yend = max(x2)), color = "orangered3", linetype = 2) +
+    geom_point(aes(x = seq[which.max(x2)], y = max(x2)), color = "orangered3") +
+    geom_segment(aes(x = seq[which.max(x3)], y = -Inf, xend = seq[which.max(x3)],
+                     yend = max(x3)), color = "black", linetype = 2) +
+    geom_point(aes(x = seq[which.max(x3)], y = max(x3)), color = "black") +
     labs(x = paste0(xlab, " shrinking factor"), y = "Sharpe ratio", title = title, color = NULL) +
     lims(y = c(-0.25, 1.2)) +
-    scale_color_manual(values = c("black", "orangered3")) +
+    scale_color_manual(values = c("black", "orangered3", "cornflowerblue")) +
+    theme(legend.position = "bottom") +
     theme
   gg
 }

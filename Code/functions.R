@@ -4,6 +4,9 @@ groups = list(Consumer = stocks[c(2, 9, 11, 15, 18)],
               Finance = stocks[c(3, 6, 16, 17, 19, 20)],
               Industrial = stocks[c(1, 4, 5, 7, 13)],
               Pharma = stocks[c(8, 10, 12, 14)])
+groups2 = list(Group1 = stocks[c(1, 2, 3, 6, 7, 11, 15, 16, 17, 19, 20)],
+               Group2 = stocks[c(5, 8, 9, 10, 12, 18)],
+               Group3 = stocks[c(4, 13, 14)])
 
 groups_returns = function(returns, groups) {
   groups_returns = data.frame(matrix(nrow = nrow(returns), ncol = length(groups)+1,
