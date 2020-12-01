@@ -9,8 +9,8 @@ groups2 = list(Group1 = stocks[c(1, 2, 3, 6, 7, 11, 15, 16, 17, 19, 20)],
                Group3 = stocks[c(4, 13, 14)])
 
 groups_returns = function(returns, groups) {
-  groups_returns = data.frame(matrix(nrow = nrow(returns), ncol = length(groups)+1,
-                              dimnames = list(NULL, c("Date", names(groups)))))
+  groups_returns = data.frame(matrix(nrow = nrow(returns), ncol = length(groups)+1))
+  rownames(groups_returns) = NULL; colnames(groups_returns) = c("Date", names(groups))
   for (i in seq_along(groups)) {groups_returns[i+1] = rowMeans(returns[-1][groups[[i]]])}
   groups_returns[1] = returns[1]
   groups_returns
