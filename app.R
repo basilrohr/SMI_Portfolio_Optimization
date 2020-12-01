@@ -326,9 +326,11 @@ server = function(input, output, session) {
     efp_gr = ef_points(efw_gr, gcm, gmr)
     efp = data.frame(n = c(colnames(r[-1]), colnames(gr[-1])), vol = c(volatilities(cm), volatilities(gcm)),
                      mr = c(mr, gmr), row.names = NULL)
-    
     g = c()
-    for (i in efp$n) {g = c(g, names(which(unlist(g_react()) == i)))}
+    for (i in efp$n[1:length(colnames(r[-1]))]) {
+      g = c(g, ifelse(identical(names(which(unlist(g_react()) == i)), character(0)),
+                      "Excluded0", names(which(unlist(g_react()) == i))))
+    }
     efp$g = c(substr(g, 1, nchar(g)-1), colnames(gr[-1]))
     efp
   })
@@ -341,11 +343,7 @@ server = function(input, output, session) {
     efp_r = as.data.frame(ef_points(efw_r, cm, mr))
     efw_gr = ef_weights(mvp_weights(gcm), tp_weights(gcm, gmr), seq(-3, 3, 0.1))
     efp_gr = as.data.frame(ef_points(efw_gr, gcm, gmr))
-    efp = data.frame(n = c(colnames(r[-1]), names(gr[-1])), vol = c(volatilities(cm), volatilities(gcm)),
-                     mr = c(mr, gmr), row.names = NULL)
     g = c()
-    for (i in efp$n) {g = c(g, names(which(unlist(g_react()) == i)))}
-    efp$g = c(substr(g, 1, nchar(g)-1), colnames(gr[-1]))
     if (input$intervalButton == "1d") {fxlim = 1; fylim = 1}
     if (input$intervalButton == "1wk") {fxlim = 2.5; fylim = 4.5}
     if (input$intervalButton == "1mo") {fxlim = 5; fylim = 15}
