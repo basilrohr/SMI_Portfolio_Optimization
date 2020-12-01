@@ -7,6 +7,7 @@ library(sortable)
 library(DT)
 library(shinycssloaders)
 library(cowplot)
+library(ggrepel)
 
 sourceDirectory("./Code", modifiedOnly = F)
 
@@ -44,7 +45,7 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                     uiOutput("returnPlotHoverInfo"))),
                            column(5,
                                   tabsetPanel(
-                                    tabPanel("Mean return and volatility",
+                                    tabPanel("Return and volatility",
                                              dataTableOutput("r_mr_vol", width = "90%")),
                                     tabPanel("Correlation", br(),
                                              plotOutput("r_cor", height = "600px")),
@@ -99,7 +100,7 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                                        font-weight: bold;}"))),
                            column(4,
                                   tabsetPanel(
-                                    tabPanel("Mean return and volatility",
+                                    tabPanel("Return and volatility",
                                              dataTableOutput("gr_mr_vol", width = "90%")),
                                     tabPanel("Correlation", br(),
                                              plotOutput("gr_cor", height = "500px")))))),
@@ -122,7 +123,11 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                                column(4, dataTableOutput("seGroupsVolatility", width = "90%")))))))),
                 tabPanel("Markovitz Optimization",
                          fluidRow(
-                           column(8,
+                           column(6,
+                                  plotOutput("effFrontierPlot", height = "600px",
+                                             hover = hoverOpts("effFrontierPlotHover",
+                                                               delay = 10, delayType = "debounce")),
+                                  uiOutput("effFrontierPlotHoverInfo"),
                                   tabsetPanel(
                                     tabPanel("Stocks", br(),
                                              fluidRow(
@@ -133,7 +138,7 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                                column(6, plotOutput("sdMVPGroupsWeightsPlot") %>% withSpinner),
                                                column(6, plotOutput("sdTPGroupsWeightsPlot") %>% withSpinner))))),
                            column(4,
-                                  plotOutput("effFrontierBootstrap") %>% withSpinner,
+                                  plotOutput("effFrontierBootstrapPlot") %>% withSpinner,
                                   actionButton("bootstrapButton", "Redo bootstrap")))),
                 tabPanel("Shrinking",
                          fluidRow(
@@ -311,6 +316,77 @@ server = function(input, output, session) {
       formatRound(columns = 2, digits = 5)
   })
   
+  ef_react = reactive({
+    r = r_react(); gr = gr_react()
+    cm = cov_mat(r); mr = mean_returns(r)
+    gcm = cov_mat(gr); gmr = mean_returns(gr)
+    efw_r = ef_weights(mvp_weights(cm), tp_weights(cm, mr), seq(-3, 3, 0.1))
+    efp_r = ef_points(efw_r, cm, mr)
+    efw_gr = ef_weights(mvp_weights(gcm), tp_weights(gcm, gmr), seq(-3, 3, 0.1))
+    efp_gr = ef_points(efw_gr, gcm, gmr)
+    efp = data.frame(n = c(colnames(r[-1]), colnames(gr[-1])), vol = c(volatilities(cm), volatilities(gcm)),
+                     mr = c(mr, gmr), row.names = NULL)
+    
+    g = c()
+    for (i in efp$n) {g = c(g, names(which(unlist(g_react()) == i)))}
+    efp$g = c(substr(g, 1, nchar(g)-1), colnames(gr[-1]))
+    efp
+  })
+  
+  output$effFrontierPlot = renderPlot({
+    r = r_react(); gr = gr_react()
+    cm = cov_mat(r); mr = mean_returns(r)
+    gcm = cov_mat(gr); gmr = mean_returns(gr)
+    efw_r = ef_weights(mvp_weights(cm), tp_weights(cm, mr), seq(-3, 3, 0.1))
+    efp_r = as.data.frame(ef_points(efw_r, cm, mr))
+    efw_gr = ef_weights(mvp_weights(gcm), tp_weights(gcm, gmr), seq(-3, 3, 0.1))
+    efp_gr = as.data.frame(ef_points(efw_gr, gcm, gmr))
+    efp = data.frame(n = c(colnames(r[-1]), names(gr[-1])), vol = c(volatilities(cm), volatilities(gcm)),
+                     mr = c(mr, gmr), row.names = NULL)
+    g = c()
+    for (i in efp$n) {g = c(g, names(which(unlist(g_react()) == i)))}
+    efp$g = c(substr(g, 1, nchar(g)-1), colnames(gr[-1]))
+    if (input$intervalButton == "1d") {fxlim = 1; fylim = 1}
+    if (input$intervalButton == "1wk") {fxlim = 2.5; fylim = 4.5}
+    if (input$intervalButton == "1mo") {fxlim = 5; fylim = 15}
+    ggplot() +
+      geom_path(data = efp_r, aes(x = efp_r[,1], y = efp_r[,2]), alpha = 0.5) +
+      geom_point(aes(x = mvp_point(efp_r)[1], y = mvp_point(efp_r)[2], color = "MVP"), size = 2) +
+      geom_point(aes(x = tp_point(efp_r)[1], y = tp_point(efp_r)[2], color = "TP"), size = 2) +
+      geom_text(aes(x = tp_point(efp_r)[1], y = tp_point(efp_r)[2], label = "SMI"),
+                vjust = -2) +
+      geom_path(data = efp_gr, aes(x = efp_gr[,1], y = efp_gr[,2]), alpha = 0.5) +
+      geom_point(aes(x = mvp_point(efp_gr)[1], y = mvp_point(efp_gr)[2], color = "MVP"), size = 2) +
+      geom_point(aes(x = tp_point(efp_gr)[1], y = tp_point(efp_gr)[2], color = "TP"), size = 2) +
+      geom_text(aes(x = tp_point(efp_gr)[1], y = tp_point(efp_gr)[2], label = "Groups"),
+                vjust = -2) +
+      geom_point(data = ef_react(), aes(x = vol, y = mr, color = g)) +
+      geom_text_repel(data = ef_react(), aes(x = vol, y = mr, label = n, color = g), size = 4) +
+      lims(x = fxlim * c(0, 3), y = fylim * c(-0.1, 0.2)) +
+      labs(x = "Volatility [%]", y = "Expected return [%]", color = NULL) +
+      # scale_color_manual(values = c("MVP" = "cornflowerblue", "TP" = "orangered3",
+      #                               "Consumer" = "lightblue4", "Industrial" = "forestgreen",
+      #                               "Pharma" = "tan2", "Finance" = "firebrick2")) +
+      guides(fill=guide_legend(ncol = 2)) +
+      theme(legend.position = "bottom") +
+      custom_theme_shiny
+  })
+  
+  output$effFrontierPlotHoverInfo = renderUI({
+    hover = input$effFrontierPlotHover
+    point = nearPoints(ef_react(), hover, xvar = "vol", yvar = "mr", threshold = 5, maxpoints = 1, addDist = T)
+    if (nrow(point) == 0) {return(NULL)}
+    left_pct = (hover$x - hover$domain$left) / (hover$domain$right - hover$domain$left)
+    top_pct = (hover$domain$top - hover$y) / (hover$domain$top - hover$domain$bottom)
+    left_px = hover$range$left + left_pct * (hover$range$right - hover$range$left)
+    top_px = hover$range$top + top_pct * (hover$range$bottom - hover$range$top)
+    style = paste0("position: absolute; z-index: 100; background-color: rgba(245, 245, 245, 0.95);",
+                   "left:", left_px + 2, "px; top:", top_px + 2, "px;", "padding: 10px 10px 0px 10px;")
+    wellPanel(
+      style = style,
+      p(HTML(paste0(point$n, "<br/>Vol = ", round(point$vol, 3), "%", "<br/>R = ", round(point$mr, 3), "%"))))
+  })
+  
   bootstrap_r_react = reactive({
     input$bootstrapButton
     bootstrap(r_react())
@@ -363,7 +439,7 @@ server = function(input, output, session) {
     ggdraw(sdTPWeightsPlot_react()[[2]])
   })
   
-  output$effFrontierBootstrap = renderPlot({
+  output$effFrontierBootstrapPlot = renderPlot({
     if (input$intervalButton == "1d") {fxlim = 1; fylim = 1}
     if (input$intervalButton == "1wk") {fxlim = 2; fylim = 4}
     if (input$intervalButton == "1mo") {fxlim = 3; fylim = 15}
@@ -392,7 +468,7 @@ server = function(input, output, session) {
   
   output$correlationShrinking = renderPlot({
     os_r_scor = unlist(out_of_sample_vec(cross_validation_sets_r_react(), 1, seq(0, 1, 0.01),
-                                  interval = input$intervalButton))
+                                         interval = input$intervalButton))
     os_gr_scor = unlist(out_of_sample_vec(cross_validation_sets_gr_react(), 1, seq(0, 1, 0.01),
                                           interval = input$intervalButton))
     gg_shrinking2D(os_r_scor, os_gr_scor, "SMI", "Groups", "Correlation",
