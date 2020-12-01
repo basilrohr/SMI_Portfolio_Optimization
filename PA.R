@@ -11,15 +11,6 @@ load("./Data/returns_1d.Rda")
 R.utils::sourceDirectory("./Code", modifiedOnly = F)
 
 
-
-cor = cor_mat(returns)
-d = dist(cor)
-heatmap(as.matrix(d), symm = T)
-
-sqrt(sum((cor[1,] - cor[2,])^2))
-
-heatmap(cor, symm = T)
-
 par(mfrow = c(1,3))
 hcsing = hclust(d, method = "single")
 hcave = hclust(d, method = "average")
@@ -28,11 +19,14 @@ plot(hcsing, main = "Single")
 plot(hcave, main = "Average")
 plot(hccom, main = "Complete")
 
-a = cbind(c(1,5),
-          c(8,4))
+a = cbind(c(1,5,6,9),
+          c(8,4,1,2),
+          c(9,0,7,5),
+          c(3,3,4,1))
 adist = dist(a)
 as.matrix(adist)
 cor(a)
+heatmap(a)
 
 
 r = returns
