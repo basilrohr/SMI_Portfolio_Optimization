@@ -416,7 +416,7 @@ suppressWarnings(suppressMessages(print(gg_cor(cor_mat(gr), 4, 12, theme = custo
 
 
 ### Mathematical grouping
-In a second approach the grouping is made my sorting the euclidean distance.
+In a second approach the grouping is made my sorting the euclidean distance. The group formation is based on the similarity measure, which is calculated here with Euclidean distances between two correlation coefficients. The formula is illustrated below.
 
 \begin{equation}
   d_{1,2} = \sqrt{\sum_{j = 1}^{p}(x_{1} - x_{2})^{2}}
@@ -427,8 +427,17 @@ In a second approach the grouping is made my sorting the euclidean distance.
 <p> *$x_{1}$ = stock 1* <p>
 <p> *$x_{2}$ = stock 2* <p>
 
+The Formula takes all column values of a first stock and calculates the squared difference to the column values of the second stock. These 20 values are summed up and the root is extracted from them. The result is the distance between the two stocks, and if it is done for all 20 stocks it results in a distance matrix. The algorithm sorts the values of the distance matrix with the method “complete”.
+The first step is (independent of methods) grouping the two stocks with the smallest distance. 
+The second step is comparing the created group to single stocks or groups. The distance between a group ($x_{1},x_{2}$) and a stock $x_{3}$ is the maximum distance between a stock of the group and the single stock.\newline
+$d\langle \{x_{1},x_{2}\} , x_{3} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{2}, x_{3} \rangle)$. \newline
+For distances between groups, the maximum value is taken from the distances between each object of a group with the object of another group.
+For distance between group ($x_{1},x_{2}$) and ($x_{3},x_{4}$) with two objects (stocks) applies \newline
+$d\langle \{x_{1},x_{2}\} , \{x_{3},x_{4}\} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{1}, x_{4} \rangle, d\langle x_{2}, x_{3} \rangle, d\langle x_{2}, x_{4} \rangle)$. The third step is repeating the procedure with the new created distance matrix until only two groups remain. The outcome is a dendogram which is also part of the illustration in \@ref(fig:heatmap). It can be seen that the first step of grouping is the connection which is drawn lowest.
 
-```{r, fig.cap = "Grouped by euclidean distance for stocks", fig.height = 6.5}
+
+
+```{r heatmap, fig.cap = "Grouped by euclidean distance for stocks", fig.height = 6.5}
 cor = cor_mat(returns)
 d = dist(cor)
 heatmap3(as.matrix(d), symm = TRUE, method = "complete", col = colorRampPalette(c("firebrick4", "orangered2", "honeydew"))(1000))
