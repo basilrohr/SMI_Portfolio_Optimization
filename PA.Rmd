@@ -408,7 +408,7 @@ To obtain the group returns, the daily mean value of the daily returns of all st
 ```{r grmrvol}
 gr = groups_returns(returns, groups)
 gr_mr_vol = data.frame(colnames(gr[-1]), mean_returns(gr), volatilities(cov_mat(gr)), row.names = NULL)
-kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption = "Mean returns and volatiltiy of groups", digits = 3, booktabs = T, linesep = "")
+kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption = "Mean returns and Volatility of groups", digits = 3, booktabs = T, linesep = "")
 ```
 
 ```{r gcm, fig.cap = "Correlation of groups", fig.height = 5}
