@@ -491,7 +491,7 @@ R_{i,w} = \vec{w}^\intercal * \vec{R_i}
 
 At the end of the cross validation, all five test sets are combined into one time series consisting of the daily weighted returns and equaling the length of the original data set. This time series is completely out of sample and is used to calculate the Sharpe ratio and hence measure the performance of the model.
 
-It is to note that the training and test sets of the five sections vary significantly in some cases. To give one cause for this, the financial crisis from 2007–2008 can be looked at. During this period, most assets yielded negative returns. For example, model 3 in figure \@ref(fig:crossvalidation) includes this time period as part of the test set and model 4 of the training set. This results in fluctuating asset weights across the five models which are illustrated in figure \@ref(fig:tpwbymodel).
+It is to note that the training and test sets of the five sections vary significantly in some cases. To give one cause for this, the financial crisis from 2007–2008 can be looked at. During this period, most assets yielded negative returns. For example, model 2 in figure \@ref(fig:crossvalidation) includes this time period as part of the test set and model 4 of the training set. This results in fluctuating asset weights across the five models which are illustrated in figure \@ref(fig:tpwbymodel).
 
 ```{r tpwbymodel, fig.cap = "Tangency portfolio weights by model", fig.height = 5}
 g2r = groups_returns(r, groups2); g2mr = mean_returns(g2r); g2cm = cov_mat(g2r)
