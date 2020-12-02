@@ -363,7 +363,7 @@ suppressMessages(suppressWarnings(print(ggplot() +
  lims(x = c(0, 3), y = c(-0.1, 0.2)) +
  labs(x = "Volatility [%]", y = "Expected return [%]", color = NULL) +
  scale_color_manual(values = c("MVP" = "cornflowerblue", "TP" = "orangered3")) +
- guides(fill=guide_legend(ncol = 2)) +
+ guides(fill = guide_legend(ncol = 2)) +
  theme(legend.position = "bottom") +
  custom_theme_markdown)))
 ```
@@ -390,14 +390,20 @@ Before any weighting of a portfolio is optimized, the Sharpe ratio of the SMI is
 
 # Methodology {#methodology}
 
-## Grouping
-A first way to increase the Sharpe ratio is to create groups. Grouping the stocks also reduces the standard errors, which will be described in more detail later in chapter [Standard error]. 
-Naturally there are different approaches how many groups and how exactly the composition of such groups should be created. In a first approach we formed four groups, which differ in their industries:
+## Grouping {#grouping}
+
+Grouping of assets is an approach to reduce the noise given by individual assets and therefore increase the Sharpe ratio. A more qualitative approach and a mathematical approach are applied.
+
+### Grouping by industry
+
+An intuitive approach to group stocks is to do so by industry. In the case of the SMI the stocks can be grouped as follows resulting in four groups:
+
+
 
 <p> *Consumer: Adecco, Nestle, Richemont, Swatch, Swisscom* <p>
-<p> *Finance: Credit Suisse, Julius Baer, Swiss Life, Swiss Re, UBS, Zurich Insurance* <p>
+<p> *Finance (and Insurance): Credit Suisse, Julius Baer, Swiss Life, Swiss Re, UBS, Zurich Insurance*<p>
 <p> *Industrial: ABB, Geberit, Givaudan, Lafarge Holcim, SGS* <p>
-<p> *Pharma: Lonza, Novartis, Roche, Sika* <p>
+<p> *Pharma (and Chemicals): Lonza, Novartis, Roche, Sika* <p>
 
 This method is not mathematical in nature but a simple intuitive decision based on the perception of these companies. Within the grouping, each share is equally weighted. This combination results in the following values for the mean return and volatility of each group as shown in table \@ref(tab:tabplot3).
 
@@ -415,7 +421,7 @@ suppressWarnings(suppressMessages(print(gg_cor(cor_mat(gr), 4, 12, theme = custo
 ```
 
 
-### Mathematical grouping
+### Grouping with cluster analysis
 In a second approach the grouping is made my sorting the euclidean distance. The group formation is based on the similarity measure, which is calculated here with Euclidean distances between two correlation coefficients. The formula is illustrated below.
 
 \begin{equation}
@@ -447,10 +453,25 @@ heatmap3(as.matrix(d), symm = TRUE, method = "complete", col = colorRampPalette(
 <p> *Group 2: Givaudan, Lonza, Nestle, Novartis, Roche, Swisscom* <p>
 <p> *Group 3: Geberit, SGS, Sika* <p>
 
-\newpage
+```{r tabplot78}
+g2r = groups_returns(r, groups2)
+# g2mr = mean_returns(g2r); g2cm = cov_mat(g2r)
+
+gr_mr_vol = data.frame(colnames(g2r[-1]), mean_returns(g2r), volatilities(cov_mat(g2r)), row.names = NULL)
+kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption = "groups with expected return and volatility", digits = 3, booktabs = T, linesep = "")
+```
 
 
-## Bootstrap
+```{r, fig.cap = "Groups correlation", fig.height = 5}
+suppressWarnings(suppressMessages(print(gg_cor(cor_mat(g2r), 4, 12, theme = custom_theme_markdown) + 
+  scale_fill_gradient2(low = "cornflowerblue", high = "orangered2", mid = "honeydew", limit = c(-1,1), name = "Cor"))))
+```
+
+
+Further methods like kmeans or PAM etc could be considered but are not discussed here.
+
+## Bootstrap {#bootstrap}
+
 Bootstrapping is a statistical method of resampling. It allows to create a new sample with drawing from the existing sample. With 100 or more resampled data, each mean and variance of the samples can be analyzed. This method can be used to draw conclusion about a population from a sample.
 
 In this method a bootstrap process was made to analyze the robustness of the tangency portfolio weights when resampling all historical returns.
@@ -459,20 +480,18 @@ All dates from the historical data were sampled in the same dimension, with repl
 
 One Bootstrap sample contains a different data, with which a new mean return of each stock and group and the corresponding covariance matrix is calculated. Those two variables are needed as input in the optimization function to calculate minimum variance portfolio, tangency portfolio of the 20 stocks and the four groups. With 100 bootstrap samples, 100 MVP’s and TP’s can be compared and analyzed. Additionally, the standard deviation of the resulting weights over those number of bootstrap samples can be studied. The standard deviation is computed with the 84-Quantil minus the 50-Quantil to achieve a more robust result, because this calculation is less vulnerable to outliers.
 
-```{r gg4, fig.cap = 'Bootstrap samples efficiency frontier', fig.height = 3.8}
+```{r gg4, fig.cap = 'Bootstrap samples efficiency frontier', fig.height = 4}
 bs_r = bootstrap(r); bs_gr = bootstrap(gr)
 suppressMessages(suppressWarnings(print(gg_bootstrap_ef(bs_r$samples_ef_points, theme = custom_theme_markdown))))
 ```
 
 In figure \@ref(fig:gg4) all bootstrap samples can be seen with their minimum variance portfolio, tangency portfolio and their efficiency frontier. Noticeable is the variance of the tangency portfolio in comparison to the minimum variance portfolio. This is due to the high standard errors of returns. Since the return is included in the calculation of the TP, but not in the MVP, a larger deviation can be seen.
 
-\newpage
-
 ## Cross validation {#crossvalidation}
 
 Cross validation is a model validation technique for assessing how a model will generalize to an independent data set. The data set is split into a training set used to train the model and a test set to evaluate its performance. This procedure is replicated multiple times until all data was once in the test set.
 
-In this case, the data set is split into five sections and consequentially five models are trained as depicted in figure \@ref(fig:crossvalidation). The gray sections are the training sets and the red ones the test sets.
+In this case, the historical data is split into five sections and consequentially five models are trained as depicted in figure \@ref(fig:crossvalidation). The gray sections are the training sets and the red ones the test sets.
 
 ```{r crossvalidation, fig.cap = "Cross validation training and test sets"}
 knitr::include_graphics("./www/Cross_validation.jpg")
@@ -489,14 +508,11 @@ R_{i,w} = \vec{w}^\intercal * \vec{R_i}
 <p> *$\vec{w}$ = asset weights* <p>
 <p> *$\vec{R_i}$ = asset returns day i* <p>
 
-At the end of the cross validation, all five test sets are combined into one time series consisting of the daily weighted returns and equaling the length of the original data set. This time series is completely out of sample and is used to calculate the Sharpe ratio and hence measure the performance of the model.
+At the end of the cross validation, all five test sets are combined into one time series consisting of the daily weighted returns and equaling the length of the historical data. This time series is completely out of sample and is used to calculate the Sharpe ratio and hence measure the performance of the model.
 
 It is to note that the training and test sets of the five sections vary significantly in some cases. To give one cause for this, the financial crisis from 2007–2008 can be looked at. During this period, most assets yielded negative returns. For example, model two in figure \@ref(fig:crossvalidation) includes this time period as part of the test set and model four of the training set. This results in fluctuating asset weights across the five models which are illustrated in figure \@ref(fig:tpwbymodel).
 
-\newpage
-
 ```{r tpwbymodel, fig.cap = "Tangency portfolio weights by model", fig.height = 5}
-g2r = groups_returns(r, groups2); g2mr = mean_returns(g2r); g2cm = cov_mat(g2r)
 is_r = in_sample(r); is_gr = in_sample(gr); is_g2r = in_sample(g2r)
 sets_r = cross_validation_sets(r); sets_gr = cross_validation_sets(gr); sets_g2r = cross_validation_sets(g2r)
 os_r = out_of_sample(sets_r); os_gr = out_of_sample(sets_gr); os_g2r = out_of_sample(sets_g2r)
@@ -615,8 +631,6 @@ ggarrange(gg1, gg2, gg3, gg4, gg5)
 ```
 
 The zero crossing of the scaling factor in model three can be seen clearly. When working with mean returns shrinkage one has to be aware of this behavior.
-
-\newpage
 
 ### Shrinkage of correlation matrix
 

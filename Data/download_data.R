@@ -34,6 +34,7 @@ for (i in 1:length(stocks)) {
 
 colnames(df) = c("Date", stocks)
 df = df[rowSums(is.na(df)) == 0,]
+df = df[-nrow(df),]
 
 save(df, file = paste0("./Data/data_", interval, ".Rda"))
 # load(paste0("./Data/data_", interval, ".Rda"))

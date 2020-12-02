@@ -1,3 +1,24 @@
+custom_theme_markdown = theme(axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
+                              axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+                              plot.title = element_text(margin = margin(t = 0, r = 0, b = 10, l = 0), hjust = 0.5),
+                              panel.background = element_rect(fill = "white", colour = "white"),
+                              panel.grid.major = element_line(colour = "grey", size = 0.4),
+                              panel.grid.minor = element_line(colour = "grey", size = 0.2),
+                              axis.ticks = element_blank(),
+                              text = element_text(family = "Times", size = 15),
+                              legend.key =  element_blank())
+
+custom_theme_shiny = theme(axis.title.x = element_text(margin = margin(t = 10, r = 0, b = 0, l = 0)),
+                           axis.title.y = element_text(margin = margin(t = 0, r = 10, b = 0, l = 0)),
+                           plot.title = element_text(margin = margin(t = 0, r = 0, b = 10, l = 0), hjust = 0.5),
+                           panel.background = element_rect(fill = "white", colour = "white"),
+                           panel.grid.major = element_line(colour = "grey", size = 0.4),
+                           panel.grid.minor = element_line(colour = "grey", size = 0.2),
+                           axis.ticks = element_blank(),
+                           text = element_text(size = 15),
+                           legend.key =  element_blank())
+
+
 gg_cor = function(cor, lab_size, tl.cex, title = " ", theme = NULL) {
   gg = ggcorrplot(cor, title = title, legend.title = "Cor",
                   lab = T, lab_size = lab_size, tl.cex = tl.cex, ggtheme = theme)
@@ -29,6 +50,8 @@ gg_bootstrap_ef = function(ef, fxlim = 1, fylim = 1, size = 0.5, title = NULL, t
     lims(x = fxlim * c(0, 5), y = fylim * c(-0.2, 0.6)) +
     labs(x = "Volatility [%]", y = "Expected return [%]", title = title, color = NULL) +
     scale_color_manual(values = c("MVP" = "cornflowerblue", "TP" = "orangered3")) +
+    guides(fill = guide_legend(ncol = 2)) +
+    theme(legend.position = "bottom") +
     theme
   gg
 }
