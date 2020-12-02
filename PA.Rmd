@@ -398,16 +398,14 @@ Grouping of assets is an approach to reduce the noise given by individual assets
 
 An intuitive approach to group stocks is to do so by industry. In the case of the SMI the stocks can be grouped as follows resulting in four groups:
 
+<p> **Consumer:** *Adecco, Nestle, Richemont, Swatch, Swisscom* <p>
+<p> **Finance:** *Credit Suisse, Julius Baer, Swiss Life, Swiss Re, UBS, Zurich Insurance* <p>
+<p> **Industrial:** *ABB, Geberit, Givaudan, LafargeHolcim, SGS* <p>
+<p> **Pharma:** *Lonza, Novartis, Roche, Sika* <p>
 
+To obtain the group returns, the daily mean value of the daily returns of all stocks within the group is calculated . Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. From this time series the mean returns, volatility and correlation matrix can be calculated from which the first two are shown in table \@ref(tab:grmrvol).
 
-<p> *Consumer: Adecco, Nestle, Richemont, Swatch, Swisscom* <p>
-<p> *Finance (and Insurance): Credit Suisse, Julius Baer, Swiss Life, Swiss Re, UBS, Zurich Insurance*<p>
-<p> *Industrial: ABB, Geberit, Givaudan, Lafarge Holcim, SGS* <p>
-<p> *Pharma (and Chemicals): Lonza, Novartis, Roche, Sika* <p>
-
-This method is not mathematical in nature but a simple intuitive decision based on the perception of these companies. Within the grouping, each share is equally weighted. This combination results in the following values for the mean return and volatility of each group as shown in table \@ref(tab:tabplot3).
-
-```{r tabplot3}
+```{r grmrvol}
 gr = groups_returns(returns, groups)
 gr_mr_vol = data.frame(colnames(gr[-1]), mean_returns(gr), volatilities(cov_mat(gr)), row.names = NULL)
 kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption = "groups with expected return and volatility", digits = 3, booktabs = T, linesep = "")
@@ -420,8 +418,8 @@ suppressWarnings(suppressMessages(print(gg_cor(cor_mat(gr), 4, 12, theme = custo
   scale_fill_gradient2(low = "cornflowerblue", high = "orangered2", mid = "honeydew", limit = c(-1,1), name = "Cor"))))
 ```
 
-
 ### Grouping with cluster analysis
+
 In a second approach the grouping is made my sorting the euclidean distance. The group formation is based on the similarity measure, which is calculated here with Euclidean distances between two correlation coefficients. The formula is illustrated below.
 
 \begin{equation}
@@ -449,9 +447,9 @@ d = dist(cor)
 heatmap3(as.matrix(d), symm = TRUE, method = "complete", col = colorRampPalette(c("firebrick4", "orangered2", "honeydew"))(1000))
 ```
 
-<p> *Group 1: ABB, Adecco, Credit Suisse, Julius Baer, LafargeHolcim, Richemont, Swatch, Swiss Life, Swiss Re, UBS, Zurich Insurance* <p>
-<p> *Group 2: Givaudan, Lonza, Nestle, Novartis, Roche, Swisscom* <p>
-<p> *Group 3: Geberit, SGS, Sika* <p>
+<p> **Group 1:** *ABB, Adecco, Credit Suisse, Julius Baer, LafargeHolcim, Richemont, Swatch, Swiss Life, Swiss Re, UBS, Zurich Insurance* <p>
+<p> **Group 2:** *Givaudan, Lonza, Nestle, Novartis, Roche, Swisscom* <p>
+<p> **Group 3:** *Geberit, SGS, Sika* <p>
 
 ```{r tabplot78}
 g2r = groups_returns(r, groups2)

@@ -10,22 +10,11 @@ library(cluster)
 load("./Data/returns_1d.Rda")
 R.utils::sourceDirectory("./Code", modifiedOnly = F)
 
-unlist(groups)
-
-groups[[1]] = c("Adecco", "Nestle")
-
-g = c()
-for (i in stocks) {g = c(g, ifelse(identical(names(which(unlist(groups) == i)), character(0)),
-                                   "Excluded", names(which(unlist(groups) == i))))}
-print(g)
 
 
-names(which(unlist(groups) == "asdf"))
+df = data.frame(matrix(unlist(groups), nrow=length(groups), byrow=T))
 
-identical(names(which(unlist(groups) == "dfgh")), character(0))
 
-ifelse(identical(names(which(unlist(groups) == "UBS")), character(0)), "Excluded",
-       names(which(unlist(groups) == "UBS")))
 
 
 par(mfrow = c(1,3))
