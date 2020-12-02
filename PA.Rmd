@@ -403,17 +403,15 @@ An intuitive approach to group stocks is to do so by industry. In the case of th
 <p> **Industrial:** *ABB, Geberit, Givaudan, LafargeHolcim, SGS* <p>
 <p> **Pharma:** *Lonza, Novartis, Roche, Sika* <p>
 
-To obtain the group returns, the daily mean value of the daily returns of all stocks within the group is calculated . Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. From this time series the mean returns, volatility and correlation matrix can be calculated from which the first two are shown in table \@ref(tab:grmrvol).
+To obtain the group returns, the daily mean value of the daily returns of all stocks within the group is calculated . Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. From this time series the mean returns, volatility and correlation matrix can be calculated from which the first two are shown in table \@ref(tab:grmrvol) and latter is shown in figure \@ref(fig:gcm).
 
 ```{r grmrvol}
 gr = groups_returns(returns, groups)
 gr_mr_vol = data.frame(colnames(gr[-1]), mean_returns(gr), volatilities(cov_mat(gr)), row.names = NULL)
-kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption = "groups with expected return and volatility", digits = 3, booktabs = T, linesep = "")
+kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption = "Mean returns and volatiltiy of groups", digits = 3, booktabs = T, linesep = "")
 ```
 
-It can already be seen that the values of volatility are lower overall than those of the individual shares. In the matrix below, the correlation of the individual groups is shown. As the returns are averaged within the groups, the values of the individual groups converge, resulting in a larger correlation coefficient.
-
-```{r, fig.cap = "Groups correlation", fig.height = 5}
+```{r gcm, fig.cap = "Correlation of groups", fig.height = 5}
 suppressWarnings(suppressMessages(print(gg_cor(cor_mat(gr), 4, 12, theme = custom_theme_markdown) + 
   scale_fill_gradient2(low = "cornflowerblue", high = "orangered2", mid = "honeydew", limit = c(-1,1), name = "Cor"))))
 ```
