@@ -253,7 +253,6 @@ ggplot(mapping = aes(sample = r[,"Swisscom"])) + stat_qq() + stat_qq_line(color 
 
 A second condition applies to the linear relationship of the stocks. The log-returns cannot show a perfect correlation between themselves, neither negative nor positive. This is described by a correlation coefficient of -1 respectively 1. If the determinant is 0, the system cannot be solved exactly. This situation occurs if shares have a correlation coefficient of 1 or -1. The system must be uniquely solvable to form the inverse of the covariance matrix $\Sigma^{-1}$.
 
-overfitting
 
 
 ## Minimum variance portfolio 
@@ -464,17 +463,17 @@ suppressWarnings(suppressMessages(print(gg_cor(cor_mat(g2r), 4, 12, theme = cust
 ```
 
 
-Further methods like kmeans or PAM etc could be considered but are not discussed here.
+Further methods like k-means or PAM etc. could be considered but are not discussed here.
 
 ## Bootstrap {#bootstrap}
 
-Bootstrapping is a statistical method of resampling. It allows to create a new sample with drawing from the existing sample. With 100 or more resampled data, each mean and variance of the samples can be analyzed. This method can be used to draw conclusion about a population from a sample.
+Bootstrapping is a statistical method of resampling. It allows to create a new sample with drawing from the existing sample. With 100 or more resampled data, each mean and variance of the samples can be analyzed. This method can be used to draw conclusion about a population from its sample.
 
 In this method a bootstrap process was made to analyze the robustness of the tangency portfolio weights when resampling all historical returns.
 
 All dates from the historical data were sampled in the same dimension, with replacing included. Which means that certain dates can occur multiple times. From each sampled date, the corresponding returns of each stock are added to the new data, consequently maintaining the daily differences between stocks. If replacing would not be included in the sampling method, the correlation matrix would remain constant to the one of the original data.
 
-One Bootstrap sample contains a different data, with which a new mean return of each stock and group and the corresponding covariance matrix is calculated. Those two variables are needed as input in the optimization function to calculate minimum variance portfolio, tangency portfolio of the 20 stocks and the four groups. With 100 bootstrap samples, 100 MVP’s and TP’s can be compared and analyzed. Additionally, the standard deviation of the resulting weights over those number of bootstrap samples can be studied. The standard deviation is computed with the 84-Quantil minus the 50-Quantil to achieve a more robust result, because this calculation is less vulnerable to outliers.
+One Bootstrap sample contains a different dataset, with which a new mean return of each stock and group and the corresponding covariance matrix is calculated. Those two variables are needed as input in the optimization function to calculate minimum variance portfolio, tangency portfolio of the 20 stocks and the four groups. With 100 bootstrap samples, 100 MVP’s and TP’s can be compared and analyzed. Additionally, the standard deviation of the resulting weights over those number of bootstrap samples can be studied. The standard deviation is computed with the 84-Quantil minus the 50-Quantil to achieve a more robust result, because this calculation is less vulnerable to outliers.
 
 ```{r gg4, fig.cap = 'Bootstrap samples efficiency frontier', fig.height = 4}
 bs_r = bootstrap(r); bs_gr = bootstrap(gr)
@@ -661,7 +660,7 @@ t11 = data.frame(is_r, os_r, row.names = "SMI")
 kable(t11, caption = "Sharpe ratio",  digits = 3, 
        booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
 ```
-The table \@ref(tab:tabplot11) describes the results of the cross-validation (\@ref(cross)) method of 20 stocks. As it can be seen and might be expected the in-sample performs much better than the out-of-sample. This is related to the fact that in-sample considers all the data for an optimization. Contrary to the out-of-sample where only four-fifths of the data is included in the optimisation. If a stock behaves differently in this one test section compared to the 4 training sections flowing into the optimisation, this stock can be easily over- or underfitted. This leads to a worse Sharpe ratio than the in-sample one. The consequences that can be drawn from this insight is, that firstly the in-sample Sharpe ratio should always be higher than the out-of-sample Sharpe ratio. Secondly, if the two Sharpe ratio differ clearly, the returns of each model differ as well. That means if we have similar returns over 20 years, in- and out-of-sample Sharpe ratio should be closer together, which is not the case here.
+The table \@ref(tab:tabplot11) describes the results of the cross-validation (\@ref(cross)) method of 20 stocks. As it can be seen and might be expected the in-sample performs much better than the out-of-sample. This is related to the fact that in-sample considers all the data for an optimization. Contrary to the out-of-sample where only four-fifths of the data is included in the optimization. If a stock behaves differently in this one test section compared to the 4 training sections flowing into the optimization, this stock can be easily over- or underfitted. This leads to a worse Sharpe ratio than the in-sample one. The consequences that can be drawn from this insight is, that firstly the in-sample Sharpe ratio should always be higher than the out-of-sample Sharpe ratio. Secondly, if the two Sharpe ratio differ clearly, the returns of each model differ as well. That means if we have similar returns over 20 years, in- and out-of-sample Sharpe ratio should be closer together, which is not the case here.
 
 <p> In the following two illustrations part of the bootstrap results can be seen. In the graphics the mean weights and the standard deviation over the 100 samples are shown. Figure \@ref(fig:mvpse) shows the MVP weights of the 20 stocks and figure \@ref(fig:tpse) the TP weights.<p>
 
@@ -686,14 +685,17 @@ gg_errorbar(stocks, tpw_r, tpw_sd_r, c(mintp, maxtp), "Weights", theme = custom_
 ## II. {#res2}
 
 ```{r tabplot12}
-t12 = data.frame(is_gr, os_gr, row.names = "Groups")
+t12 = data.frame(c(is_gr, is_g2r),
+                 c(os_gr, os_g2r), row.names = c("Group by industry", "Groups by correlation"))
 
-kable(t12, caption = "Sharpe ratio",  digits = 3, 
+kable(t12, caption = "Sharpe ratio",  digits = 3,
        booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
 ```
 
-Here in table \@ref(tab:tabplot12) the Sharpe ratio of in-and out-of-sample of the formed groups are presented. The first observation is, that the in-sample value has become smaller after this method was applied. The reason for this is, that there are less parameters to optimize with the grouping method. Instead of 20 different stocks there are now only 4 stocks respectively groups which can be optimized. That means with less parameters or data, less portfolio variations can be made to find the best possible optimization.
+Here in table \@ref(tab:tabplot12) the Sharpe ratio of in- and out-of-sample of the formed groups are presented. The first observation is, that the in-sample value has become smaller after the grouping method was applied. The reason for this is, that there are less parameters to optimize. Instead of 20 different stocks there are now only 3 or 4 stocks respectively groups which can be optimized. That means with less parameters or data, less portfolio variations can be made to find the best possible optimization. Between the two grouping methods though, the difference in parameters is to small to affect the Sharpe ratio in the way as mentioned before. Other impacts are more significant to the outcome. Although the SMI should have the highest in-sample Sharpe ratio because of the numerous parameters.
 However, the out-of-sample Sharpe ratio has increased. This is because with forming groups, stock returns of companies within the group are being averaged. Consequently, the group return is more stable over the time period. As described more detailed in results \@ref(res1), this leads to a better performance respectively a better Sharpe ratio. Therefore, also in- and out-of-sample are here closer together.
+
+In chapter \@ref(groupclust), cluster analysis is used to optimize the group collocation. Hence, more correlating stocks are put together to have a more diversifying portfolio. Consequently, the correlation between the groups shrunk in comparison to the correlation between the groups by industry. Further seen in table \@ref(tab:tabplot12), the Sharpe ratio of the new grouping method is much higher than grouping by industries which is a logical consequence of the diversification. In reality though, it is unlikely to invest in such a compiled portfolio, however it was made to find a method for grouping, which affects the Sharpe ratio positively.
 
 Below the second part of bootstrapping results is depicted. As mentioned in section \@ref(res1), the same is shown for the groups. Figure \@ref(fig:mvpsegr) illustrates the MVP weights and figure \@ref(fig:tpsegr) the TP weights.
 
@@ -708,15 +710,6 @@ gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(mintp, maxtp), "Weights", the
 
 As it is obvious to see and also visualized in figure \@ref(fig:gg4), is that TP weights have a higher standard deviation than MVP weights. That means the TP is more sensible to changes of returns than the MVP is. If the equation \@ref(eq:mvpw) of MVP and the equation \@ref(eq:tpw) of TP are considered, the MVP does not depend on the returns directly. Consequently different returns samples have not a large impact on the MVP. The small differences arise from the varying covariance matrix. But it can also be noticed that this matrix has not large deviations following the standard deviation of the MVP. Therefore bootstrap sampling of the returns does not influence the covariance matrix as much as the returns itself.
 
-```{r tabplot15}
-t15 = data.frame(c(is_gr, is_g2r),
-                 c(os_gr, os_g2r), row.names = c("Groups 4", "Groups 3"))
-
-kable(t15, caption = "Sharpe ratio",  digits = 3,
-       booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
-```
-
-In chapter \@ref(groupclust), cluster analysis is used to optimize the group collocation. With that more correlating stocks are put together to have a more diversifying portfolio. As it can be extracted directly from the two correlation matrices from grouping by industry (figure \@ref(fig:gcm)) and grouping by correlation (figure \@ref(fig:gcacm)), the correlation between the groups shrunk as expected. That means the grouping by correlation was successful. Further seen in table \@ref(tab:tabplot15)), the Sharpe ratio of the new grouping method is much higher than grouping by industries which is a logical consequence of the diversification. In reality though, it is unlikely to invest in such a compiled portfolio, however it was made to find a method for grouping which affected the Sharpe ratio positively.
 
 ## III. {#res3}
 
