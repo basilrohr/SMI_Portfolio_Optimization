@@ -59,7 +59,7 @@ gg_bootstrap_ef = function(ef, fxlim = 1, fylim = 1, size = 0.5, title = NULL, t
 
 gg_shrink2D = function(sr, srname, xlab, title = NULL, theme = NULL) {
   seq = seq(0, 1, length = length(sr[[1]]))
-  # colors = c("black", "orangered3", "cornflowerblue")
+  colors = c("darkseagreen4", "orangered3", "cornflowerblue")
   gg = ggplot()
   for (i in seq_along(sr)) {
     eval(substitute(expr = {gg = gg +
@@ -74,7 +74,7 @@ gg_shrink2D = function(sr, srname, xlab, title = NULL, theme = NULL) {
   }
   gg = gg + lims(y = c(-0.25, 1.25)) +
     labs(x = paste0(xlab, " shrinkage factor"), y = "Sharpe ratio", title = title, color = NULL) +
-    # scale_color_manual(values = colors) +
+    scale_color_manual(values = colors) +
     theme(legend.position = "bottom") +
     theme
   gg

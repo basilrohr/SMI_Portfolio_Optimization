@@ -54,7 +54,7 @@ Lange, min. eine halbe Seite
 For this paper historical data from the Swiss Market Index or (SMI) were used, the data are from the period from `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. The SMI covers approximately 80% of the total capitalization of the Swiss stock market. It is also a price index, which means that dividends are not included in the index. The SMI is always reviewed twice a year and, if necessary, reassembled. In our case, we use the composition per end of 2018. The reason for the 2018 composition is, that enough historical data for all those companies is available. The results shown in table \@ref(tab:tabplot2) are calculated with following two equations, daily logarithmic return \@ref(eq:LogR) and volatility \@ref(eq:Volatility). [1] [2]
 
 ## Logarithmic return
-The reason for using logarithmic returns is that the numbers take smaller values than discrete returns. Due to smaller values there is also a smaller variance, which influences fitting positively. As well historical daily data is used for the calculation of the logarithmic return. For later calculations the risk-free return has to be subtracted from the returns. For the sake of simplicity the risk-free rate is already deducted now. For the risk-free return $R_{f}$, shown in table \@ref(tab:tabplot1), the LIBOR interest rate is commonly used. Due to several negative incidents in the past the Swiss Average Rate Overnight (SARON) is used for the time period 2014-2020. SARON is a rate that is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [3] [4]
+The reason for using logarithmic returns is that the numbers take smaller values than discrete returns. Due to smaller values there is also a smaller variance, which influences fitting positively. For later calculations the risk-free return has to be subtracted from the returns. For the sake of simplicity the risk-free rate is already deducted now. For the risk-free return $R_{f}$, shown in table \@ref(tab:tabplot1), the LIBOR interest rate is commonly used. Due to several negative incidents in the past the Swiss Average Rate Overnight (SARON) is used for the time period 2014-2020. SARON is a rate that is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [3] [4]
 
 \begin{equation}
   R = R_{ln} - R_{f} = ln\left(\frac{x_t}{x_{t-1}}\right) - R_{f}
@@ -70,6 +70,8 @@ The reason for using logarithmic returns is that the numbers take smaller values
 ann_rf = data.frame(names(rf), round(rf * 252, 3), row.names = NULL)
 kable(ann_rf, col.names = c("Year", "Rate [%]"), caption = "Average overnight risk-free return per year in \\%", booktabs = T, linesep = "")
 ```
+
+\newpage
 
 ## Volatility (standard deviation)
 Volatility describes the risk of a stock or market index and is a statistical measure of the dispersion of the calculated logarithmic returns \@ref(eq:LogR). In general, the higher the volatility, the riskier the security.
@@ -102,6 +104,8 @@ The covariance is a numerical measure that describes the linear statistical rela
 <p> *$x$ = variable x* <p>
 <p> *$y$ = variable y* <p>
 <p> *$n$ = sample size* <p>
+
+\newpage
 
 \begin{equation}
   \rho_{i,j} = \frac{cov_{i,j}}{\sigma_{i}*\sigma_{j}}
@@ -171,7 +175,7 @@ gg_errorbar(stocks, mr, se_r, c(min, max), "Return [%]", theme = custom_theme_ma
 ```
 
 
-As can be seen, the standard error of expected mean return by groups do not show larger values as for example the individual shares *Sika* or *Geberit* do. Due to averaging returns the impact of the outliers is stabilized, therefore the standard error declines when grouping individual stocks.
+In the plot above (figure \@ref(fig:gg1)) you can see the logarithmic mean return with the standart errors for each stock. It is easy to see that stocks such as *Swisscom* and *Nestle* with low volatility also have a lower standard error. As well *ABB* and *Credit Suisse* show a high volatility and accordingly have higher values for the standart error. Figure \@ref(fig:gg1) and table \@ref(tab:tabplot2) can therefore be compared well together.
 
 \newpage
 
@@ -187,7 +191,7 @@ This formula is an approximation for the standard error of volatility, which is 
 <p> *$\sigma$ = standard deviation* <p>
 <p> *$n$ = sample size* <p>
 
-As shown in table \@ref(tab:tabplot5) respectively table \@ref(tab:tabplot6) the values of the standard error of volatility are much lower as the one of the returns. Therefore we will neglect the values for further calculations.
+As shown in table \@ref(tab:tabplot5) the values of the standard error of volatility are much lower as the one of the mean returns. This behavior will be clearly visible later in the chapter bootstrap. Furthermore, we will neglect the values for any further calculations.
 
 ```{r tabplot5}
 se_volr = data.frame(colnames(r[-1]), apply(r[,-1], 2, se_sd), row.names = NULL)
@@ -253,7 +257,6 @@ ggplot(mapping = aes(sample = r[,"Swisscom"])) + stat_qq() + stat_qq_line(color 
 ```
 
 A second condition applies to the linear relationship of the stocks. The log-returns cannot show a perfect correlation between themselves, neither negative nor positive. This is described by a correlation coefficient of -1 respectively 1. If the determinant is 0, the system cannot be solved exactly. This situation occurs if shares have a correlation coefficient of 1 or -1. The system must be uniquely solvable to form the inverse of the covariance matrix $\Sigma^{-1}$.
-
 
 
 ## Minimum variance portfolio 
@@ -391,11 +394,9 @@ Before any weighting of a portfolio is optimized, the Sharpe ratio of the SMI is
 # Methodology {#methodology}
 
 ## Grouping {#grouping}
-
-Grouping of assets is an approach to reduce the noise given by individual assets and therefore increase the Sharpe ratio. A more qualitative approach and a mathematical approach are applied.
+Grouping of stocks is an approach to reduce the noise given by individual assets and therefore increase the Sharpe ratio. A more qualitative approach and a mathematical approach are applied in this paper.
 
 ### Grouping by industry
-
 An intuitive approach to group stocks is to do so by industry. In the case of the SMI the stocks can be grouped as follows resulting in four groups:
 
 <p> **Consumer:** *Adecco, Nestle, Richemont, Swatch, Swisscom* <p>
@@ -412,8 +413,7 @@ kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption 
 ```
 
 ### Grouping with cluster analysis {#groupclust}
-
-In a second approach the grouping is made my sorting the euclidean distance. The group formation is based on the similarity measure, which is calculated here with Euclidean distances between two correlation coefficients. The formula is illustrated below.
+In a second approach the grouping is made by sorting the euclidean distance. The group formation is based on the similarity measure, which is calculated here with Euclidean distances between two correlation coefficients. The formula is illustrated below.
 
 \begin{equation}
   d_{1,2} = \sqrt{\sum_{j = 1}^{p}(x_{1} - x_{2})^{2}}
@@ -424,14 +424,11 @@ In a second approach the grouping is made my sorting the euclidean distance. The
 <p> *$x_{1}$ = stock 1* <p>
 <p> *$x_{2}$ = stock 2* <p>
 
-The Formula takes all column values of a first stock and calculates the squared difference to the column values of the second stock. These 20 values are summed up and the root is extracted from them. The result is the distance between the two stocks, and if it is done for all 20 stocks it results in a distance matrix. The algorithm sorts the values of the distance matrix with the method “complete”.
-The first step is (independent of methods) grouping the two stocks with the smallest distance. 
+The Formula takes all column values of a first stock and calculates the squared difference to the column values of the second stock. These 20 values are summed up and the root is extracted from them. The result is the distance between the two stocks, and if it is done for all 20 stocks it results in a distance matrix. The algorithm sorts the values of the distance matrix with the method “complete”. The first step is (independent of methods) grouping the two stocks with the smallest distance. 
 The second step is comparing the created group to single stocks or groups. The distance between a group ($x_{1},x_{2}$) and a stock $x_{3}$ is the maximum distance between a stock of the group and the single stock.\newline
 $d\langle \{x_{1},x_{2}\} , x_{3} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{2}, x_{3} \rangle)$. \newline
-For distances between groups, the maximum value is taken from the distances between each object of a group with the object of another group.
-For distance between group ($x_{1},x_{2}$) and ($x_{3},x_{4}$) with two objects (stocks) applies \newline
-$d\langle \{x_{1},x_{2}\} , \{x_{3},x_{4}\} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{1}, x_{4} \rangle, d\langle x_{2}, x_{3} \rangle, d\langle x_{2}, x_{4} \rangle)$. The third step is repeating the procedure with the new created distance matrix until only two groups remain. The outcome is a dendogram which is also part of the illustration in \@ref(fig:heatmap). It can be seen that the first step of grouping is the connection which is drawn lowest.
-
+For distances between groups, the maximum value is taken from the distances between each object of a group with the object of another group. For distance between group ($x_{1},x_{2}$) and ($x_{3},x_{4}$) with two objects (stocks) applies \newline
+$d\langle \{x_{1},x_{2}\} , \{x_{3},x_{4}\} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{1}, x_{4} \rangle, d\langle x_{2}, x_{3} \rangle, d\langle x_{2}, x_{4} \rangle)$. The third step is repeating the procedure with the new created distance matrix until only two groups remain. The outcome is a dendogram which is also part of the illustration in figure \@ref(fig:heatmap). It can be seen that the first step of grouping is the connection which is drawn lowest.
 
 
 ```{r heatmap, fig.cap = "Grouped by euclidean distance for stocks", fig.height = 6.5}
@@ -452,10 +449,9 @@ gr_mr_vol = data.frame(colnames(g2r[-1]), mean_returns(g2r), volatilities(cov_ma
 kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption = "groups with expected return and volatility", digits = 3, booktabs = T, linesep = "")
 ```
 
-Further methods like k-means or PAM etc. could be considered but are not discussed here.
+Further methods like k-means or PAM etc. could be considered but are not discussed in this paper.
 
 ## Bootstrap {#bootstrap}
-
 Bootstrapping is a statistical method of resampling. It allows to create a new sample with drawing from the existing sample. With 100 or more resampled data, each mean and variance of the samples can be analyzed. This method can be used to draw conclusion about a population from its sample.
 
 In this method a bootstrap process was made to analyze the robustness of the tangency portfolio weights when resampling all historical returns.
@@ -472,7 +468,6 @@ suppressMessages(suppressWarnings(print(gg_bootstrap_ef(bs_r$samples_ef_points, 
 In figure \@ref(fig:gg4) all bootstrap samples can be seen with their minimum variance portfolio, tangency portfolio and their efficiency frontier. Noticeable is the variance of the tangency portfolio in comparison to the minimum variance portfolio. This is due to the high standard errors of returns. Since the return is included in the calculation of the TP, but not in the MVP, a larger deviation can be seen.
 
 ## Cross validation {#crossvalidation}
-
 Cross validation is a model validation technique for assessing how a model will generalize to an independent data set. The data set is split into a training set used to train the model and a test set to evaluate its performance. This procedure is replicated multiple times until all data was once in the test set.
 
 In this case, the historical data is split into five sections and consequentially five models are trained as depicted in figure \@ref(fig:crossvalidation). The gray sections are the training sets and the red ones the test sets.
@@ -526,12 +521,12 @@ ggplot(sets_tpw) +
 
 Stocks like *Julius Baer* and *Sika* have similar weights across all models while *Lonza* for example varies significantly.
 
-## Shrinkage {#shrinkage}
+\newpage
 
+## Shrinkage {#shrinkage}
 Shrinkage is an approach with the goal to increase the out of sample Sharpe ratio by altering the inputs of the Markovitz optimization, namely the mean returns and covariance matrix.
 
 ### Shrinkage of mean returns
-
 The shrunk mean returns are calculated as in \@ref(eq:shrinkr).
 
 \begin{equation}
@@ -617,7 +612,6 @@ ggarrange(gg1, gg2, gg3, gg4, gg5)
 The zero crossing of the scaling factor in model three can be seen clearly. When working with mean returns shrinkage one has to be aware of this behavior.
 
 ### Shrinkage of correlation matrix
-
 The shrunk correlation matrix is calculated as in \@ref(eq:shrinkcor).
 
 \begin{equation}
@@ -637,11 +631,9 @@ There can also arise the case where for some shrinkage factor $\epsilon$ the sca
 \newpage
 
 # Results
-
 In this section the different approaches which were described in chapter \@ref(methodology) methodology are applied on the historical data. Section \@ref(res1) optimizes the entire SMI with 20 stocks. Section \@ref(res2) includes the optimization of the different grouping methods. Section \@ref(res3) applies the shrinkage.
 
 ## I. {#res1}
-
 
 ```{r tabplot11}
 t11 = data.frame(is_r, os_r, row.names = "SMI")
@@ -703,7 +695,6 @@ As it is obvious to see and also visualized in figure \@ref(fig:gg4), is that TP
 ## III. {#res3}
 
 ### Shrinkage factors analyzed separately
-
 The Sharpe ratio can be visualized as a function of the shrinking factor. Figure \@ref(fig:srplot) shows such a plot for the mean returns shrinkage factor.
 
 When looking at the SMI curve it can be seen that the highest Sharpe ratio is achieved with a shrinkage factor of about 0.05. This means that the mean returns are shrunk almost completely and therefore there is not much trust in them. This result is plausible, as the returns are very noisy. Further can be seen that the Sharpe ratio has a sharp bend and drop below zero. This is caused by the close to zero denominator of the tangency portfolio \@ref(eq:tpw) as described in chapter \@ref(shrinkage)
@@ -729,8 +720,9 @@ os_g2r_scor = unlist(out_of_sample_vec(sets_g2r, 1, seq(0, 1, 0.01)))
 gg_shrink2D(list(os_r_scor, os_gr_scor, os_g2r_scor), c("SMI", "Groups by industry", "Groups by cor"), "Correlation", theme = custom_theme_markdown)
 ```
 
-### Shrinkage factors analyzed simultaneously
+\newpage
 
+### Shrinkage factors analyzed simultaneously
 A further visualization is a three dimensional plot where the Sharpe ratio is plotted as a function of both shrinkage factors. The darker the area, the higher the Sharpe ratio.
 
 Figure \@ref(fig:srcorplot1) shows such a plot for the SMI. In the lower and left part of the plot the contour lines are very chaotic which is caused by the Sharpe ratio dropping quickly and below zero. The highest Sharpe ratio is achieved with a mean returns shrinkage factor of about 0.05 and a correlation shrinkage factor of close to one. This matches the result of the previous plots where the mean return shrinkage is better at improving the Sharpe ratio.
