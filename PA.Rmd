@@ -40,6 +40,7 @@ R.utils::sourceDirectory("./Code", modifiedOnly = F)
 ```
 
 # Introduction
+
 Markowitz' Optimization and other models of Finance require estimates of the expected return, the standard deviation and the correlations of individual assets.
 These estimates are subject to estimation errors, especially when they are based on short historical time series. This leads to the danger of over- fitting historical data and - in the case of portfolio optimization - of producing portfolios that perform well in backtesting, but perform poorly in the future.
 To overcome these problems, several approaches have been proposed. This includes Bayesian approaches, including shrinking Estimators for historical returns, volatilites and correlations. It also includes resampling/bootstrapping approaches, where expected returns, volatilites and correlations are modelled as random variables.
@@ -402,17 +403,12 @@ An intuitive approach to group stocks is to do so by industry. In the case of th
 <p> **Industrial:** *ABB, Geberit, Givaudan, LafargeHolcim, SGS* <p>
 <p> **Pharma:** *Lonza, Novartis, Roche, Sika* <p>
 
-To obtain the group returns, the daily mean value of the daily returns of all stocks within the group is calculated . Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. From this time series the mean returns, volatility and correlation matrix can be calculated from which the first two are shown in table \@ref(tab:grmrvol) and latter is shown in figure \@ref(fig:gcm).
+To obtain the group returns, the daily mean value of the daily returns of all stocks within the group is calculated . Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. From this time series the mean returns, volatility and correlation matrix can be calculated from which the first two are shown in table \@ref(tab:grmrvol).
 
 ```{r grmrvol}
 gr = groups_returns(returns, groups)
 gr_mr_vol = data.frame(colnames(gr[-1]), mean_returns(gr), volatilities(cov_mat(gr)), row.names = NULL)
 kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption = "Mean returns and Volatility of groups", digits = 3, booktabs = T, linesep = "")
-```
-
-```{r gcm, fig.cap = "Correlation of groups", fig.height = 5}
-suppressWarnings(suppressMessages(print(gg_cor(cor_mat(gr), 4, 12, theme = custom_theme_markdown) + 
-  scale_fill_gradient2(low = "cornflowerblue", high = "orangered2", mid = "honeydew", limit = c(-1,1), name = "Cor"))))
 ```
 
 ### Grouping with cluster analysis {#groupclust}
@@ -455,13 +451,6 @@ g2r = groups_returns(r, groups2)
 gr_mr_vol = data.frame(colnames(g2r[-1]), mean_returns(g2r), volatilities(cov_mat(g2r)), row.names = NULL)
 kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption = "groups with expected return and volatility", digits = 3, booktabs = T, linesep = "")
 ```
-
-
-```{r gcacm, fig.cap = "Groups correlation", fig.height = 5}
-suppressWarnings(suppressMessages(print(gg_cor(cor_mat(g2r), 4, 12, theme = custom_theme_markdown) + 
-  scale_fill_gradient2(low = "cornflowerblue", high = "orangered2", mid = "honeydew", limit = c(-1,1), name = "Cor"))))
-```
-
 
 Further methods like k-means or PAM etc. could be considered but are not discussed here.
 
@@ -713,75 +702,76 @@ As it is obvious to see and also visualized in figure \@ref(fig:gg4), is that TP
 
 ## III. {#res3}
 
-### Shrinking factors analyzed separately
-The Sharpe ratio can be visualized as a function of the shrinking factor. Figure \@ref(fig:gg20) shows such a plot for the return shrinking factor. The global maxima are highlighted with points and their coordinates. It can be seen that the highest Sharpe ratio for the SMI is achieved with a shrinking factor of about two thirds. For the groups on the other hand shrinking does not lead to an improvement of the Sharpe ratio, as the highest Sharpe ratio is achieved at shrinking factor of zero which means that the returns are not altered. For the SMI it is visible that close to the shrinking factor one the line is interrupted. This implies that the corresponding Sharpe ratio is below zero which is not shown in the plot. These outliers are caused by extreme portfolio weights which are obtained at these shrinking factors. Extreme portfolio weights are obtained through near-singularity of the covariance matrix.
+### Shrinkage factors analyzed separately
 
-```{r gg20, fig.cap = 'Sharpe ratio as a function of return shrinking factor',fig.height = 4}
+The Sharpe ratio can be visualized as a function of the shrinking factor. Figure \@ref(fig:srplot) shows such a plot for the mean returns shrinkage factor.
+
+When looking at the SMI curve it can be seen that the highest Sharpe ratio is achieved with a shrinkage factor of about 0.05. This means that the mean returns are shrunk almost completely and therefore there is not much trust in them. This result is plausible, as the returns are very noisy. Further can be seen that the Sharpe ratio has a sharp bend and drop below zero. This is caused by the close to zero denominator of the tangency portfolio \@ref(eq:tpw) as described in chapter \@ref(shrinkage)
+
+For the two group curves the result is inverted. As the grouping of the stocks already reduces the noise significantly, shrinkage does show almost no improvement over non-shrunk mean returns. The groups by correlation do show a significantly higher Sharpe ratio than the grouping by industry and it is also higher than the one of the SMI.
+
+```{r srplot, fig.cap = 'Sharpe ratio as a function of return shrinking factor',fig.height = 4}
 os_r_sr = unlist(out_of_sample_vec(sets_r, seq(0, 1, 0.01)))
 os_gr_sr = unlist(out_of_sample_vec(sets_gr, seq(0, 1, 0.01)))
 os_g2r_sr = unlist(out_of_sample_vec(sets_g2r, seq(0, 1, 0.01)))
 
-gg_shrinking2D(os_r_sr, os_gr_sr, os_g2r_sr, "SMI", "Groups 4", "Groups 3", "Return", theme = custom_theme_markdown)
+gg_shrink2D(list(os_r_sr, os_gr_sr, os_g2r_sr), c("SMI", "Groups by industry", "Groups by cor"), "Return", theme = custom_theme_markdown)
 ```
 
-Figure \@ref(fig:gg21) shows the same plot for the correlation shrinking factor. The highest Sharpe ratio for the SMI is achieved with a shrinking factor of about one third and for the groups of close to one.
+Figure \@ref(scorplot) shows the same plot for the correlation shrinkage factor. The highest Sharpe ratio for the SMI is achieved with a shrinkage factor of about one third. This result is similar to the one obtained in figure \@ref(fig:srplot) as for the groups shrinkage does not have a great impact.
+The highest Sharpe ratio is again achieved by the groups by correlation.
 
-```{r gg21, fig.cap = 'Sharpe ratio as a function of correlation shrinking factor', fig.height = 4}
+```{r scorplot, fig.cap = 'Sharpe ratio as a function of correlation shrinking factor', fig.height = 4}
 os_r_scor = unlist(out_of_sample_vec(sets_r, 1, seq(0, 1, 0.01)))
 os_gr_scor = unlist(out_of_sample_vec(sets_gr, 1, seq(0, 1, 0.01)))
 os_g2r_scor = unlist(out_of_sample_vec(sets_g2r, 1, seq(0, 1, 0.01)))
 
-gg_shrinking2D(os_r_scor, os_gr_scor, os_g2r_scor, "SMI", "Groups 4", "Groups 3", "Correlation", theme = custom_theme_markdown)
+gg_shrink2D(list(os_r_scor, os_gr_scor, os_g2r_scor), c("SMI", "Groups by industry", "Groups by cor"), "Correlation", theme = custom_theme_markdown)
 ```
 
-It can be concluded that for the SMI shrinking does make a noticeable difference in regard of increasing the Sharpe ratio. It is to note that the shrinking factors of the return and correlation are equal in regard of the deviation from the original values. The optimal return shrinking factor is about two thirds (no shrinking at value 0) and the one of the correlation about one third (no shrinking at value 1) which is in both cases a deviation of about two thirds from the original values.
+### Shrinkage factors analyzed simultaneously
 
-In the case of the groups shrinking does not have proven to make a noticeable impact. Shrinking the returns does worsen the Sharpe ratio and Shrinking the correlation does only make a slight difference.
-The conclusion of the SMI above also holds true here, as both shrinking factors deviate approximately the same from their original values, which in this case is no or almost no deviation.
+A further visualization is a three dimensional plot where the Sharpe ratio is plotted as a function of both shrinkage factors. The darker the area, the higher the Sharpe ratio.
 
-### Shrinking factors analyzed simultaneously
-A further visualization is a three dimensional plot where the Sharpe ratio is plotted as a function of both shrinking coefficients. The points of the maxima and their values are also displayed.
+Figure \@ref(fig:srcorplot1) shows such a plot for the SMI. In the lower and left part of the plot the contour lines are very chaotic which is caused by the Sharpe ratio dropping quickly and below zero. The highest Sharpe ratio is achieved with a mean returns shrinkage factor of about 0.05 and a correlation shrinkage factor of close to one. This matches the result of the previous plots where the mean return shrinkage is better at improving the Sharpe ratio.
 
-Figure \@ref(fig:gg22) shows such a plot for the SMI. The outliers where the Sharpe ratio drops below zero can also be seen in this plot in the top left corner, although only on the lower third of the correlation shrinking factor. The highest Sharpe ratio is achieved at a correlation shrinking factor of about one third again but a return shrinking factor of zero meaning the original values are used. Varying both shrinking factors together yields the same Sharpe ratio as in \@ref(fig:gg21) where only the correlation shrinking factor is varied. Noticeable is that the major part of the plot area has Sharpe ratios which are very close to each other.
-
-```{r gg22, fig.cap = 'SMI Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
+```{r srcorplot1, fig.cap = 'SMI Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
 grid = expand.grid(seq(0, 1, by = 0.05), seq(0, 1, by = 0.05))
 os_r_sr_scor = unlist(out_of_sample_vec(sets_r, grid[,1], grid[,2]))
 
-gg_shrinking3D(grid, os_r_sr_scor, theme = custom_theme_markdown)
+gg_shrink3D(grid, os_r_sr_scor, theme = custom_theme_markdown)
 ```
 
-Figure \@ref(fig:gg23) shows the three dimensional plot for the groups. Here, a much smaller fraction of the plot area shows Sharpe ratios which are similarly high. The highest Sharpe ratio is achieved at a correlation shrinking factor of close to one and a return shrinking factor of zero. Varying both shrinking factors toghether yields also the same Sharpe ratio as in \@ref(fig:gg21) were only the correlation shrinking factor is varied.
+Figure \@ref(fig:srcorplot2) shows the three dimensional plot for the groups by industry and figure \@ref(fig:srcorplot3) for the groups by correlation. Both plots are very similar in their general structure. The groups by industry also show a drop in Sharpe ratio in the lower portion while the groups by correlation does not. Overall, latter do show a Sharpe ratio which is about 0.3 greater than the groups by industry.
 
-```{r gg23, fig.cap = 'Groups Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
+```{r srcorplot2, fig.cap = 'Groups Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
 os_gr_sr_scor = unlist(out_of_sample_vec(sets_gr, grid[,1], grid[,2]))
 
-gg_shrinking3D(grid, os_gr_sr_scor, theme = custom_theme_markdown)
+gg_shrink3D(grid, os_gr_sr_scor, theme = custom_theme_markdown)
 ```
 
-```{r gg24, fig.cap = 'Groups Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
+```{r srcorplot3, fig.cap = 'Groups Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
 os_g2r_sr_scor = unlist(out_of_sample_vec(sets_g2r, grid[,1], grid[,2]))
 
-gg_shrinking3D(grid, os_g2r_sr_scor, theme = custom_theme_markdown)
+gg_shrink3D(grid, os_g2r_sr_scor, theme = custom_theme_markdown)
 ```
 
+Table \@ref(tab:srcomptab) provides an overview over all Sharpe investigated Sharpe ratios, namely in sample (IS), out of sample (OS) and out of sample with applied Shrinkage (OS Shrinkage).
 
-To conclude these results, it can be said that shrinking of the correlation has a greater impact than shrinking of the return and can result in higher Sharpe ratios, although not in all cases. Table \@ref(tab:tabplot20) provides an overview.
-
-```{r tabplot20}
+```{r srcomptab}
 t20 = data.frame(c(is_r, is_gr, is_g2r),
                  c(os_r, os_gr, os_g2r),
                  c(max(os_r_sr_scor), max(os_gr_sr_scor), max(os_g2r_sr_scor)), row.names = c("SMI", "Groups 4", "Groups 3"))
 
 kable(t20, caption = "Sharpe ratio",  digits = 3,
-       booktabs = T, linesep = "", col.names = c("In sample", "Out of sample", "Out of sample shrinking"))
+       booktabs = T, linesep = "", col.names = c("IS", "OS", "OS Shrinkage"))
 ```
-
-
 
 # Conclusion
 
+It can be concluded, that the best improvement of Sharpe ratio is achieved by grouping by correlation with the help of cluster analysis methods. Shrinkage can also improve the Sharpe ratio slightly on already optimized groups and more significantly on ungrouped assets as in the case of the SMI.
 
+Kapitel noch ausbauen, aber Kernaussage ist jene von oben
 
 \newpage
 

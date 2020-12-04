@@ -45,7 +45,8 @@ gg_bootstrap_ef = function(ef, fxlim = 1, fylim = 1, size = 0.5, title = NULL, t
   }
   mvpp = t(sapply(ef, function(x){mvp_point(x)}))
   tpp = t(sapply(ef, function(x){tp_point(x)}))
-  gg = gg + geom_point(aes(x = mvpp[,1], y = mvpp[,2], color = "MVP"), size = size) +
+  gg = gg +
+    geom_point(aes(x = mvpp[,1], y = mvpp[,2], color = "MVP"), size = size) +
     geom_point(aes(x = tpp[,1], y = tpp[,2], color = "TP"), size = size) +
     lims(x = fxlim * c(0, 5), y = fylim * c(-0.2, 0.6)) +
     labs(x = "Volatility [%]", y = "Expected return [%]", title = title, color = NULL) +
@@ -56,45 +57,42 @@ gg_bootstrap_ef = function(ef, fxlim = 1, fylim = 1, size = 0.5, title = NULL, t
   gg
 }
 
-gg_shrinking2D = function(x1, x2, x3, x1_name, x2_name, x3_name, xlab, title = NULL, theme = NULL) {
-  seq = seq(0, 1, length = length(x1))
-  gg = ggplot() +
-    geom_line(aes(x = seq, y = x1, color = paste0(x1_name, "\nMax(", format(round(seq[which.max(x1)], 2), nsmall = 2),
-                                                  "/", format(round(max(x1), 2), nsmall = 2), ")"))) +
-    geom_line(aes(x = seq, y = x2, color = paste0(x2_name, "\nMax(", format(round(seq[which.max(x2)], 2), nsmall = 2),
-                                                  "/", format(round(max(x2), 2), nsmall = 2), ")"))) +
-    geom_line(aes(x = seq, y = x3, color = paste0(x3_name, "\nMax(", format(round(seq[which.max(x3)], 2), nsmall = 2),
-                                                  "/", format(round(max(x3), 2), nsmall = 2), ")"))) +
-    geom_segment(aes(x = seq[which.max(x1)], y = -Inf, xend = seq[which.max(x1)],
-                     yend = max(x1)), color = "cornflowerblue", linetype = 2) +
-    geom_point(aes(x = seq[which.max(x1)], y = max(x1)), color = "cornflowerblue") +
-    geom_segment(aes(x = seq[which.max(x2)], y = -Inf, xend = seq[which.max(x2)],
-                     yend = max(x2)), color = "orangered3", linetype = 2) +
-    geom_point(aes(x = seq[which.max(x2)], y = max(x2)), color = "orangered3") +
-    geom_segment(aes(x = seq[which.max(x3)], y = -Inf, xend = seq[which.max(x3)],
-                     yend = max(x3)), color = "black", linetype = 2) +
-    geom_point(aes(x = seq[which.max(x3)], y = max(x3)), color = "black") +
-    labs(x = paste0(xlab, " shrinking factor"), y = "Sharpe ratio", title = title, color = NULL) +
-    lims(y = c(-0.25, 1.2)) +
-    scale_color_manual(values = c("black", "orangered3", "cornflowerblue")) +
+gg_shrink2D = function(sr, srname, xlab, title = NULL, theme = NULL) {
+  seq = seq(0, 1, length = length(sr[[1]]))
+  # colors = c("black", "orangered3", "cornflowerblue")
+  gg = ggplot()
+  for (i in seq_along(sr)) {
+    eval(substitute(expr = {gg = gg +
+      geom_line(aes(x = seq, y = sr[[i]],
+                    color = paste0(srname[i], "\nmax at (",
+                                   format(round(seq[which.max(sr[[i]])], 2), nsmall = 2), "/",
+                                   format(round(max(sr[[i]]), 2), nsmall = 2), ")"))) +
+      geom_segment(aes(x = seq[which.max(sr[[i]])], y = -Inf, xend = seq[which.max(sr[[i]])],
+                       yend = max(sr[[i]])), linetype = 2) +
+      geom_point(aes(x = seq[which.max(sr[[i]])], y = max(sr[[i]])))},
+      env = list(i = i)))
+  }
+  gg = gg + lims(y = c(-0.25, 1.25)) +
+    labs(x = paste0(xlab, " shrinkage factor"), y = "Sharpe ratio", title = title, color = NULL) +
+    # scale_color_manual(values = colors) +
     theme(legend.position = "bottom") +
     theme
   gg
 }
 
-gg_shrinking3D = function(grid, z, title = NULL, theme = NULL) {
+gg_shrink3D = function(grid, z, title = NULL, theme = NULL) {
   gg = ggplot(mapping = aes(x = grid[,2], y = grid[,1], z = z)) +
     geom_raster(aes(fill = z), interpolate = T) +
     stat_contour(bins = 30, color = "black", alpha = 0.5) +
     scale_fill_gradientn(colors = c("honeydew", "brown1", "red4"), values = c(0, 0.8, 1),
                          name = "Sharpe ratio") +
-    geom_point(aes(x = grid[,2][which.max(z)], y = grid[,1][which.max(z)]), color = "grey") +
-    geom_text(aes(x = grid[,2][which.max(z)], y = grid[,1][which.max(z)],
-                  label = paste0("x = ", format(round(grid[,2][which.max(z)], 2), nsmall = 2),
-                                 "\ny = ", format(round(grid[,1][which.max(z)], 2), nsmall = 2),
-                                 "\nz = ", format(round(max(z), 2), nsmall = 2))),
-              color = "grey", vjust = -0.2) +
+    # geom_point(aes(x = grid[,2][which.max(z)], y = grid[,1][which.max(z)]), color = "grey") +
+    # geom_text(aes(x = grid[,2][which.max(z)], y = grid[,1][which.max(z)],
+    #               label = paste0("x = ", format(round(grid[,2][which.max(z)], 2), nsmall = 2),
+    #                              "\ny = ", format(round(grid[,1][which.max(z)], 2), nsmall = 2),
+    #                              "\nz = ", format(round(max(z), 2), nsmall = 2))),
+    #           color = "grey", vjust = -0.2) +
     labs(x = "Correlation shrinking coefficient", y = "Return shrinking coefficient", title = title) +
     theme
-  return(gg)
+  gg
 }
