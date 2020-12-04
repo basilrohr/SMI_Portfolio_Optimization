@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.10.30)  4 DEC 2020 14:14
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020) (preloaded format=pdflatex 2020.10.30)  4 DEC 2020 15:29
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -883,7 +883,7 @@ m/lmri8.pfb></Users/maurice/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lm
 sy6.pfb></Users/maurice/Library/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy8.
 pfb></Users/maurice/Library/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symb
 ols/msam7.pfb>
-Output written on PA.pdf (13 pages, 771671 bytes).
+Output written on PA.pdf (13 pages, 772078 bytes).
 PDF statistics:
  661 PDF objects out of 1000 (max. 8388607)
  565 compressed objects within 6 object streams

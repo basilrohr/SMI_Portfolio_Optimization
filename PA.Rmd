@@ -428,7 +428,7 @@ The Formula takes all column values of a first stock and calculates the squared 
 The second step is comparing the created group to single stocks or groups. The distance between a group ($x_{1},x_{2}$) and a stock $x_{3}$ is the maximum distance between a stock of the group and the single stock.\newline
 $d\langle \{x_{1},x_{2}\} , x_{3} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{2}, x_{3} \rangle)$. \newline
 For distances between groups, the maximum value is taken from the distances between each object of a group with the object of another group. For distance between group ($x_{1},x_{2}$) and ($x_{3},x_{4}$) with two objects (stocks) applies \newline
-$d\langle \{x_{1},x_{2}\} , \{x_{3},x_{4}\} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{1}, x_{4} \rangle, d\langle x_{2}, x_{3} \rangle, d\langle x_{2}, x_{4} \rangle)$. The third step is repeating the procedure with the new created distance matrix until only two groups remain. The outcome is a dendogram which is also part of the illustration in figure \@ref(fig:heatmap). It can be seen that the first step of grouping is the connection which is drawn lowest.
+$d\langle \{x_{1},x_{2}\} , \{x_{3},x_{4}\} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{1}, x_{4} \rangle, d\langle x_{2}, x_{3} \rangle, d\langle x_{2}, x_{4} \rangle)$. The third step is repeating the procedure with the new created distance matrix until only two groups remain. The outcome is a dendogram which is also part of the illustration in figure \@ref(fig:heatmap). It can be seen that the first step of grouping is the connection which is drawn lowest. [10]
 
 
 ```{r heatmap, fig.cap = "Grouped by euclidean distance for stocks", fig.height = 6.5}
@@ -796,6 +796,9 @@ EECS Department, The University of Michigan, pp.1-2.
 
 [9] D. G. Leuenberger (1998). Investment Science. 
 Published by: Oxford University Press, New York.
+
+[10] A. Ruckstuhl (2020). Statistisches Data Mining.
+School of Engineering, Zurich University of Applied Science
 
 \newpage
 
