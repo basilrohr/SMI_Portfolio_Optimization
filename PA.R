@@ -14,6 +14,9 @@ R.utils::sourceDirectory("./Code", modifiedOnly = F)
 
 df = data.frame(matrix(unlist(groups), nrow=length(groups), byrow=T))
 
+x = unlist(groups)
+
+y = setNames(unlist(groups, use.names = F), rep(names(groups), lengths(groups)))
 
 
 

@@ -328,10 +328,12 @@ server = function(input, output, session) {
                      mr = c(mr, gmr), row.names = NULL)
     g = c()
     for (i in efp$n[1:length(colnames(r[-1]))]) {
-      g = c(g, ifelse(identical(names(which(unlist(g_react()) == i)), character(0)),
-                      "Excluded0", names(which(unlist(g_react()) == i))))
+      g = c(g, ifelse(identical(names(which(setNames(unlist(g_react(), use.names = F), rep(names(g_react()), lengths(g_react()))) == i)), character(0)),
+                      "Excluded", names(which(setNames(unlist(g_react(), use.names = F), rep(names(g_react()), lengths(g_react()))) == i))))
     }
-    efp$g = c(substr(g, 1, nchar(g)-1), colnames(gr[-1]))
+    print(g)
+    efp$g = c(g, colnames(gr[-1]))
+    print(efp)
     efp
   })
   
@@ -362,9 +364,6 @@ server = function(input, output, session) {
       geom_text_repel(data = ef_react(), aes(x = vol, y = mr, label = n, color = g), size = 4) +
       lims(x = fxlim * c(0, 3), y = fylim * c(-0.1, 0.2)) +
       labs(x = "Volatility [%]", y = "Expected return [%]", color = NULL) +
-      # scale_color_manual(values = c("MVP" = "cornflowerblue", "TP" = "orangered3",
-      #                               "Consumer" = "lightblue4", "Industrial" = "forestgreen",
-      #                               "Pharma" = "tan2", "Finance" = "firebrick2")) +
       guides(fill=guide_legend(ncol = 2)) +
       theme(legend.position = "bottom") +
       custom_theme_shiny
