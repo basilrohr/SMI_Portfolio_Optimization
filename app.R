@@ -51,7 +51,7 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                              plotOutput("r_cor", height = "600px")),
                                     tabPanel("Risk-free rate",
                                              dataTableOutput("rf", width = "90%")))))),
-                tabPanel("Groups",
+                tabPanel("Grouping",
                          fluidRow(
                            column(8,
                                   strong("Groups"),
@@ -140,11 +140,11 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                            column(4,
                                   plotOutput("effFrontierBootstrapPlot") %>% withSpinner,
                                   actionButton("bootstrapButton", "Redo bootstrap")))),
-                tabPanel("Shrinking",
+                tabPanel("Sharpe ratios",
                          fluidRow(
-                           column(5,
+                           column(4,
                                   plotOutput("returnShrinking")),
-                           column(5,
+                           column(4,
                                   plotOutput("correlationShrinking")))),
                 tabPanel("About the authors",
                          fluidRow(
@@ -459,8 +459,8 @@ server = function(input, output, session) {
                                        interval = input$intervalButton))
     os_gr_sr = unlist(out_of_sample_vec(cross_validation_sets_gr_react(), seq(0, 1, 0.01),
                                         interval = input$intervalButton))
-    gg_shrinking2D(os_r_sr, os_gr_sr, "SMI", "Groups", "Return",
-                   "Sharpe ratio as a function of return shrinkage factor", custom_theme_shiny)
+    gg_shrink2D(list(os_r_sr, os_gr_sr), c("SMI", "Groups"), "Return",
+                "Sharpe ratio as a function of return shrinkage factor", custom_theme_shiny)
   })
   
   output$correlationShrinking = renderPlot({
@@ -468,8 +468,8 @@ server = function(input, output, session) {
                                          interval = input$intervalButton))
     os_gr_scor = unlist(out_of_sample_vec(cross_validation_sets_gr_react(), 1, seq(0, 1, 0.01),
                                           interval = input$intervalButton))
-    gg_shrinking2D(os_r_scor, os_gr_scor, "SMI", "Groups", "Correlation",
-                   "Sharpe ratio as a function of return shrinkage factor", custom_theme_shiny)
+    gg_shrink2D(list(os_r_scor, os_gr_scor), c("SMI", "Groups"), "Correlation",
+                "Sharpe ratio as a function of correlation shrinkage factor", custom_theme_shiny)
   })
   
 }

@@ -12,6 +12,12 @@ R.utils::sourceDirectory("./Code", modifiedOnly = F)
 
 
 
+
+myfunc <- function(v1) {   s <- substitute(v1);   if (length(s) == 1)     deparse(s)   else     sub("\\(.", "", s[2]) }
+
+myfunc(t[1])
+
+
 df = data.frame(matrix(unlist(groups), nrow=length(groups), byrow=T))
 
 x = unlist(groups)

@@ -59,17 +59,21 @@ gg_bootstrap_ef = function(ef, fxlim = 1, fylim = 1, size = 0.5, title = NULL, t
 
 gg_shrink2D = function(sr, srname, xlab, title = NULL, theme = NULL) {
   seq = seq(0, 1, length = length(sr[[1]]))
-  colors = c("darkseagreen4", "orangered3", "cornflowerblue")
+  labels = numeric(length(srname))
+  for (i in seq_along(srname)) {
+    labels[i] = paste0(srname[i], "\nmax at (",
+                       format(round(seq[which.max(sr[[i]])], 2), nsmall = 2), "/",
+                       format(round(max(sr[[i]]), 2), nsmall = 2), ")")
+  }
+  colors = c("black", "orangered3", "cornflowerblue")
+  colors = colors[1:length(srname)]
+  names(colors) = labels
   gg = ggplot()
   for (i in seq_along(sr)) {
-    eval(substitute(expr = {gg = gg +
-      geom_line(aes(x = seq, y = sr[[i]],
-                    color = paste0(srname[i], "\nmax at (",
-                                   format(round(seq[which.max(sr[[i]])], 2), nsmall = 2), "/",
-                                   format(round(max(sr[[i]]), 2), nsmall = 2), ")"))) +
+    eval(substitute(expr = {gg = gg + geom_line(aes(x = seq, y = sr[[i]], color = labels[i])) +
       geom_segment(aes(x = seq[which.max(sr[[i]])], y = -Inf, xend = seq[which.max(sr[[i]])],
-                       yend = max(sr[[i]])), linetype = 2) +
-      geom_point(aes(x = seq[which.max(sr[[i]])], y = max(sr[[i]])))},
+                       yend = max(sr[[i]])), color = colors[i], linetype = 2) +
+      geom_point(aes(x = seq[which.max(sr[[i]])], y = max(sr[[i]])), color = colors[i])},
       env = list(i = i)))
   }
   gg = gg + lims(y = c(-0.25, 1.25)) +
@@ -83,16 +87,19 @@ gg_shrink2D = function(sr, srname, xlab, title = NULL, theme = NULL) {
 gg_shrink3D = function(grid, z, title = NULL, theme = NULL) {
   gg = ggplot(mapping = aes(x = grid[,2], y = grid[,1], z = z)) +
     geom_raster(aes(fill = z), interpolate = T) +
-    stat_contour(bins = 30, color = "black", alpha = 0.5) +
+    stat_contour(bins = 20, color = "black", alpha = 0.2) +
     scale_fill_gradientn(colors = c("honeydew", "brown1", "red4"), values = c(0, 0.8, 1),
-                         name = "Sharpe ratio") +
-    # geom_point(aes(x = grid[,2][which.max(z)], y = grid[,1][which.max(z)]), color = "grey") +
-    # geom_text(aes(x = grid[,2][which.max(z)], y = grid[,1][which.max(z)],
-    #               label = paste0("x = ", format(round(grid[,2][which.max(z)], 2), nsmall = 2),
-    #                              "\ny = ", format(round(grid[,1][which.max(z)], 2), nsmall = 2),
-    #                              "\nz = ", format(round(max(z), 2), nsmall = 2))),
-    #           color = "grey", vjust = -0.2) +
-    labs(x = "Correlation shrinking coefficient", y = "Return shrinking coefficient", title = title) +
+                         name = paste0("Sharpe ratio max at", "\n(",
+                                       format(round(grid[,2][which.max(z)], 2), nsmall = 2), "/",
+                                       format(round(grid[,1][which.max(z)], 2), nsmall = 2), "/",
+                                       format(round(max(z), 2), nsmall = 2), ")")) +
+    geom_segment(aes(x = grid[,2][which.max(z)], y = -Inf, xend = grid[,2][which.max(z)],
+                     yend = grid[,1][which.max(z)]), color = "white", linetype = 2) +
+    geom_segment(aes(x = -Inf, y = grid[,1][which.max(z)], xend = grid[,2][which.max(z)],
+                     yend = grid[,1][which.max(z)]), color = "white", linetype = 2) +
+    geom_point(aes(x = grid[,2][which.max(z)], y = grid[,1][which.max(z)]), color = "white") +
+    coord_fixed() +
+    labs(x = "Correlation shrinkage coefficient", y = "Return shrinkage coefficient", title = title) +
     theme
   gg
 }
