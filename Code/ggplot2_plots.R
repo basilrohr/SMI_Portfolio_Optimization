@@ -88,8 +88,8 @@ gg_shrink3D = function(grid, z, title = NULL, theme = NULL) {
   gg = ggplot(mapping = aes(x = grid[,2], y = grid[,1], z = z)) +
     geom_raster(aes(fill = z), interpolate = T) +
     stat_contour(bins = 20, color = "black", alpha = 0.2) +
-    scale_fill_gradientn(colors = c("honeydew", "brown1", "red4"), values = c(0, 0.8, 1),
-                         name = paste0("Sharpe ratio max at", "\n(",
+    scale_fill_gradientn(colors = c("honeydew", "red2", "red4"), values = c(0, 0.8, 1),
+                         name = paste0("Sharpe ratio", "\nmax at (",
                                        format(round(grid[,2][which.max(z)], 2), nsmall = 2), "/",
                                        format(round(grid[,1][which.max(z)], 2), nsmall = 2), "/",
                                        format(round(max(z), 2), nsmall = 2), ")")) +
@@ -100,6 +100,7 @@ gg_shrink3D = function(grid, z, title = NULL, theme = NULL) {
     geom_point(aes(x = grid[,2][which.max(z)], y = grid[,1][which.max(z)]), color = "white") +
     coord_fixed() +
     labs(x = "Correlation shrinkage coefficient", y = "Return shrinkage coefficient", title = title) +
+    theme(legend.title = element_text(size = 12)) +
     theme
   gg
 }
