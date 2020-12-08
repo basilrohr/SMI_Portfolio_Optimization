@@ -10,7 +10,10 @@ library(cluster)
 load("./Data/returns_1d.Rda")
 R.utils::sourceDirectory("./Code", modifiedOnly = F)
 
-
+tt = groups_returns(returns, groups3)
+m = mean_returns(tt)
+co = cov_mat(tt)
+tp_weights(co, m)
 
 
 myfunc <- function(v1) {   s <- substitute(v1);   if (length(s) == 1)     deparse(s)   else     sub("\\(.", "", s[2]) }

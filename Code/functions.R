@@ -10,6 +10,9 @@ groups2 = list("Group 1" = stocks[c(1, 2, 3, 6, 7, 11, 15, 16, 17, 19, 20)],
                "Group 2" = stocks[c(5, 8, 9, 10, 12, 18)],
                "Group 3" = stocks[c(4, 13, 14)])
 
+groups3 = list("Group 1" = stocks[c(1, 2, 3, 6, 7, 11, 15, 16, 17, 19, 20)],
+               "Group 2" = stocks[c(5, 8, 9, 10, 12, 18, 4, 13, 14)])
+
 groups_returns = function(returns, groups) {
   groups_returns = data.frame(matrix(nrow = nrow(returns), ncol = length(groups)+1))
   rownames(groups_returns) = NULL; colnames(groups_returns) = c("Date", names(groups))
