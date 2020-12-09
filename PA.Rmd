@@ -472,14 +472,22 @@ Further methods like k-means or PAM etc. could be considered but are not discuss
 
 ## Bootstrap {#bootstrap}
 
-**schrittweise erklaeren z.b wie stdm skript seite 70**
 Bootstrapping is a statistical method of resampling. It allows to create a new sample with drawing from the existing sample. With 100 or more resampled data, each mean and variance of the samples can be analyzed. This method can be used to draw conclusion about a population from its sample.
 
 In this method a bootstrap process was made to analyze the robustness of the tangency portfolio weights when resampling all historical returns.
 
-All dates from the historical data were sampled in the same dimension, with replacing included. Which means that certain dates can occur multiple times. From each sampled date, the corresponding returns of each stock are added to the new data, consequently maintaining the daily differences between stocks. If replacing would not be included in the sampling method, the correlation matrix would remain constant to the one of the original data.
+**Step 1**
+The dates of the historical data is being sampled (using `sample()`) in the same dimension, with replacing included. In other words, the row numbers of the historical is being sampled. With the argument `replace = TRUE` ensures, that certain dates, respectively rows can occur multiple times. If replacing would not be included in the sampling method, the correlation matrix would remain constant to the one of the original data.
 
-One Bootstrap sample contains a different dataset, with which a new mean return of each stock and group and the corresponding covariance matrix is calculated. Those two variables are needed as input in the optimization function to calculate minimum variance portfolio, tangency portfolio of the 20 stocks and the four groups. With 100 bootstrap samples, 100 MVP’s and TP’s can be compared and analyzed. Additionally, the standard deviation of the resulting weights over those number of bootstrap samples can be studied. The standard deviation is computed with the 84-Quantil minus the 50-Quantil to achieve a more robust result, because this calculation is less vulnerable to outliers.
+**Step 2**
+A new dataset is created with the new sorted dates or row numbers. From each sampled date or row, the corresponding returns of each stock are added to the new dataset, consequently maintaining the daily differences between stocks. This new dataset is one Bootstrap sample.
+
+**Step 3**
+From the Bootstrap sample, new mean return of each stock and the corresponding covariance matrix is being calculated. Those two variables are now used as input of the optimization function to calculate minimum variance portfolio, tangency portfolio of the stocks. The weights of this two portfolios are now being saved in a mvp-weights-matrix and a tp-weights-matrix.
+
+**Step 4**
+Repeat the steps 1-3 100 times. This results in two matrices with each 100 rows of weights. Those MVP and TP weights can now be compared and analyzed. Additionally, the standard deviation of the resulting weights over those number of bootstrap samples can be studied. The standard deviation is computed with the 84-Quantil minus the 50-Quantil to achieve a more robust result, because this calculation is less vulnerable to outliers.
+
 **: the extended cloud of red dots demonstrates the huge estimation error of the risk and return of the TP**
 
 ```{r gg4, fig.cap = 'Bootstrap samples efficiency frontier', fig.height = 4}
@@ -655,7 +663,7 @@ There can also arise the case where for some shrinkage factor $\epsilon$ the sca
 # Results
 In this section the different approaches which were described in chapter \@ref(methodology) methodology are applied on the historical data. Section \@ref(res1) optimizes the entire SMI with 20 stocks. Section \@ref(res2) includes the optimization of the different grouping methods. Section \@ref(res3) applies the shrinkage.
 
-## I. {#res1}
+## Sharpe ratio of SMI as a portfolio {#res1}
 
 ```{r tabplot11}
 t11 = data.frame(is_r, os_r, row.names = "SMI")
@@ -664,8 +672,8 @@ kable(t11, caption = "Sharpe ratio",  digits = 3,
        booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
 ```
 
-**Der Grund, warum in-sample besser performt als out-of-sample ist nicht so sehr die Datenmenge, sondern dass das Validation Sample = dem Training Sample ist, also kein unabhängiger Test der Ergebnisse. Man optimiert die past performance über ein Zeitfenster, also kein Wunder dass die past Performance in genau diesem Zeitfenster gut ist.**
-The table \@ref(tab:tabplot11) describes the results of the cross-validation (\@ref(cross)) method of 20 stocks. As it can be seen and might be expected the in-sample performs much better than the out-of-sample. This is related to the fact that in-sample considers all the data for an optimization. Contrary to the out-of-sample where only four-fifths of the data is included in the optimization. If a stock behaves differently in this one test section compared to the 4 training sections flowing into the optimization, this stock can be easily over- or underfitted. This leads to a worse Sharpe ratio than the in-sample one. The consequences that can be drawn from this insight is, that firstly the in-sample Sharpe ratio should always be higher than the out-of-sample Sharpe ratio. Secondly, if the two Sharpe ratio differ clearly, the returns of each model differ as well. That means if we have similar returns over 20 years, in- and out-of-sample Sharpe ratio should be closer together, which is not the case here.
+
+The table \@ref(tab:tabplot11) describes the results of the cross-validation (\@ref(crossvalidation)) method of 20 stocks. As it can be seen and might be expected the in-sample performs much better than the out-of-sample. This is related to the fact that in-sample has the same testing section as training section. which logically results in a high performance considering that the testing data is part of the previous optimized training data. Contrary to the out-of-sample where the testing section is not included in the training section. If a stock behaves differently in this one test section compared to the 4 training sections flowing into the optimization, this stock can be easily over- or underfitted. This leads to a worse Sharpe ratio than the in-sample one. The consequences that can be drawn from this insight is, that firstly the in-sample Sharpe ratio should always be higher than the out-of-sample Sharpe ratio. Secondly, if the two Sharpe ratio differ clearly, the returns of each model differ as well. That means if we have similar returns over 20 years, in- and out-of-sample Sharpe ratio should be closer together, which is not the case here.
 
 <p> In the following two illustrations part of the bootstrap results can be seen. In the graphics the mean weights and the standard deviation over the 100 samples are shown. Figure \@ref(fig:mvpse) shows the MVP weights of the 20 stocks and figure \@ref(fig:tpse) the TP weights.<p>
 
@@ -687,7 +695,7 @@ gg_errorbar(stocks, tpw_r, tpw_sd_r, c(mintp, maxtp), "Weights", theme = custom_
 ```
 
 
-## II. {#res2}
+## Results of grouping and bootstrapping method {#res2}
 
 ```{r tabplot12}
 t12 = data.frame(c(is_gr, is_g2r),
@@ -697,8 +705,9 @@ kable(t12, caption = "Sharpe ratio",  digits = 3,
        booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
 ```
 
-Here in table \@ref(tab:tabplot12) the Sharpe ratio of in- and out-of-sample of the formed groups are presented. The first observation is, that the in-sample value has become smaller after the grouping method was applied. The reason for this is, that there are less parameters to optimize. Instead of 20 different stocks there are now only 3 or 4 stocks respectively groups which can be optimized. That means with less parameters or data, less portfolio variations can be made to find the best possible optimization. Between the two grouping methods though, the difference in parameters is to small to affect the Sharpe ratio in the way as mentioned before. Other impacts are more significant to the outcome. Although the SMI should have the highest in-sample Sharpe ratio because of the numerous parameters.
-However, the out-of-sample Sharpe ratio has increased. This is because with forming groups, stock returns of companies within the group are being averaged. Consequently, the group return is more stable over the time period. As described more detailed in results \@ref(res1), this leads to a better performance respectively a better Sharpe ratio. Therefore, also in- and out-of-sample are here closer together.
+Here in table \@ref(tab:tabplot12) the Sharpe ratio of in- and out-of-sample of the formed groups are presented. The first observation is, that the in-sample value decreased after the grouping method was applied. Optimizing 20 Parameters lead to higher possible variations, therefore this portfolio performs well in-sample. Between the two grouping methods though, the difference in parameters is to small to affect the Sharpe ratio in the way as mentioned before. Other impacts are more significant to the outcome. However the SMI should have the highest in-sample Sharpe ratio because of the numerous parameters.
+
+Nevertheless, the out-of-sample Sharpe ratio has increased. This is because with forming groups, stock returns of companies within the group are being averaged. Consequently, the group return is more stable over the whole time period. As described more detailed in results \@ref(res1), this leads to a better performance respectively a better Sharpe ratio. Therefore, also in- and out-of-sample are here closer together.
 
 In chapter \@ref(groupclust), cluster analysis is used to optimize the group collocation. Hence, more correlating stocks are put together to have a more diversifying portfolio. Consequently, the correlation between the groups shrunk in comparison to the correlation between the groups by industry. Further seen in table \@ref(tab:tabplot12), the Sharpe ratio of the new grouping method is much higher than grouping by industries which is a logical consequence of the diversification. In reality though, it is unlikely to invest in such a compiled portfolio, however it was made to find a method for grouping, which affects the Sharpe ratio positively.
 
@@ -714,10 +723,9 @@ gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(mintp, maxtp), "Weights", the
 ```
 
 As it is obvious to see and also visualized in figure \@ref(fig:gg4), is that TP weights have a higher standard deviation than MVP weights. That means the TP is more sensible to changes of returns than the MVP is. If the equation \@ref(eq:mvpw) of MVP and the equation \@ref(eq:tpw) of TP are considered, the MVP does not depend on the returns directly. Consequently different returns samples have not a large impact on the MVP. The small differences arise from the varying covariance matrix. But it can also be noticed that this matrix has not large deviations following the standard deviation of the MVP. Therefore bootstrap sampling of the returns does not influence the covariance matrix as much as the returns itself.
-**Die Erklärung, warum das out-of-sample Sharpe besser ist wenn man weniger optimiert, sollte noch verbessert werden (optimizing 20 parameters leads to portfolios that perform well in-sample, but that are poorly diversified and therefore tend to perform poorly out-of-sample)**
 
 
-## III. {#res3}
+## Results of shrinkage method {#res3}
 
 ### Shrinkage factors analyzed separately
 The Sharpe ratio can be visualized as a function of the shrinking factor. Figure \@ref(fig:srplot) shows such a plot for the mean returns shrinkage factor.
@@ -739,7 +747,7 @@ os_g2r_sr = unlist(out_of_sample_vec(sets_g2r, seq(0, 1, 0.01)))
 gg_shrink2D(list(os_r_sr, os_gr_sr, os_g2r_sr), c("SMI", "Groups by industry", "Groups by correlation"), "Return", theme = custom_theme_markdown)
 ```
 
-Figure \@ref(scorplot) shows the same plot for the correlation shrinkage factor. The highest Sharpe ratio for the SMI is achieved with a shrinkage factor of about one third. This result is similar to the one obtained in figure \@ref(fig:srplot) as for the groups shrinkage does not have a great impact.
+Figure \@ref(fig:scorplot) shows the same plot for the correlation shrinkage factor. The highest Sharpe ratio for the SMI is achieved with a shrinkage factor of about one third. This result is similar to the one obtained in figure \@ref(fig:srplot) as for the groups shrinkage does not have a great impact.
 The highest Sharpe ratio is again achieved by the groups by correlation.
 
 ```{r scorplot, fig.cap = 'Sharpe ratio as a function of correlation shrinking factor', fig.height = 4}
