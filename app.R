@@ -331,9 +331,7 @@ server = function(input, output, session) {
       g = c(g, ifelse(identical(names(which(setNames(unlist(g_react(), use.names = F), rep(names(g_react()), lengths(g_react()))) == i)), character(0)),
                       "Excluded", names(which(setNames(unlist(g_react(), use.names = F), rep(names(g_react()), lengths(g_react()))) == i))))
     }
-    print(g)
     efp$g = c(g, colnames(gr[-1]))
-    print(efp)
     efp
   })
   
@@ -350,7 +348,7 @@ server = function(input, output, session) {
     if (input$intervalButton == "1wk") {fxlim = 2.5; fylim = 4.5}
     if (input$intervalButton == "1mo") {fxlim = 5; fylim = 15}
     ggplot() +
-      geom_path(data = efp_r, aes(x = efp_r[,1], y = efp_r[,2]), alpha = 0.5) +
+      geom_path(aes(x = efp_r[,1], y = efp_r[,2]), alpha = 0.5) +
       geom_point(aes(x = mvp_point(efp_r)[1], y = mvp_point(efp_r)[2], color = "MVP"), size = 2) +
       geom_point(aes(x = tp_point(efp_r)[1], y = tp_point(efp_r)[2], color = "TP"), size = 2) +
       geom_text(aes(x = tp_point(efp_r)[1], y = tp_point(efp_r)[2], label = "SMI"),
@@ -360,11 +358,11 @@ server = function(input, output, session) {
       geom_point(aes(x = tp_point(efp_gr)[1], y = tp_point(efp_gr)[2], color = "TP"), size = 2) +
       geom_text(aes(x = tp_point(efp_gr)[1], y = tp_point(efp_gr)[2], label = "Groups"),
                 vjust = -2) +
-      geom_point(data = ef_react(), aes(x = vol, y = mr, color = g)) +
-      geom_text_repel(data = ef_react(), aes(x = vol, y = mr, label = n, color = g), size = 4) +
+      geom_point(data = ef_react(), aes(x = vol, y = mr, color = g), key_glyph = draw_key_point) +
+      geom_text_repel(data = ef_react(), aes(x = vol, y = mr, label = n, color = g), key_glyph = draw_key_point, size = 4) +
       lims(x = fxlim * c(0, 3), y = fylim * c(-0.1, 0.2)) +
       labs(x = "Volatility [%]", y = "Expected return [%]", color = NULL) +
-      guides(fill=guide_legend(ncol = 2)) +
+      guides(fill = guide_legend(ncol = 2)) +
       theme(legend.position = "bottom") +
       custom_theme_shiny
   })

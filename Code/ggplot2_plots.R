@@ -20,9 +20,10 @@ custom_theme_shiny = theme(axis.title.x = element_text(margin = margin(t = 10, r
 
 
 gg_cor = function(cor, lab_size, tl.cex, title = " ", theme = NULL) {
-  gg = ggcorrplot(cor, title = title, legend.title = "Cor",
-                  lab = T, lab_size = lab_size, tl.cex = tl.cex, ggtheme = theme)
-  return(gg)
+  gg = ggcorrplot(cor, lab = T, lab_size = lab_size, tl.cex = tl.cex, title = title, ggtheme = theme) +
+    scale_fill_gradient2(high = "orangered2", mid = "honeydew", low = "cornflowerblue",
+                         limit = c(-1, 1), name = "Cor")
+  gg
 }
 
 gg_errorbar = function(x, y, error, ylim = c(min(y - error), max(y + error)), ylab = "y",
@@ -70,13 +71,15 @@ gg_shrink2D = function(sr, srname, xlab, title = NULL, theme = NULL) {
   names(colors) = labels
   gg = ggplot()
   for (i in seq_along(sr)) {
-    eval(substitute(expr = {gg = gg + geom_line(aes(x = seq, y = sr[[i]], color = labels[i])) +
+    eval(substitute(expr = {gg = gg +
+      geom_line(aes(x = seq, y = sr[[i]], color = labels[i])) +
       geom_segment(aes(x = seq[which.max(sr[[i]])], y = -Inf, xend = seq[which.max(sr[[i]])],
                        yend = max(sr[[i]])), color = colors[i], linetype = 2) +
       geom_point(aes(x = seq[which.max(sr[[i]])], y = max(sr[[i]])), color = colors[i])},
       env = list(i = i)))
   }
-  gg = gg + lims(y = c(-0.25, 1.25)) +
+  gg = gg +
+    lims(y = c(-0.25, 1.25)) +
     labs(x = paste0(xlab, " shrinkage factor"), y = "Sharpe ratio", title = title, color = NULL) +
     scale_color_manual(values = colors) +
     theme(legend.position = "bottom") +
@@ -88,16 +91,16 @@ gg_shrink3D = function(grid, z, title = NULL, theme = NULL) {
   gg = ggplot(mapping = aes(x = grid[,2], y = grid[,1], z = z)) +
     geom_raster(aes(fill = z), interpolate = T) +
     stat_contour(bins = 20, color = "black", alpha = 0.2) +
-    scale_fill_gradientn(colors = c("honeydew", "red2", "red4"), values = c(0, 0.8, 1),
+    scale_fill_gradientn(colors = c("honeydew", "orangered2", "orangered4"), values = c(0, 0.8, 1),
                          name = paste0("Sharpe ratio", "\nmax at (",
                                        format(round(grid[,2][which.max(z)], 2), nsmall = 2), "/",
                                        format(round(grid[,1][which.max(z)], 2), nsmall = 2), "/",
                                        format(round(max(z), 2), nsmall = 2), ")")) +
     geom_segment(aes(x = grid[,2][which.max(z)], y = -Inf, xend = grid[,2][which.max(z)],
-                     yend = grid[,1][which.max(z)]), color = "white", linetype = 2) +
+                     yend = grid[,1][which.max(z)]), color = "honeydew", linetype = 2) +
     geom_segment(aes(x = -Inf, y = grid[,1][which.max(z)], xend = grid[,2][which.max(z)],
-                     yend = grid[,1][which.max(z)]), color = "white", linetype = 2) +
-    geom_point(aes(x = grid[,2][which.max(z)], y = grid[,1][which.max(z)]), color = "white") +
+                     yend = grid[,1][which.max(z)]), color = "honeydew", linetype = 2) +
+    geom_point(aes(x = grid[,2][which.max(z)], y = grid[,1][which.max(z)]), color = "honeydew") +
     coord_fixed() +
     labs(x = "Correlation shrinkage coefficient", y = "Return shrinkage coefficient", title = title) +
     theme(legend.title = element_text(size = 12)) +

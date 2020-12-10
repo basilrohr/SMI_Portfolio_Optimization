@@ -53,12 +53,12 @@ Lange, min. eine halbe Seite
 # Data
 
 **SMI and its constituents instead of just SMI for better clarification**
-For this paper historical data from the Swiss Market Index or (SMI) and its constituents were used, the data are from the period from `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. The SMI covers approximately 80% of the total capitalization of the Swiss stock market. It is also a price index, which means that dividends are not included in the index. The SMI is always reviewed twice a year and, if necessary, reassembled. In our case, we use the composition per end of 2018. The reason for the 2018 composition is, that enough historical data for all those companies is available. The results shown in table \@ref(tab:tabplot2) are calculated with following two equations, daily logarithmic return \@ref(eq:LogR) and volatility \@ref(eq:Volatility). [1] [2]
+For this paper historical data from the Swiss Market Index or (SMI) and its constituents were used, the data are from the period from `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. The SMI covers approximately 80% of the total capitalization of the Swiss stock market. It is also a price index, which means that dividends are not included in the index. The SMI is always reviewed twice a year and, if necessary, reassembled. In our case, we use the composition per end of 2018. The reason for the 2018 composition is, that enough historical data for all those companies is available. The results shown in table \@ref(tab:rmrvoltab) are calculated with following two equations, daily logarithmic return \@ref(eq:LogR) and volatility \@ref(eq:Volatility). [1] [2]
 
 ## Logarithmic return
 
 **stock returns are generally assumed to be log-normally, not normally distributed**
-The reason for using logarithmic returns is that the numbers take smaller values than discrete returns. Due to smaller values there is also a smaller variance, which influences fitting positively. For later calculations the risk-free return has to be subtracted from the returns. For the sake of simplicity the risk-free rate is already deducted now. For the risk-free return $R_{f}$, shown in table \@ref(tab:tabplot1), the LIBOR interest rate is commonly used. Due to several negative incidents in the past the Swiss Average Rate Overnight (SARON) is used for the time period 2014-2020. SARON is a rate that is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [3] [4]
+The reason for using logarithmic returns is that the numbers take smaller values than discrete returns. Due to smaller values there is also a smaller variance, which influences fitting positively. For later calculations the risk-free return has to be subtracted from the returns. For the sake of simplicity the risk-free rate is already deducted now. For the risk-free return $R_{f}$, shown in table \@ref(tab:annrftab), the LIBOR interest rate is commonly used. Due to several negative incidents in the past the Swiss Average Rate Overnight (SARON) is used for the time period 2014-2020. SARON is a rate that is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [3] [4]
 
 \begin{equation}
   R = R_{ln} - R_{f} = ln\left(\frac{x_t}{x_{t-1}}\right) - R_{f}
@@ -70,9 +70,11 @@ The reason for using logarithmic returns is that the numbers take smaller values
 <p> *$R_{f}$ = risk-free rate of return* <p>
 <p> *$x_{t}$ = closing stock price at time t* <p>
 
-```{r tabplot1}
-ann_rf = data.frame(names(rf), round(rf * 252, 3), row.names = NULL)
-kable(ann_rf, col.names = c("Year", "Rate [%]"), caption = "Average overnight risk-free return per year in \\%", booktabs = T, linesep = "")
+```{r annrftab}
+ann_rf = data.frame(names(rf), rf * 252, row.names = NULL)
+kable(ann_rf, col.names = c("Year", "Rate [%]"),
+      caption = "Average overnight risk-free return per year in \\%",
+      digits = 3, booktabs = T, linesep = "")
 ```
 
 \newpage
@@ -92,10 +94,12 @@ Volatility describes the risk of a stock or market index and is a statistical me
 <p> *$\overline{R}$ = sample mean return* <p>
 <p> *$n$ = sample size* <p>
 
-```{r tabplot2}
+```{r rmrvoltab}
 r = returns
 r_mr_vol = data.frame(colnames(r[-1]), mean_returns(r), volatilities(cov_mat(r)), row.names = NULL)
-kable(r_mr_vol, col.names = c("Stock","Return [%]", "Volatility [%]"), caption = "SMI constituents with expected return and volatility", digits = 3, booktabs = T, linesep = "")
+kable(r_mr_vol, col.names = c("Stock","Return [%]", "Volatility [%]"),
+      caption = "SMI constituents with expected return and volatility",
+      digits = 3, booktabs = T, linesep = "")
 ```
 
 ## Covariance and correlation
@@ -123,11 +127,10 @@ The covariance is a numerical measure that describes the linear statistical rela
 <p> *$\sigma_{i}$ = volatility of return i* <p>
 <p> *$\sigma_{j}$ = volatility of return j* <p>
 
-The matrix below shows the correlations of all 20 stocks included in the SMI. By definition, the diagonal values are always 1. As the SMI only contains shares that are traded on the Swiss stock exchange, there is a rather high correlation between the individual companies. The correlation between companies from the same sector is also higher than that between companies from different sectors or which have less in common. From this it can be concluded that economic similarities are reflected in a higher correlation of stock returns. Another way to demonstrate a connection between two companies is the t-statistic which is described in chapter \@ref(t-statistic).
+The matrix in figure \@ref(fig:corplot) shows the correlations of all 20 stocks included in the SMI. By definition, the diagonal values are always 1. As the SMI only contains shares that are traded on the Swiss stock exchange, there is a rather high correlation between the individual companies. The correlation between companies from the same sector is also higher than that between companies from different sectors or which have less in common. From this it can be concluded that economic similarities are reflected in a higher correlation of stock returns. Another way to demonstrate a connection between two companies is the t-statistic which is described in chapter \@ref(t-statistic).
 
-```{r, fig.cap = "SMI correlation", fig.height = 6}
-suppressWarnings(suppressMessages(print(gg_cor(cor_mat(r), 2, 8, theme = custom_theme_markdown) +
-    scale_fill_gradient2(low = "cornflowerblue", high = "orangered2", mid = "honeydew", limit = c(-1,1), name = "Cor"))))
+```{r corplot, fig.cap = "SMI correlation", fig.height = 6}
+suppressWarnings(suppressMessages(print(gg_cor(cor_mat(r), 2, 8, theme = custom_theme_markdown))))
 ```
 
 \newpage
@@ -174,7 +177,7 @@ In statistics the standard deviation of the sampling distribution is known as th
 <p> *$\sigma$ = standard deviation of sample* <p>
 <p> *$n$ = sample size* <p>
 
-```{r gg1, fig.cap = 'Expected mean return with standard error', fig.height = 4}
+```{r serplot, fig.cap = 'Expected mean return with standard error', fig.height = 4}
 mr = mean_returns(r)
 se_r = apply(r[,-1], 2, se_mean)
 min = min(mr - se_r); max = max(mr + se_r)
@@ -182,7 +185,7 @@ gg_errorbar(stocks, mr, se_r, c(min, max), "Return [%]", theme = custom_theme_ma
 ```
 
 
-In the plot above (figure \@ref(fig:gg1)) you can see the logarithmic mean return with the standart errors for each stock. It is easy to see that stocks such as *Swisscom* and *Nestle* with low volatility also have a lower standard error. As well *ABB* and *Credit Suisse* show a high volatility and accordingly have higher values for the standart error. Figure \@ref(fig:gg1) and table \@ref(tab:tabplot2) can therefore be compared well together.
+In the plot above (figure \@ref(fig:serplot)) you can see the logarithmic mean return with the standart errors for each stock. It is easy to see that stocks such as *Swisscom* and *Nestle* with low volatility also have a lower standard error. As well *ABB* and *Credit Suisse* show a high volatility and accordingly have higher values for the standard error. Figure \@ref(fig:ser) and table \@ref(tab:rmrvoltab) can therefore be compared well together.
 
 \newpage
 
@@ -198,13 +201,14 @@ This formula is an approximation for the standard error of volatility, which is 
 <p> *$\sigma$ = standard deviation* <p>
 <p> *$n$ = sample size* <p>
 
-As shown in table \@ref(tab:tabplot5) the values of the standard error of volatility are much lower as the one of the mean returns. This behavior will be clearly visible later in the chapter bootstrap. Furthermore, we will neglect the values for any further calculations.
+As shown in table \@ref(tab:sevolrtab) the values of the standard error of volatility are much lower as the one of the mean returns. This behavior will be clearly visible later in the chapter bootstrap. Furthermore, we will neglect the values for any further calculations.
 **wir können die Volatilität praktisch exakt schätzen, als vernachlässigen wir den Schätzfehler im folgenden**
 
-```{r tabplot5}
+```{r sevolrtab}
 se_volr = data.frame(colnames(r[-1]), apply(r[,-1], 2, se_sd), row.names = NULL)
-kable(se_volr, col.names = c("Stock", "Standard error [%]"), caption = "Standard error of volatility", digits = 5, 
-      booktabs = T, linesep = "")
+kable(se_volr, col.names = c("Stock", "Standard error [%]"),
+      caption = "Standard error of volatility",
+      digits = 5, booktabs = T, linesep = "")
 ```
 
 \newpage
@@ -264,6 +268,8 @@ The disappearance of the gradient is the necessary condition for a minimum. This
 **overfitting**
 Markowitz' optimization only works under certain assumptions and conditions. Apart from the assumptions concerning particular investors and the capital market, which will not be discussed here, there are also mathematical assumptions that must be made. First assumption is an approximate normal distribution of log-returns. Since it is a stock price over 20 years, it is almost impossible to describe the log-returns as normally distributed. In historical data over a long period of time there are strong stock price movements which can be clearly identified as outliers and therefore reject the assumption of an exact normal distribution. However, a quantile-quantile plot can be used to show that the majority of the data is normally distributed. The y-axis describes the quantiles of the data and the x-axis the quantiles of the normal distribution. The majority of the data is linear near the middle which speaks for a normal distribution. At both ends clear deviations and individual outliers are to be recognized, which is a strong indication of a heavy left tail. This behavior results from stronger stock price volatilities, as they occur for example in times of crisis and uncertain markets. 
 
+plot vermutlich loeschen da nicht mehr relevant
+
 ```{r gg98, fig.cap = 'Q-Q plot of daily log-returns for Swisscom', fig.height = 3}
 ggplot(mapping = aes(sample = r[,"Swisscom"])) + stat_qq() + stat_qq_line(color = "orangered3") + custom_theme_markdown
 ```
@@ -283,11 +289,10 @@ The Minimum Variance Portfolio, or MVP for short, describes the portfolio of all
 <p> *$\vec{1}$ = all-ones vector* <p>
 <p> *$\Sigma$ = covariance matrix* <p>
 
-```{r tabplot7}
+```{r mvpwrtab}
 mvpw_r = data.frame(colnames(r[-1]), mvp_weights(cov_mat(r)))
-
-kable(mvpw_r, caption = "Weights of MVP", digits = 3, 
-      col.names = c("Stock", "Weight"), booktabs = T, linesep = "")
+kable(mvpw_r, col.names = c("Stock", "Weight"), caption = "Weights of minimum variance portfolio",
+      digits = 3, booktabs = T, linesep = "")
 ```
 
 It is clear to see that returns which have a negative value also have a negative weighting. In practice, this would lead to a short selling.
@@ -322,16 +327,15 @@ R_{P}(\sigma_{P}) = R_{f} + \frac{R_{tp} - R_{f}}{\sigma_{tp}} * \sigma_{P}
 <p> *$\vec{R}$ = return* <p>
 
 
-```{r tabplot9}
+```{r tpwrtab}
 tpw_r = data.frame(colnames(r[-1]), tp_weights(cov_mat(r), mean_returns(r)))
-
-kable(tpw_r, caption = "Weights of tangency portfolio", digits = 3, 
-      col.names = c("Stock", "Weight"), booktabs = T, linesep = "")
+kable(tpw_r, col.names = c("Stock", "Weight"), caption = "Weights of tangency portfolio",
+      digits = 3, booktabs = T, linesep = "")
 ```
 
 
 ## Efficient Frontier
-The efficient frontier is a set of points that extends in the return-volatility diagram (figure \@ref(fig:gg3)) between the minimum variance portfolio at the left edge of the reachable area and the tangency portfolio. All possible weightings of portfolios on this line are efficient because they have the maximum return at a defined level of volatility.
+The efficient frontier is a set of points that extends in the return-volatility diagram (figure \@ref(fig:refplot)) between the minimum variance portfolio at the left edge of the reachable area and the tangency portfolio. All possible weightings of portfolios on this line are efficient because they have the maximum return at a defined level of volatility.
 
 \begin{equation}
 \vec{w}_{tp} = \alpha * \vec{w}_{mvp} + (1 - \alpha) * \vec{w}_{tp}
@@ -362,26 +366,24 @@ R_{P} = \vec{w}^T * \vec{R}
 <p> *$\Sigma$ = covariance matrix* <p>
 
 
-```{r gg3, fig.cap = 'Efficient frontier with stocks', fig.height = 5}
+```{r refplot, fig.cap = 'Efficient frontier with stocks', fig.height = 5}
 cm = cov_mat(r); mr = mean_returns(r)
-
-efw_r = ef_weights(mvp_weights(cm), tp_weights(cm, mr), seq(-2, 2, 0.1))
+efw_r = ef_weights(mvp_weights(cm), tp_weights(cm, mr), seq(-3, 3, 0.1))
 efp_r = ef_points(efw_r, cm, mr)
-
 efp = data.frame(n = stocks, vol = volatilities(cm), mr = mr, row.names = NULL)
-
-suppressMessages(suppressWarnings(print(ggplot() +
- geom_abline(intercept = 0, slope = tp_point(efp_r)[2]/tp_point(efp_r)[1], alpha = 0.6, col = "burlywood4") +
- geom_path(aes(x = efp_r[,1], y = efp_r[,2]), alpha = 0.5) +
- geom_point(aes(x = mvp_point(efp_r)[1], y = mvp_point(efp_r)[2], color = "MVP")) +
- geom_point(aes(x = tp_point(efp_r)[1], y = tp_point(efp_r)[2], color = "TP")) +
- geom_text_repel(data = efp, aes(x = vol, y = mr, label = n), size = 3) +
- lims(x = c(0, 3), y = c(-0.1, 0.2)) +
- labs(x = "Volatility [%]", y = "Expected return [%]", color = NULL) +
- scale_color_manual(values = c("MVP" = "cornflowerblue", "TP" = "orangered3")) +
- guides(fill = guide_legend(ncol = 2)) +
- theme(legend.position = "bottom") +
- custom_theme_markdown)))
+suppressMessages(
+  suppressWarnings(print(
+    ggplot() +
+      geom_abline(intercept = 0, slope = tp_point(efp_r)[2]/tp_point(efp_r)[1], alpha = 0.5) +
+      geom_path(aes(x = efp_r[,1], y = efp_r[,2]), alpha = 0.5) +
+      geom_point(aes(x = mvp_point(efp_r)[1], y = mvp_point(efp_r)[2], color = "MVP")) +
+      geom_point(aes(x = tp_point(efp_r)[1], y = tp_point(efp_r)[2], color = "TP")) +
+      geom_text_repel(data = efp, aes(x = vol, y = mr, label = n), size = 3) +
+      lims(x = c(0, 3), y = c(-0.1, 0.2)) +
+      labs(x = "Volatility [%]", y = "Expected return [%]", color = NULL) +
+      scale_color_manual(values = c("MVP" = "cornflowerblue", "TP" = "orangered3")) +
+      theme(legend.position = "bottom") +
+      custom_theme_markdown)))
 ```
 
 **text umschreiben, SMI nicht erwaehnen**
@@ -418,12 +420,14 @@ An intuitive approach to group stocks is to do so by industry. In the case of th
 <p> **Industrial:** *ABB, Geberit, Givaudan, LafargeHolcim, SGS* <p>
 <p> **Pharma:** *Lonza, Novartis, Roche, Sika* <p>
 
-To obtain the group returns, the daily mean value of the daily returns of all stocks within the group is calculated . Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. From this time series the mean returns, volatility and correlation matrix can be calculated from which the first two are shown in table \@ref(tab:grmrvol).
+To obtain the group returns, the daily mean value of the daily returns of all stocks within the group is calculated . Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. From this time series the mean returns, volatility and correlation matrix can be calculated from which the first two are shown in table \@ref(tab:grmrvoltab).
 
-```{r grmrvol}
+```{r grmrvoltab}
 gr = groups_returns(returns, groups)
 gr_mr_vol = data.frame(colnames(gr[-1]), mean_returns(gr), volatilities(cov_mat(gr)), row.names = NULL)
-kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption = "Mean returns and Volatility of groups", digits = 3, booktabs = T, linesep = "")
+kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"),
+      caption = "Mean returns and Volatility of groups",
+      digits = 3, booktabs = T, linesep = "")
 ```
 
 ### Grouping with cluster analysis {#groupclust}
@@ -460,15 +464,48 @@ heatmap3(as.matrix(d), symm = TRUE, method = "complete", col = colorRampPalette(
 
 **plot von eingefaerbten gruppen zeigen analog shiny**
 
-```{r tabplot78}
+```{r g2rmrvoltab}
 g2r = groups_returns(r, groups2)
-# g2mr = mean_returns(g2r); g2cm = cov_mat(g2r)
-
-gr_mr_vol = data.frame(colnames(g2r[-1]), mean_returns(g2r), volatilities(cov_mat(g2r)), row.names = NULL)
-kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"), caption = "groups with expected return and volatility", digits = 3, booktabs = T, linesep = "")
+gr_mr_vol = data.frame(colnames(g2r[-1]), mean_returns(g2r), volatilities(cov_mat(g2r)),
+                       row.names = NULL)
+kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"),
+      caption = "groups with expected return and volatility",
+      digits = 3, booktabs = T, linesep = "")
 ```
 
 Further methods like k-means or PAM etc. could be considered but are not discussed in this paper.
+
+```{r gefplot, fig.cap = 'Efficient frontier with stocks', fig.height = 5}
+g2cm = cov_mat(g2r); g2mr = mean_returns(g2r)
+efw_g2r = ef_weights(mvp_weights(g2cm), tp_weights(g2cm, g2mr), seq(-3, 3, 0.1))
+efp_g2r = ef_points(efw_g2r, g2cm, g2mr)
+efp = data.frame(n = c(colnames(r[-1]), colnames(g2r[-1])),
+                 vol = c(volatilities(cm), volatilities(g2cm)), mr = c(mr, g2mr), row.names = NULL)
+g = c()
+for (i in efp$n[1:length(colnames(r[-1]))]) {
+  g = c(g, ifelse(identical(
+    names(which(setNames(unlist(groups2, use.names = F),
+                         rep(names(groups2), lengths(groups2))) == i)), character(0)),
+    "Excluded", names(which(setNames(unlist(groups2, use.names = F),
+                                     rep(names(groups2), lengths(groups2))) == i))))
+}
+efp$g = c(g, colnames(g2r[-1]))
+suppressMessages(
+  suppressWarnings(print(
+    ggplot() +
+      geom_abline(intercept = 0, slope = tp_point(efp_g2r)[2]/tp_point(efp_g2r)[1], alpha = 0.5) +
+      geom_path(aes(x = efp_g2r[,1], y = efp_g2r[,2]), alpha = 0.5) +
+      geom_point(aes(x = mvp_point(efp_g2r)[1], y = mvp_point(efp_g2r)[2]), color = "cornflowerblue") +
+      geom_point(aes(x = tp_point(efp_g2r)[1], y = tp_point(efp_g2r)[2]), color = "orangered3") +
+      geom_text_repel(data = efp, aes(x = vol, y = mr, label = n, color = g), size = 3,
+                      key_glyph = draw_key_point) +
+      lims(x = c(0, 3), y = c(-0.1, 0.2)) +
+      labs(x = "Volatility [%]", y = "Expected return [%]", color = NULL) +
+      scale_color_manual(values = c("Group 1" = "forestgreen", "Group 2" = "tan1",
+                                    "Group 3" = "darkgray")) +
+      theme(legend.position = "bottom") +
+      custom_theme_markdown)))
+```
 
 ## Bootstrap {#bootstrap}
 
