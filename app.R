@@ -53,7 +53,7 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                              dataTableOutput("rf", width = "90%")))))),
                 tabPanel("Grouping",
                          fluidRow(
-                           column(8,
+                           column(7,
                                   strong("Groups"),
                                   bucket_list(
                                     group_name = "stockGroups",
@@ -98,7 +98,7 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                   textOutput("errorGroupNames"),
                                   tags$head(tags$style("#errorGroupNames{color: red; font-size: 16px;
                                                        font-weight: bold;}"))),
-                           column(4,
+                           column(5,
                                   tabsetPanel(
                                     tabPanel("Return and volatility",
                                              dataTableOutput("gr_mr_vol", width = "90%")),
@@ -328,8 +328,11 @@ server = function(input, output, session) {
                      mr = c(mr, gmr), row.names = NULL)
     g = c()
     for (i in efp$n[1:length(colnames(r[-1]))]) {
-      g = c(g, ifelse(identical(names(which(setNames(unlist(g_react(), use.names = F), rep(names(g_react()), lengths(g_react()))) == i)), character(0)),
-                      "Excluded", names(which(setNames(unlist(g_react(), use.names = F), rep(names(g_react()), lengths(g_react()))) == i))))
+      g = c(g, ifelse(identical(names(which(setNames(unlist(g_react(), use.names = F),
+                                                     rep(names(g_react()), lengths(g_react()))) == i)),
+                                character(0)),
+                      "Excluded", names(which(setNames(unlist(g_react(), use.names = F),
+                                                       rep(names(g_react()), lengths(g_react()))) == i))))
     }
     efp$g = c(g, colnames(gr[-1]))
     efp
@@ -359,7 +362,8 @@ server = function(input, output, session) {
       geom_text(aes(x = tp_point(efp_gr)[1], y = tp_point(efp_gr)[2], label = "Groups"),
                 vjust = -2) +
       geom_point(data = ef_react(), aes(x = vol, y = mr, color = g), key_glyph = draw_key_point) +
-      geom_text_repel(data = ef_react(), aes(x = vol, y = mr, label = n, color = g), key_glyph = draw_key_point, size = 4) +
+      geom_text_repel(data = ef_react(), aes(x = vol, y = mr, label = n, color = g),
+                      key_glyph = draw_key_point, size = 4) +
       lims(x = fxlim * c(0, 3), y = fylim * c(-0.1, 0.2)) +
       labs(x = "Volatility [%]", y = "Expected return [%]", color = NULL) +
       guides(fill = guide_legend(ncol = 2)) +

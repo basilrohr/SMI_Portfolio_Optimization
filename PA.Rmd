@@ -508,7 +508,6 @@ suppressMessages(
 ```
 
 ## Bootstrap {#bootstrap}
-
 Bootstrapping is a statistical method of resampling. It allows to create a new sample with drawing from the existing sample. With 100 or more resampled data, each mean and variance of the samples can be analyzed. This method can be used to draw conclusion about a population from its sample.
 
 In this method a bootstrap process was made to analyze the robustness of the tangency portfolio weights when resampling all historical returns.
@@ -529,7 +528,8 @@ Repeat the steps 1-3 100 times. This results in two matrices with each 100 rows 
 
 ```{r gg4, fig.cap = 'Bootstrap samples efficiency frontier', fig.height = 4}
 bs_r = bootstrap(r); bs_gr = bootstrap(gr)
-suppressMessages(suppressWarnings(print(gg_bootstrap_ef(bs_r$samples_ef_points, theme = custom_theme_markdown))))
+suppressMessages(suppressWarnings(print(gg_bootstrap_ef(bs_r$samples_ef_points,
+                                                        theme = custom_theme_markdown))))
 ```
 
 In figure \@ref(fig:gg4) all bootstrap samples can be seen with their minimum variance portfolio, tangency portfolio and their efficiency frontier. Noticeable is the variance of the tangency portfolio in comparison to the minimum variance portfolio. This is due to the high standard errors of returns. Since the return is included in the calculation of the TP, but not in the MVP, a larger deviation can be seen.
@@ -560,7 +560,8 @@ It is to note that the training and test sets of the five sections vary signific
 
 ```{r tpwbymodel, fig.cap = "Tangency portfolio weights by model", fig.height = 5}
 is_r = in_sample(r); is_gr = in_sample(gr); is_g2r = in_sample(g2r)
-sets_r = cross_validation_sets(r); sets_gr = cross_validation_sets(gr); sets_g2r = cross_validation_sets(g2r)
+sets_r = cross_validation_sets(r); sets_gr = cross_validation_sets(gr)
+sets_g2r = cross_validation_sets(g2r)
 os_r = out_of_sample(sets_r); os_gr = out_of_sample(sets_gr); os_g2r = out_of_sample(sets_g2r)
 sets_tpw = matrix(ncol = length(sets_r[[1]]), nrow = ncol(r[-1]))
 for (i in 1:5) {sets_tpw[,i] = out_of_sample(sets_r, set = i)$tp_weights}
@@ -638,16 +639,23 @@ s5 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 5)
 out5 = t(sapply(s5, function(x){x$tp_weights}))
 cm3 = solve(sets_r[[1]][[3]]$cov_mat); mr3 = sets_r[[1]][[3]]$mean_returns
 denom_zero = (-rowSums(cm3) %*% rep(mean(mr3), n)) / (rowSums(cm3) %*% mr3 - rowSums(cm3) %*% rep(mean(mr3), n))
-gg1 = gg2 = gg3 = gg4 = gg5 = ggplot() + scale_x_continuous(breaks = c(0, 0.5, 1)) + custom_theme_markdown
-for (i in 1:20) {gg1 = gg1 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out1[,i]), size = size)}
+gg1 = gg2 = gg3 = gg4 = gg5 = ggplot() +
+  scale_x_continuous(breaks = c(0, 0.5, 1)) + custom_theme_markdown
+for (i in 1:20) {gg1 = gg1 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out1[,i]),
+                                       size = size)}
 gg1 = gg1 + labs(x = expression(lambda), y = "Weight", title = "Model 1")
-for (i in 1:20) {gg2 = gg2 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out2[,i]), size = size)}
+for (i in 1:20) {gg2 = gg2 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out2[,i]),
+                                       size = size)}
 gg2 = gg2 + labs(x = expression(lambda), y = "Weight", title = "Model 2")
-for (i in 1:20) {gg3 = gg3 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out3[,i]), size = size)}
-gg3 = gg3 + geom_vline(xintercept = denom_zero, color = "orangered3") + labs(x = expression(lambda), y = "Weight", title = "Model 3")
-for (i in 1:20) {gg4 = gg4 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out4[,i]), size = size)}
+for (i in 1:20) {gg3 = gg3 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out3[,i]),
+                                       size = size)}
+gg3 = gg3 + geom_vline(xintercept = denom_zero, color = "orangered3") +
+  labs(x = expression(lambda), y = "Weight", title = "Model 3")
+for (i in 1:20) {gg4 = gg4 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out4[,i]),
+                                       size = size)}
 gg4 = gg4 + labs(x = expression(lambda), y = "Weight", title = "Model 4")
-for (i in 1:20) {gg5 = gg5 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out5[,i]), size = size)}
+for (i in 1:20) {gg5 = gg5 + geom_line(aes_string(x = seq(start, stop, 0.01), y = out5[,i]),
+                                       size = size)}
 gg5 = gg5 + labs(x = expression(lambda), y = "Weight", title = "Model 5")
 ggarrange(gg1, gg2, gg3, gg4, gg5)
 ```
@@ -667,12 +675,18 @@ s4 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 4)
 out4 = t(sapply(s4, function(x){1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns)}))
 s5 = out_of_sample_vec(sets_r, seq(start, stop, 0.01), set = 5)
 out5 = t(sapply(s5, function(x){1 / (rep(1, n) %*% solve(x$shrinking_cov_mat) %*% x$shrinking_mean_returns)}))
-gg1 = gg2 = gg3 = gg4 = gg5 = ggplot() + expand_limits(y = 0) + scale_x_continuous(breaks = c(0, 0.5, 1)) +  custom_theme_markdown
-gg1 = gg1 + geom_line(aes(x = seq(start, stop, 0.01), y = out1[1,]), size = size) + labs(x = expression(lambda), y = "Scaling factor", title = "Model 1")
-gg2 = gg2 + geom_line(aes(x = seq(start, stop, 0.01), y = out2[1,]), size = size) + labs(x = expression(lambda), y = "Scaling factor", title = "Model 2")
-gg3 = gg3 + geom_line(aes(x = seq(start, stop, 0.01), y = out3[1,]), size = size) + geom_vline(xintercept = denom_zero, color = "orangered3") + labs(x = expression(lambda), y = "Scaling factor", title = "Model 3")
-gg4 = gg4 + geom_line(aes(x = seq(start, stop, 0.01), y = out4[1,]), size = size) + labs(x = expression(lambda), y = "Scaling factor", title = "Model 4")
-gg5 = gg5 + geom_line(aes(x = seq(start, stop, 0.01), y = out5[1,]), size = size) + labs(x = expression(lambda), y = "Scaling factor", title = "Model 5")
+gg1 = gg2 = gg3 = gg4 = gg5 = ggplot() + expand_limits(y = 0) +
+  scale_x_continuous(breaks = c(0, 0.5, 1)) +  custom_theme_markdown
+gg1 = gg1 + geom_line(aes(x = seq(start, stop, 0.01), y = out1[1,]), size = size) +
+  labs(x = expression(lambda), y = "Scaling factor", title = "Model 1")
+gg2 = gg2 + geom_line(aes(x = seq(start, stop, 0.01), y = out2[1,]), size = size) +
+  labs(x = expression(lambda), y = "Scaling factor", title = "Model 2")
+gg3 = gg3 + geom_line(aes(x = seq(start, stop, 0.01), y = out3[1,]), size = size) + geom_vline(xintercept = denom_zero, color = "orangered3") +
+  labs(x = expression(lambda), y = "Scaling factor", title = "Model 3")
+gg4 = gg4 + geom_line(aes(x = seq(start, stop, 0.01), y = out4[1,]), size = size) +
+  labs(x = expression(lambda), y = "Scaling factor", title = "Model 4")
+gg5 = gg5 + geom_line(aes(x = seq(start, stop, 0.01), y = out5[1,]), size = size) +
+  labs(x = expression(lambda), y = "Scaling factor", title = "Model 5")
 ggarrange(gg1, gg2, gg3, gg4, gg5)
 ```
 
@@ -780,8 +794,9 @@ o	Single stock optimization with 40% correlation shrinking is better out-of-samp
 os_r_sr = unlist(out_of_sample_vec(sets_r, seq(0, 1, 0.01)))
 os_gr_sr = unlist(out_of_sample_vec(sets_gr, seq(0, 1, 0.01)))
 os_g2r_sr = unlist(out_of_sample_vec(sets_g2r, seq(0, 1, 0.01)))
-
-gg_shrink2D(list(os_r_sr, os_gr_sr, os_g2r_sr), c("SMI", "Groups by industry", "Groups by correlation"), "Return", theme = custom_theme_markdown)
+gg_shrink2D(list(os_r_sr, os_gr_sr, os_g2r_sr),
+            c("SMI", "Groups by industry", "Groups by correlation"), "Return",
+            theme = custom_theme_markdown)
 ```
 
 Figure \@ref(fig:scorplot) shows the same plot for the correlation shrinkage factor. The highest Sharpe ratio for the SMI is achieved with a shrinkage factor of about one third. This result is similar to the one obtained in figure \@ref(fig:srplot) as for the groups shrinkage does not have a great impact.
@@ -791,8 +806,9 @@ The highest Sharpe ratio is again achieved by the groups by correlation.
 os_r_scor = unlist(out_of_sample_vec(sets_r, 1, seq(0, 1, 0.01)))
 os_gr_scor = unlist(out_of_sample_vec(sets_gr, 1, seq(0, 1, 0.01)))
 os_g2r_scor = unlist(out_of_sample_vec(sets_g2r, 1, seq(0, 1, 0.01)))
-
-gg_shrink2D(list(os_r_scor, os_gr_scor, os_g2r_scor), c("SMI", "Groups by industry", "Groups by correlation"), "Correlation", theme = custom_theme_markdown)
+gg_shrink2D(list(os_r_scor, os_gr_scor, os_g2r_scor),
+            c("SMI", "Groups by industry", "Groups by correlation"), "Correlation",
+            theme = custom_theme_markdown)
 ```
 
 \newpage
@@ -805,9 +821,6 @@ Figure \@ref(fig:srcorplot1) shows such a plot for the SMI. In the lower and lef
 ```{r srcorplot1, fig.cap = 'SMI Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
 grid = expand.grid(seq(0, 1, by = 0.05), seq(0, 1, by = 0.05))
 os_r_sr_scor = unlist(out_of_sample_vec(sets_r, grid[,1], grid[,2]))
-
-
-
 gg_shrink3D(grid, os_r_sr_scor, theme = custom_theme_markdown)
 ```
 
@@ -817,15 +830,11 @@ Figure \@ref(fig:srcorplot2) shows the three dimensional plot for the groups by 
 
 ```{r srcorplot2, fig.cap = 'Groups Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
 os_gr_sr_scor = unlist(out_of_sample_vec(sets_gr, grid[,1], grid[,2]))
-
-R.utils::sourceDirectory("./Code", modifiedOnly = F)
-
 gg_shrink3D(grid, os_gr_sr_scor, theme = custom_theme_markdown)
 ```
 
 ```{r srcorplot3, fig.cap = 'Groups Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
 os_g2r_sr_scor = unlist(out_of_sample_vec(sets_g2r, grid[,1], grid[,2]))
-
 gg_shrink3D(grid, os_g2r_sr_scor, theme = custom_theme_markdown)
 ```
 
