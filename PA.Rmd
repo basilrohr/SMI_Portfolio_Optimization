@@ -6,7 +6,7 @@ author:
   - Maurice Gerber
   - Basil Rohr
 date: "`r format(Sys.time(), '%d. %B %Y')`"
-abstract: "Sed ut perspiciatis unde omnis iste natus error sit voluptatem accusantium doloremque laudantium, totam rem aperiam, eaque ipsa quae ab illo inventore veritatis et quasi architecto beatae vitae dicta sunt explicabo. Nemo enim ipsam voluptatem quia voluptas sit aspernatur aut odit aut fugit, sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt. Neque porro quisquam est, qui dolorem ipsum quia dolor sit amet, consectetur, adipisci velit, sed quia non numquam eius modi tempora incidunt ut labore et dolore magnam aliquam quaerat voluptatem. Ut enim ad minima veniam, quis nostrum exercitationem ullam corporis suscipit laboriosam, nisi ut aliquid ex ea commodi consequatur? Quis autem vel eum iure reprehenderit qui in ea voluptate velit esse quam nihil molestiae consequatur, vel illum qui dolorem eum fugiat quo voluptas nulla pariatur?\\par\\textbf{Keywords:} Portfolio optimization, Robust optimization, Markowitz model, Covariance matrix, Shrinkage, Sharpe ratio\\newpage"
+abstract: "Markowitz' optimization requires estimates of the expected return, standard deviation and correlations of the individual stocks. These estimates are subject to estimation errors, especially if they are based on short historical time series. This leads to the risk of overfitting historical data and, in the case of portfolio optimization, creating portfolios that perform well in backtesting but poorly in the future. To overcome these problems are several approaches including shrinkable estimators for historical returns and correlations. Also included are bootstrapping approaches in which expected returns, volatilities, and correlations are modeled as random variables. The goal is to provide a recommended methodology for optimizing a portfolio that includes all stocks from the Swiss Market Index.\\par\\textbf{Keywords:} Portfolio optimization, Robust optimization, Markowitz model, Covariance matrix, Shrinkage, Sharpe ratio\\newpage"
 output:
   bookdown::pdf_book:
     toc: F
@@ -40,7 +40,6 @@ R.utils::sourceDirectory("./Code", modifiedOnly = F)
 ```
 
 # Introduction
-
 Markowitz' Optimization and other models of Finance require estimates of the expected return, the standard deviation and the correlations of individual assets.
 These estimates are subject to estimation errors, especially when they are based on short historical time series. This leads to the danger of over- fitting historical data and - in the case of portfolio optimization - of producing portfolios that perform well in backtesting, but perform poorly in the future.
 To overcome these problems, several approaches have been proposed. This includes Bayesian approaches, including shrinking Estimators for historical returns, volatilites and correlations. It also includes resampling/bootstrapping approaches, where expected returns, volatilites and correlations are modelled as random variables.
@@ -51,14 +50,10 @@ Lange, min. eine halbe Seite
 \newpage
 
 # Data
-
-**SMI and its constituents instead of just SMI for better clarification**
-For this paper historical data from the Swiss Market Index or (SMI) and its constituents were used, the data are from the period from `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. The SMI covers approximately 80% of the total capitalization of the Swiss stock market. It is also a price index, which means that dividends are not included in the index. The SMI is always reviewed twice a year and, if necessary, reassembled. In our case, we use the composition per end of 2018. The reason for the 2018 composition is, that enough historical data for all those companies is available. The results shown in table \@ref(tab:rmrvoltab) are calculated with following two equations, daily logarithmic return \@ref(eq:LogR) and volatility \@ref(eq:Volatility). [1] [2]
+For this paper, historical data of the constituent companies of the Swiss Market Index or (SMI) were used, the data originates from the period from `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. The SMI covers approximately 80% of the total capitalization of the Swiss stock market. It is also a price index, which means that dividends are not included in the index. The SMI is always reviewed twice a year and, if necessary, reassembled. In our case, we use the composition per end of 2018. The reason for the 2018 composition is, that enough historical data for all those companies is available. The results shown in table \@ref(tab:rmrvoltab) are calculated with following two equations, daily logarithmic return \@ref(eq:LogR) and volatility \@ref(eq:Volatility). [1] [2]
 
 ## Logarithmic return
-
-**stock returns are generally assumed to be log-normally, not normally distributed**
-The reason for using logarithmic returns is that the numbers take smaller values than discrete returns. Due to smaller values there is also a smaller variance, which influences fitting positively. For later calculations the risk-free return has to be subtracted from the returns. For the sake of simplicity the risk-free rate is already deducted now. For the risk-free return $R_{f}$, shown in table \@ref(tab:annrftab), the LIBOR interest rate is commonly used. Due to several negative incidents in the past the Swiss Average Rate Overnight (SARON) is used for the time period 2014-2020. SARON is a rate that is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [3] [4]
+The reason for using logarithmic returns is that the numbers take smaller values than discrete returns. Due to smaller values there is also a smaller variance, which influences fitting positively. Furthermore, stock returns are generally assumed to be log-normally and not normally distributed. For later calculations the risk-free return has to be subtracted from the returns. For the sake of simplicity the risk-free rate is already deducted now. For the risk-free return $R_{f}$, shown in table \@ref(tab:annrftab), the LIBOR interest rate is commonly used. Due to several negative incidents in the past the Swiss Average Rate Overnight (SARON) is used for the time period 2014-2020. SARON is a rate that is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [3] [4]
 
 \begin{equation}
   R = R_{ln} - R_{f} = ln\left(\frac{x_t}{x_{t-1}}\right) - R_{f}
@@ -103,7 +98,7 @@ kable(r_mr_vol, col.names = c("Stock","Return [%]", "Volatility [%]"),
 ```
 
 ## Covariance and correlation
-The covariance is a numerical measure that describes the linear statistical relationship between two variables. In this case, it represents the strength of the relationship between two return time series. The correlation is the standardized covariance. By definition, the correlation ranges in an interval of [-1, 1]. A value of 1 or -1 means that the returns of two shares move in the same direction respectively in opposite directions. In Markowitz' portfolio theory the dependency (correlation) of two individual stocks is an important matter, which will be discussed later on in chapter [Markovitz Model].
+The covariance is a numerical measure that describes the linear statistical relationship between two variables. In this case, it represents the strength of the relationship between two return time series. Equally, the correlation describes the standardized covariance, the correlation is also generally liked to be seen as a value for the connection of two companies and their behave. By definition, the correlation ranges in an interval of [-1, 1] and the diagonal values are always 1. A value of 1 or -1 means that the returns of two shares move in the same direction respectively in opposite directions. In Markowitz' portfolio theory the dependency (correlation) of two individual stocks is an important matter, which will be discussed later on in chapter [Markovitz Model].
 
 \begin{equation}
   cov(x,y) = \frac{\sum_{i = 1}^{n}(x_{i} - \overline{x})(y_{i} - \overline{y})}{n - 1}
@@ -127,7 +122,7 @@ The covariance is a numerical measure that describes the linear statistical rela
 <p> *$\sigma_{i}$ = volatility of return i* <p>
 <p> *$\sigma_{j}$ = volatility of return j* <p>
 
-The matrix in figure \@ref(fig:corplot) shows the correlations of all 20 stocks included in the SMI. By definition, the diagonal values are always 1. As the SMI only contains shares that are traded on the Swiss stock exchange, there is a rather high correlation between the individual companies. The correlation between companies from the same sector is also higher than that between companies from different sectors or which have less in common. From this it can be concluded that economic similarities are reflected in a higher correlation of stock returns. Another way to demonstrate a connection between two companies is the t-statistic which is described in chapter \@ref(t-statistic).
+The matrix in figure \@ref(fig:corplot) shows the correlations of all 20 stocks included in the SMI. As the SMI only contains shares that are traded on the Swiss stock exchange, there is a rather high correlation between the individual companies. The correlation between companies from the same sector is also higher than that between companies from different sectors or which have less in common. From this it can be concluded that economic similarities are reflected in a higher correlation of stock returns. Another way to demonstrate a connection between two companies is the t-statistic which is described in chapter \@ref(t-statistic).
 
 ```{r corplot, fig.cap = "SMI correlation", fig.height = 6}
 suppressWarnings(suppressMessages(print(gg_cor(cor_mat(r), 2, 8, theme = custom_theme_markdown))))
@@ -185,7 +180,7 @@ gg_errorbar(stocks, mr, se_r, c(min, max), "Return [%]", theme = custom_theme_ma
 ```
 
 
-In the plot above (figure \@ref(fig:serplot)) you can see the logarithmic mean return with the standart errors for each stock. It is easy to see that stocks such as *Swisscom* and *Nestle* with low volatility also have a lower standard error. As well *ABB* and *Credit Suisse* show a high volatility and accordingly have higher values for the standard error. Figure \@ref(fig:ser) and table \@ref(tab:rmrvoltab) can therefore be compared well together.
+In Figure \@ref(fig:serplot) above you can see the logarithmic mean return with the standard errors for each stock. It is easy to see that stocks such as *Swisscom* and *Nestle* with low volatility also have a lower standard error. As well *ABB* and *Credit Suisse* show a high volatility and accordingly have higher values for the standard error. Figure \@ref(fig:serplot) and table \@ref(tab:rmrvoltab) can therefore be compared well together.
 
 \newpage
 
@@ -201,8 +196,7 @@ This formula is an approximation for the standard error of volatility, which is 
 <p> *$\sigma$ = standard deviation* <p>
 <p> *$n$ = sample size* <p>
 
-As shown in table \@ref(tab:sevolrtab) the values of the standard error of volatility are much lower as the one of the mean returns. This behavior will be clearly visible later in the chapter bootstrap. Furthermore, we will neglect the values for any further calculations.
-**wir können die Volatilität praktisch exakt schätzen, als vernachlässigen wir den Schätzfehler im folgenden**
+As shown in table \@ref(tab:sevolrtab) the values of the standard error of volatility are much lower as the one of the logarithmic mean returns. This behavior will be clearly visible later in the chapter bootstrap. Furthermore, we will neglect the values for any further calculations since these values can be estimated nearly exactly.
 
 ```{r sevolrtab}
 se_volr = data.frame(colnames(r[-1]), apply(r[,-1], 2, se_sd), row.names = NULL)
@@ -214,11 +208,9 @@ kable(se_volr, col.names = c("Stock", "Standard error [%]"),
 \newpage
 
 # Review of classical markovitz optimization
-
-**Markowitz optimization assumes that the return … is known.**
 Modern portfolio theory is a theory that deals with the construction of portfolios to maximize the expected return based on a given market risk. Markowitz' portfolio theory shows that efficient risk reduction is only possible if the extent of the correlation of the individual investments is taken into account when putting together the portfolio. Risk reduction through risk diversification is a key finding of the aforementioned portfolio theory. Harry Markowitz pioneered this theory in his article "Portfolio Selection”. The main point is that the risk and return characteristics of an investment should not be considered in isolation, but should be evaluated according to how the investment affects the risk and return of the overall portfolio. It is shown that an investor can construct a portfolio of multiple assets that maximizes returns for a given level of risk. Similarly, an investor can construct a portfolio with the lowest possible risk at a desired level of expected return. Based on statistical measures such as volatility and correlation, the performance of an individual investment is less important than how it affects the portfolio as a whole. [5] 
 
-The return, volatility and covariance matrix is known. The portfolio volatility is accordingly given as a function of the covariance matrix and the weight vector and it can be minimized as much as desired by sufficient diversification. Also the sum of all weights equals 1. The portfolio weights being searched for are described by the vector $\vec{w} = (w_{1}, \dots, w_{n})$. The weights that are calculated are those weights that match the portfolio with minimal volatility (variance) to a given expected portfolio return $R_{p}$. This is a linear optimization problem, as well a formulation of the fundamental problem of balancing return and risk. Furthermore, negative weightings are defined as short sales. [9]
+It is also assumed that the return, volatility and covariance matrix is known. The portfolio volatility is accordingly given as a function of the covariance matrix and the weight vector and it can be minimized as much as desired by sufficient diversification. Also the sum of all weights equals 1. The portfolio weights being searched for are described by the vector $\vec{w} = (w_{1}, \dots, w_{n})$. The weights that are calculated are those weights that match the portfolio with minimal volatility (variance) to a given expected portfolio return $R_{p}$. This is a linear optimization problem, as well a formulation of the fundamental problem of balancing return and risk. Furthermore, in practice negative weightings are defined as short sales. [9]
 
 
 \begin{equation}
@@ -264,21 +256,11 @@ The disappearance of the gradient is the necessary condition for a minimum. This
 \newpage
 
 ## Problem
-
-**overfitting**
-Markowitz' optimization only works under certain assumptions and conditions. Apart from the assumptions concerning particular investors and the capital market, which will not be discussed here, there are also mathematical assumptions that must be made. First assumption is an approximate normal distribution of log-returns. Since it is a stock price over 20 years, it is almost impossible to describe the log-returns as normally distributed. In historical data over a long period of time there are strong stock price movements which can be clearly identified as outliers and therefore reject the assumption of an exact normal distribution. However, a quantile-quantile plot can be used to show that the majority of the data is normally distributed. The y-axis describes the quantiles of the data and the x-axis the quantiles of the normal distribution. The majority of the data is linear near the middle which speaks for a normal distribution. At both ends clear deviations and individual outliers are to be recognized, which is a strong indication of a heavy left tail. This behavior results from stronger stock price volatilities, as they occur for example in times of crisis and uncertain markets. 
-
-plot vermutlich loeschen da nicht mehr relevant
-
-```{r gg98, fig.cap = 'Q-Q plot of daily log-returns for Swisscom', fig.height = 3}
-ggplot(mapping = aes(sample = r[,"Swisscom"])) + stat_qq() + stat_qq_line(color = "orangered3") + custom_theme_markdown
-```
-
-A second condition applies to the linear relationship of the stocks. The log-returns cannot show a perfect correlation between themselves, neither negative nor positive. This is described by a correlation coefficient of -1 respectively 1. If the determinant is 0, the system cannot be solved exactly. This situation occurs if shares have a correlation coefficient of 1 or -1. The system must be uniquely solvable to form the inverse of the covariance matrix $\Sigma^{-1}$.
+In order to apply the optimization, some assumptions have to be made at the beginning. As already mentioned before, the returns, risk and correlation coefficients are known. It is also important that the risk is described by the standard deviation. This also leads to the conclusion that a normal distribution is irrelevant, because the standard deviation is used as risk. Another condition applies to the linear relationship of the stocks. The log returns must not have a perfect correlation among themselves, neither negative nor positive. This is described by a correlation coefficient of -1 or 1. If the determinant is 0, the system cannot be solved exactly. This situation occurs when stocks have a correlation coefficient of 1 or -1. The system must be uniquely solvable to form the inverse of the covariance matrix $\Sigma^{-1}$.
 
 
 ## Minimum variance portfolio 
-The Minimum Variance Portfolio, or MVP for short, describes the portfolio of all possible weightings with the minimum volatility. Since only the volatility is minimized, constraint II. is not included in the equation.
+The Minimum Variance Portfolio, or MVP for short, describes the portfolio of all possible weightings with the minimum volatility. Since only the volatility is minimized, constraint *II* (\@ref(eq:constraint2) is not included in the equation. Negative returns do not necessarily have to result in a negative weighting, since in the calculation of the MVP the return is not directly included in the calculation but only the covariance matrix. Therefore, the correlation coefficients are the important factor.
 
 \begin{equation}
 \vec{w}_{mvp} = \frac{1}{\vec{1}^T\Sigma^{-1}\vec{1}}*\Sigma^{-1}\vec{1}
@@ -295,13 +277,11 @@ kable(mvpw_r, col.names = c("Stock", "Weight"), caption = "Weights of minimum va
       digits = 3, booktabs = T, linesep = "")
 ```
 
-It is clear to see that returns which have a negative value also have a negative weighting. In practice, this would lead to a short selling.
-**: negative return bedeutet nicht unbedingt negatives Gewicht und umgekehrt. Es kommt noch auf die Korrelationen an**
 
 ## Tangency portfolio 
-The tangency portfolio results from the tangent of the capital market line and the efficient frontier, which will be shown more detailed in chapter [Efficient Frontier]. The capital market line is an important component of the Capital Asset Pricing Model. The slope of the capital market line indicates how much more return is expected per additional volatility, therefore a steeper slope of the capital market line gives a better Sharpe ratio. This is exactly the situation when the capital market line is tangential to the efficient frontier. Therefore, the best possible diversified portfolio results from the weightings of the tangency portfolio. 
+The tangency portfolio, or TP for short results from the tangent of the capital market line and the efficient frontier, which will be shown more detailed in chapter [Efficient Frontier]. The capital market line is an important component of the Capital Asset Pricing Model. The slope of the capital market line indicates how much more return is expected per additional volatility, therefore a steeper slope of the capital market line gives a better Sharpe ratio. This is exactly the situation when the capital market line is tangential to the efficient frontier. Therefore, the best possible diversified portfolio results from the weightings of the tangency portfolio. 
 
-In this paper the MVP and TP serve as useful reference points to compare the Sharpe ratio of different optimizations. The tangency portfolio is often referred to in the literature as the market portfolio. In the equation for the capital market line, shown as equation \@ref(eq:cml), the expected return of the market portfolio respectively the tangency portfolio is written as $R_{tp}$.
+In this paper the MVP and TP serve as useful reference points to compare the Sharpe ratio of different optimization, the Sharpe ratio will be explained in chapter {sharpe}. The tangency portfolio is often referred to in the literature as the market portfolio. In the equation for the capital market line, shown as equation \@ref(eq:cml), the expected return of the market portfolio respectively the tangency portfolio is written as $R_{tp}$.
 
 *Capital Market Line:*
 \begin{equation}
@@ -333,6 +313,7 @@ kable(tpw_r, col.names = c("Stock", "Weight"), caption = "Weights of tangency po
       digits = 3, booktabs = T, linesep = "")
 ```
 
+\newpage
 
 ## Efficient Frontier
 The efficient frontier is a set of points that extends in the return-volatility diagram (figure \@ref(fig:refplot)) between the minimum variance portfolio at the left edge of the reachable area and the tangency portfolio. All possible weightings of portfolios on this line are efficient because they have the maximum return at a defined level of volatility.
@@ -386,11 +367,11 @@ suppressMessages(
       custom_theme_markdown)))
 ```
 
-**text umschreiben, SMI nicht erwaehnen**
-In figure \@ref(fig:gg3) it is clearly visible that the SMI shows a significantly higher return with almost the same volatility and vice versa. This leads to a larger in sample Sharpe ratio of the SMI compared to the groups. The reason for a higher in sample Sharpe ratio of the individual stocks is due to the higher amount of data. There are 20 stocks in the SMI for which the weighting can be optimized, but only four in the grouping. However, it will become apparent in chapter \@ref(cross) that this no longer applies to the out of sample Sharpe ratio, which in our case is much more important than the in sample.
+
+In figure \@ref(fig:refplot) it is clearly visible that the efficiency line covers the range in which all possible portfolio compositions can be located. Through the optimization, the TP was created, which achieves a significantly higher return than the individual stocks included in the SMI. Also, the MVP is at the extreme left of the achievable area on the efficiency line, which means that there is no portfolio that has a lower volatility.
 
 
-## Sharpe ratio
+## Sharpe ratio {#sharpe}
 The Sharpe ratio measures the performance of an investment which means the return of an investment compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the risk-adjusted return. In practice, the value of the Sharpe Ratio is not only positively received. In this paper, however, we will rely on the Sharpe ratio because it is a key figure by which performance can be measured. It is calculated by the average return earned in excess of the risk-free rate per unit of volatility. In this case it is the natural logarithmic return per day $R$ divided by $\sigma$. $R$ is already calculated in equation \@ref(eq:LogR). [6] [7]
 
 \begin{equation}
@@ -403,9 +384,8 @@ The Sharpe ratio measures the performance of an investment which means the retur
 <p> *$R_{f}$ = risk-free rate of return* <p>
 <p> *$\sigma_{i}$ = volatility of return* <p>
 
-Before any weighting of a portfolio is optimized, the Sharpe ratio of the SMI is calculated. This is done by weighting all stocks equally, 1/20 each, and then applying the weightings to the actual returns of the historical data. This results in a Sharpe ratio of XX. Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. As mentioned above, the Sharpe ratio is used as a measure of the optimization and robustness. A robust optimization leads to a lower volatility which results in a higher Sharpe ratio. The higher the value the better the optimization.
+Before any weighting of a portfolio is optimized, the Sharpe ratio of the 20 shares is calculated. This is done by weighting all stocks equally, 1/20 each, and then applying the weightings to the actual returns of the historical data. This results in a Sharpe ratio of XX. Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. As mentioned above, the Sharpe ratio is used as a measure of the optimization and robustness. A robust optimization leads to a lower volatility which results in a higher Sharpe ratio. The higher the value the better the optimization.
 
-\newpage
 
 # Methodology {#methodology}
 
@@ -420,7 +400,7 @@ An intuitive approach to group stocks is to do so by industry. In the case of th
 <p> **Industrial:** *ABB, Geberit, Givaudan, LafargeHolcim, SGS* <p>
 <p> **Pharma:** *Lonza, Novartis, Roche, Sika* <p>
 
-To obtain the group returns, the daily mean value of the daily returns of all stocks within the group is calculated . Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. From this time series the mean returns, volatility and correlation matrix can be calculated from which the first two are shown in table \@ref(tab:grmrvoltab).
+To obtain the group returns, the daily mean value of the daily returns of all stocks within the group is calculated. Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. From this time series the mean returns, volatility and correlation matrix can be calculated from which the first two are shown in table \@ref(tab:grmrvoltab).
 
 ```{r grmrvoltab}
 gr = groups_returns(returns, groups)
@@ -430,24 +410,25 @@ kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"),
       digits = 3, booktabs = T, linesep = "")
 ```
 
+\newpage
+
 ### Grouping with cluster analysis {#groupclust}
-In a second approach the grouping is made by sorting the euclidean distance. The group formation is based on the similarity measure, which is calculated here with Euclidean distances between two correlation coefficients. The formula is illustrated below.
+In a second approach the grouping is made by sorting the euclidean distance. The group formation is based on the similarity measure, which is calculated here with euclidean distances between two correlation coefficients. The formula is illustrated below.
 
 \begin{equation}
   d_{1,2} = \sqrt{\sum_{j = 1}^{p}(x_{1} - x_{2})^{2}}
-  \label{eq:sharperatio}
+  \label{eq:eucledean}
 \end{equation}
 
 <p> *$d_{1,2}$ = euclidean distance between stock 1 and stock 2* <p>
 <p> *$x_{1}$ = stock 1* <p>
 <p> *$x_{2}$ = stock 2* <p>
 
-The Formula takes all column values of a first stock and calculates the squared difference to the column values of the second stock. These 20 values are summed up and the root is extracted from them. The result is the distance between the two stocks, and if it is done for all 20 stocks it results in a distance matrix. The algorithm sorts the values of the distance matrix with the method “complete”. The first step is (independent of methods) grouping the two stocks with the smallest distance. 
-The second step is comparing the created group to single stocks or groups. The distance between a group ($x_{1},x_{2}$) and a stock $x_{3}$ is the maximum distance between a stock of the group and the single stock.\newline
+The Formula takes all column values of a first stock and calculates the squared difference to the column values of the second stock. These 20 values are summed up and the root is extracted from them. The result is the distance between the two stocks, and if it is done for all 20 stocks it results in a distance matrix. The algorithm sorts the values of the distance matrix with the method “complete”. The first step is (independent of methods) grouping the two stocks with the smallest distance value. 
+The second step is comparing the created group to single stocks or groups. The distance between a group ($x_{1},x_{2}$) and a stock $x_{3}$ is the possible maximum distance between a stock of the group and the single stock.\newline
 $d\langle \{x_{1},x_{2}\} , x_{3} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{2}, x_{3} \rangle)$. \newline
 For distances between groups, the maximum value is taken from the distances between each object of a group with the object of another group. For distance between group ($x_{1},x_{2}$) and ($x_{3},x_{4}$) with two objects (stocks) applies \newline
-$d\langle \{x_{1},x_{2}\} , \{x_{3},x_{4}\} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{1}, x_{4} \rangle, d\langle x_{2}, x_{3} \rangle, d\langle x_{2}, x_{4} \rangle)$. The third step is repeating the procedure with the new created distance matrix until only two groups remain. The outcome is a dendogram which is also part of the illustration in figure \@ref(fig:heatmap). It can be seen that the first step of grouping is the connection which is drawn lowest. [10]
-**die farben sind die distanzen**
+$d\langle \{x_{1},x_{2}\} , \{x_{3},x_{4}\} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{1}, x_{4} \rangle, d\langle x_{2}, x_{3} \rangle, d\langle x_{2}, x_{4} \rangle)$. The third step is repeating the procedure with the new created distance matrix until only two groups remain. The outcome is a dendogram which is also part of the illustration in figure \@ref(fig:heatmap). It can be seen that the first step of grouping is the connection which is drawn lowest. The color scaling describes the different distances. [10]
 
 ```{r heatmap, fig.cap = "Grouped by euclidean distance for stocks", fig.height = 6.5}
 cor = cor_mat(returns)
@@ -459,23 +440,15 @@ heatmap3(as.matrix(d), symm = TRUE, method = "complete", col = colorRampPalette(
 <p> **Group 2:** *Givaudan, Lonza, Nestle, Novartis, Roche, Swisscom* <p>
 <p> **Group 3:** *Geberit, SGS, Sika* <p>
 
-**unterschiedliche gruppengroessen beschreiben und was das bedeutet**
-**eine 3er und eine 11er gruppe eher wenig sinnvoll**
+Using the cluster analysis, the 20 stocks can now be divided into three groups. The dendrogram in figure \@ref(fig:heatmap) clearly shows the breakdown. As a result three, according to number and sector, very different groups are created. This division makes mathematical sense, but is hardly ever used in practice. First, the groups are very different in terms of number of shares. *Group 1* has eleven stocks, but *Group 3* has only three. This would mean that if all shares within a group are weighted equally, the shares of *Group 3* would be weighted much higher than those of *Group 1*. Second, you would have to explain to an investor why ABB is in a group with UBS but not with Geberit, which is intuitively very contradictory.
 
-**plot von eingefaerbten gruppen zeigen analog shiny**
+Nevertheless, figure \@ref(fig:gefplot) can be used to provide some clarity. This plot underlines the division and makes clear how the groups are formed. The groups contain stocks with similar volatility and return, so it makes sense that ABB is grouped with UBS because of its high risk and not with Geberit.
 
-```{r g2rmrvoltab}
+```{r gefplot, fig.cap = 'Efficient frontier with stocks', fig.height = 5}
 g2r = groups_returns(r, groups2)
 gr_mr_vol = data.frame(colnames(g2r[-1]), mean_returns(g2r), volatilities(cov_mat(g2r)),
                        row.names = NULL)
-kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"),
-      caption = "groups with expected return and volatility",
-      digits = 3, booktabs = T, linesep = "")
-```
 
-Further methods like k-means or PAM etc. could be considered but are not discussed in this paper.
-
-```{r gefplot, fig.cap = 'Efficient frontier with stocks', fig.height = 5}
 g2cm = cov_mat(g2r); g2mr = mean_returns(g2r)
 efw_g2r = ef_weights(mvp_weights(g2cm), tp_weights(g2cm, g2mr), seq(-3, 3, 0.1))
 efp_g2r = ef_points(efw_g2r, g2cm, g2mr)
@@ -507,6 +480,16 @@ suppressMessages(
       custom_theme_markdown)))
 ```
 
+Table \@ref(tab:g2rmrvoltab) shows the returns and volatility of the three groups. It is clearly visible that the values have improved on average compared to table \@ref(tab:grmrvoltab). Further methods like k-means or PAM etc. could be considered but are not discussed in this paper.
+
+```{r g2rmrvoltab}
+kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"),
+      caption = "groups with expected return and volatility",
+      digits = 3, booktabs = T, linesep = "")
+```
+
+\newpage
+
 ## Bootstrap {#bootstrap}
 Bootstrapping is a statistical method of resampling. It allows to create a new sample with drawing from the existing sample. With 100 or more resampled data, each mean and variance of the samples can be analyzed. This method can be used to draw conclusion about a population from its sample.
 
@@ -533,6 +516,8 @@ suppressMessages(suppressWarnings(print(gg_bootstrap_ef(bs_r$samples_ef_points,
 ```
 
 In figure \@ref(fig:gg4) all bootstrap samples can be seen with their minimum variance portfolio, tangency portfolio and their efficiency frontier. Noticeable is the variance of the tangency portfolio in comparison to the minimum variance portfolio. This is due to the high standard errors of returns. Since the return is included in the calculation of the TP, but not in the MVP, a larger deviation can be seen.
+
+\newpage
 
 ## Cross validation {#crossvalidation}
 Cross validation is a model validation technique for assessing how a model will generalize to an independent data set, i.e., in another time period. The data set is split into a training set used to train the model and a test set to evaluate its performance. This procedure is replicated multiple times until all data was once in the test set.
@@ -587,7 +572,7 @@ ggplot(sets_tpw) +
   custom_theme_markdown
 ```
 
-Stocks like *Julius Baer* and *Sika* have similar weights across all models while *Lonza* for example varies significantly.
+Stocks like *Julius Baer* and *Sika* have similar weights across all models while *Lonza* for example varies significantly.Another potential approach could be to investigate what exactly happened to the individual stocks during this period. Perhaps the individual outliers could then be better explained.
 
 \newpage
 
@@ -712,9 +697,9 @@ There can also arise the case where for some shrinkage factor $\epsilon$ the sca
 \newpage
 
 # Results
-In this section the different approaches which were described in chapter \@ref(methodology) methodology are applied on the historical data. Section \@ref(res1) optimizes the entire SMI with 20 stocks. Section \@ref(res2) includes the optimization of the different grouping methods. Section \@ref(res3) applies the shrinkage.
+In this section the different approaches which were described in chapter methodology \@ref(methodology) are applied on the historical data. Section \@ref(res1) optimizes the 20 single stocks included in the SMI. Section \@ref(res2) includes the optimization of the different grouping methods. Section \@ref(res3) applies the shrinkage.
 
-## Sharpe ratio of SMI as a portfolio {#res1}
+## Results of individual SMI constituents {#res1}
 
 ```{r tabplot11}
 t11 = data.frame(is_r, os_r, row.names = "SMI")
@@ -724,7 +709,7 @@ kable(t11, caption = "Sharpe ratio",  digits = 3,
 ```
 
 
-The table \@ref(tab:tabplot11) describes the results of the cross-validation (\@ref(crossvalidation)) method of 20 stocks. As it can be seen and might be expected the in-sample performs much better than the out-of-sample. This is related to the fact that in-sample has the same testing section as training section. which logically results in a high performance considering that the testing data is part of the previous optimized training data. Contrary to the out-of-sample where the testing section is not included in the training section. If a stock behaves differently in this one test section compared to the 4 training sections flowing into the optimization, this stock can be easily over- or underfitted. This leads to a worse Sharpe ratio than the in-sample one. The consequences that can be drawn from this insight is, that firstly the in-sample Sharpe ratio should always be higher than the out-of-sample Sharpe ratio. Secondly, if the two Sharpe ratio differ clearly, the returns of each model differ as well. That means if we have similar returns over 20 years, in- and out-of-sample Sharpe ratio should be closer together, which is not the case here.
+Table \@ref(tab:tabplot11) describes the results of the cross-validation (\@ref(crossvalidation)) method of 20 stocks. As it can be seen and might be expected the in-sample performs much better than the out-of-sample. This is related to the fact that in-sample has the same testing section as training section. which logically results in a high performance considering that the testing data is part of the previous optimized training data. Contrary to the out-of-sample where the testing section is not included in the training section. If a stock behaves differently in this one test section compared to the 4 training sections flowing into the optimization, this stock can be easily over- or underfitted. This leads to a worse Sharpe ratio than the in-sample one. The consequences that can be drawn from this insight is, that firstly the in-sample Sharpe ratio should always be higher than the out-of-sample Sharpe ratio. Secondly, if the two Sharpe ratio differ clearly, the returns of each model differ as well. That means if we have similar returns over 20 years, in- and out-of-sample Sharpe ratio should be closer together, which is not the case here.
 
 <p> In the following two illustrations part of the bootstrap results can be seen. In the graphics the mean weights and the standard deviation over the 100 samples are shown. Figure \@ref(fig:mvpse) shows the MVP weights of the 20 stocks and figure \@ref(fig:tpse) the TP weights.<p>
 
@@ -746,7 +731,7 @@ gg_errorbar(stocks, tpw_r, tpw_sd_r, c(mintp, maxtp), "Weights", theme = custom_
 ```
 
 
-## Results of grouping and bootstrapping method {#res2}
+## Results of grouped SMI constituents and bootstrapping method {#res2}
 
 ```{r tabplot12}
 t12 = data.frame(c(is_gr, is_g2r),
@@ -756,11 +741,11 @@ kable(t12, caption = "Sharpe ratio",  digits = 3,
        booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
 ```
 
-Here in table \@ref(tab:tabplot12) the Sharpe ratio of in- and out-of-sample of the formed groups are presented. The first observation is, that the in-sample value decreased after the grouping method was applied. Optimizing 20 Parameters lead to higher possible variations, therefore this portfolio performs well in-sample. Between the two grouping methods though, the difference in parameters is to small to affect the Sharpe ratio in the way as mentioned before. Other impacts are more significant to the outcome. However the SMI should have the highest in-sample Sharpe ratio because of the numerous parameters.
+In the above table \@ref(tab:tabplot12) the Sharpe ratio of in- and out-of-sample of the formed groups are presented. The first observation is, that the in-sample value decreased after the grouping method was applied. Optimizing 20 Parameters lead to higher possible variations, therefore this portfolio performs well in-sample. Between the two grouping methods though, the difference in parameters is to small to affect the Sharpe ratio in the way as mentioned before. Other impacts are more significant to the outcome. However the SMI should have the highest in-sample Sharpe ratio because of the numerous parameters.
 
 Nevertheless, the out-of-sample Sharpe ratio has increased. This is because with forming groups, stock returns of companies within the group are being averaged. Consequently, the group return is more stable over the whole time period. As described more detailed in results \@ref(res1), this leads to a better performance respectively a better Sharpe ratio. Therefore, also in- and out-of-sample are here closer together.
 
-In chapter \@ref(groupclust), cluster analysis is used to optimize the group collocation. Hence, more correlating stocks are put together to have a more diversifying portfolio. Consequently, the correlation between the groups shrunk in comparison to the correlation between the groups by industry. Further seen in table \@ref(tab:tabplot12), the Sharpe ratio of the new grouping method is much higher than grouping by industries which is a logical consequence of the diversification. In reality though, it is unlikely to invest in such a compiled portfolio, however it was made to find a method for grouping, which affects the Sharpe ratio positively.
+In chapter \@ref(groupclust), cluster analysis is used to optimize the group composition. Hence, more correlating stocks are put together to have a more diversifying portfolio. Consequently, the correlation between the groups shrunk in comparison to the correlation between the groups by industry. Further seen in table \@ref(tab:tabplot12), the Sharpe ratio of the new grouping method is much higher than grouping by industries which is a logical consequence of the diversification. In reality though, it is unlikely to invest in such a compiled portfolio, however it was made to find a method for grouping, which affects the Sharpe ratio positively.
 
 Below the second part of bootstrapping results is depicted. As mentioned in section \@ref(res1), the same is shown for the groups. Figure \@ref(fig:mvpsegr) illustrates the MVP weights and figure \@ref(fig:tpsegr) the TP weights.
 
