@@ -1,5 +1,5 @@
 ---
-title: "Robust Methods of Portfolio Optimization Exemplified by the Swiss Market Index\\vspace{0.1cm}"
+title: "Robust Methods of Portfolio Optimization Exemplified by the Swiss Market Index Constituents\\vspace{0.1cm}"
 subtitle: "School of Engineering, Zurich University of Applied Sciences"
 author:
   - Pascal Aigner

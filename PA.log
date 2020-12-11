@@ -1,4 +1,4 @@
-This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.11.7)  10 DEC 2020 13:46
+This is pdfTeX, Version 3.14159265-2.6-1.40.21 (TeX Live 2020/W32TeX) (preloaded format=pdflatex 2020.11.7)  11 DEC 2020 12:13
 entering extended mode
  restricted \write18 enabled.
  %&-line parsing enabled.
@@ -960,7 +960,7 @@ LaTeX Warning: There were multiply-defined labels.
 Here is how much of TeX's memory you used:
  11382 strings out of 481466
  168319 string characters out of 5920170
- 466169 words of memory out of 5000000
+ 466305 words of memory out of 5000000
  27746 multiletter control sequences out of 15000+600000
  581574 words of font info for 66 fonts, out of 8000000 for 9000
  14 hyphenation exceptions out of 8191
@@ -987,7 +987,7 @@ a/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmsy8.pfb><c:/Users/
 pasca/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/lm/lmtt8.pfb><c:/Us
 ers/pasca/AppData/Roaming/TinyTeX/texmf-dist/fonts/type1/public/amsfonts/symbol
 s/msam7.pfb>
-Output written on PA.pdf (14 pages, 794966 bytes).
+Output written on PA.pdf (14 pages, 795366 bytes).
 PDF statistics:
  645 PDF objects out of 1000 (max. 8388607)
  563 compressed objects within 6 object streams
