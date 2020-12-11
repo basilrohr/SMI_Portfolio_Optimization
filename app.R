@@ -49,6 +49,9 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                              dataTableOutput("r_mr_vol", width = "90%")),
                                     tabPanel("Correlation", br(),
                                              plotOutput("r_cor", height = "600px")),
+                                    tabPanel("Standard error", br(),
+                                             plotOutput("seReturnPlot", width = "90%"),
+                                             dataTableOutput("seVolatility", width = "90%")),
                                     tabPanel("Risk-free rate",
                                              dataTableOutput("rf", width = "90%")))))),
                 tabPanel("Grouping",
@@ -103,24 +106,10 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                     tabPanel("Return and volatility",
                                              dataTableOutput("gr_mr_vol", width = "90%")),
                                     tabPanel("Correlation", br(),
-                                             plotOutput("gr_cor", height = "500px")))))),
-                tabPanel("Standard Errors",
-                         fluidRow(
-                           column(2,
-                                  strong("Standard error return"),
-                                  uiOutput("seReturnFormula"),
-                                  strong("Standard error volatility"),
-                                  uiOutput("seVolatilityFormula")),
-                           column(10,
-                                  tabsetPanel(
-                                    tabPanel("Stocks", br(),
-                                             fluidRow(
-                                               column(5, plotOutput("seReturnPlot")),
-                                               column(4, dataTableOutput("seVolatility", width = "90%")))),
-                                    tabPanel("Groups", br(),
-                                             fluidRow(
-                                               column(5, plotOutput("seGroupsReturnPlot")),
-                                               column(4, dataTableOutput("seGroupsVolatility", width = "90%")))))))),
+                                             plotOutput("gr_cor", height = "500px")),
+                                    tabPanel("Standard error", br(),
+                                             plotOutput("seGroupsReturnPlot", width = "90%"),
+                                             dataTableOutput("seGroupsVolatility", width = "90%")))))),
                 tabPanel("Markovitz Optimization",
                          fluidRow(
                            column(6,
@@ -272,14 +261,6 @@ server = function(input, output, session) {
     gg_cor(cor_mat(gr_react()), 5, 15, "Correlation", custom_theme_shiny)
   })
   
-  output$seReturnFormula = renderUI({
-    withMathJax(helpText("$$\\sigma_{\\overline{R}} = \\frac{\\sigma}{\\sqrt{n}}$$"))
-  })
-  
-  output$seVolatilityFormula = renderUI({
-    withMathJax(helpText("$$\\sigma_{\\sigma} = \\sigma * \\frac{1}{\\sqrt{2 * (n - 1)}}$$"))
-  })
-  
   seReturnPlot_react = reactive({
     r = r_react(); gr = gr_react()
     mr = mean_returns(r); gmr = mean_returns(gr)
@@ -304,7 +285,7 @@ server = function(input, output, session) {
     r = r_react()
     se_volr = data.frame(colnames(r[-1]), apply(r[,-1], 2, se_sd))
     se_volr %>% datatable(colnames = c("Stock", "Standard error volatility [%]"), rownames = NULL,
-                          options = list(dom = "tip", pageLength = 10)) %>%
+                          options = list(dom = "tip", pageLength = 5)) %>%
       formatRound(columns = 2, digits = 5)
   })
   
@@ -312,7 +293,7 @@ server = function(input, output, session) {
     gr = gr_react()
     se_volgr = data.frame(colnames(gr[-1]), apply(gr[,-1], 2, se_sd))
     se_volgr %>% datatable(colnames = c("Group", "Standard error volatility [%]"), rownames = NULL,
-                           options = list(dom = "t")) %>%
+                           options = list(dom = "tip", pageLength = 5)) %>%
       formatRound(columns = 2, digits = 5)
   })
   
