@@ -10,6 +10,33 @@ library(cluster)
 load("./Data/returns_1d.Rda")
 R.utils::sourceDirectory("./Code", modifiedOnly = F)
 
+
+
+cor = cor_mat(returns)
+hm = heatmap3(dist(cor), method = "complete", symm = T, margins = c(7, 7),
+              keep.dendro=TRUE,
+              col = colorRampPalette(c("orangered4", "orangered2", "honeydew"))(1000))
+
+
+row.clusters = as.hclust(hm$Rowv)
+cutree(row.clusters,k=1)
+
+t
+
+t[t == 1]
+
+l = list(names(t[t == 1]), names(t[t == 2]), names(t[t == 3]))
+
+
+l
+
+
+q = hclust(dist(cor), method = "complete")
+cutree(q,k=4)
+
+
+
+
 tt = groups_returns(returns, groups3)
 m = mean_returns(tt)
 co = cov_mat(tt)
