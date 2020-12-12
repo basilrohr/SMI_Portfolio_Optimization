@@ -428,19 +428,19 @@ The Formula takes all column values of a first stock and calculates the squared 
 The second step is comparing the created group to single stocks or groups. The distance between a group ($x_{1},x_{2}$) and a stock $x_{3}$ is the possible maximum distance between a stock of the group and the single stock.\newline
 $d\langle \{x_{1},x_{2}\} , x_{3} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{2}, x_{3} \rangle)$. \newline
 For distances between groups, the maximum value is taken from the distances between each object of a group with the object of another group. For distance between group ($x_{1},x_{2}$) and ($x_{3},x_{4}$) with two objects (stocks) applies \newline
-$d\langle \{x_{1},x_{2}\} , \{x_{3},x_{4}\} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{1}, x_{4} \rangle, d\langle x_{2}, x_{3} \rangle, d\langle x_{2}, x_{4} \rangle)$. The third step is repeating the procedure with the new created distance matrix until only two groups remain. The outcome is a dendogram which is also part of the illustration in figure \@ref(fig:heatmap). It can be seen that the first step of grouping is the connection which is drawn lowest. The color scaling describes the different distances. [10]
+$d\langle \{x_{1},x_{2}\} , \{x_{3},x_{4}\} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{1}, x_{4} \rangle, d\langle x_{2}, x_{3} \rangle, d\langle x_{2}, x_{4} \rangle)$. The third step is repeating the procedure with the new created distance matrix until only two groups remain. The outcome is a dendogram which is also part of the illustration in figure \@ref(fig:distheatmap). It can be seen that the first step of grouping is the connection which is drawn lowest. The color scaling describes the different distances. [10]
 
-```{r heatmap, fig.cap = "Grouped by euclidean distance for stocks", fig.height = 6.5}
+```{r distheatmap, fig.cap = "Grouped by euclidean distance of correlation coefficients", fig.height = 7}
 cor = cor_mat(returns)
-d = dist(cor)
-heatmap3(as.matrix(d), symm = TRUE, method = "complete", col = colorRampPalette(c("firebrick4", "orangered2", "honeydew"))(1000))
+heatmap3(as.matrix(dist(cor)), method = "complete", symm = T, margins = c(7, 7),
+         col = colorRampPalette(c("orangered4", "orangered2", "honeydew"))(1000))
 ```
 
 <p> **Group 1:** *ABB, Adecco, Credit Suisse, Julius Baer, LafargeHolcim, Richemont, Swatch, Swiss Life, Swiss Re, UBS, Zurich Insurance* <p>
 <p> **Group 2:** *Givaudan, Lonza, Nestle, Novartis, Roche, Swisscom* <p>
 <p> **Group 3:** *Geberit, SGS, Sika* <p>
 
-Using the cluster analysis, the 20 stocks can now be divided into three groups. The dendrogram in figure \@ref(fig:heatmap) clearly shows the breakdown. As a result three, according to number and sector, very different groups are created. This division makes mathematical sense, but is hardly ever used in practice. First, the groups are very different in terms of number of shares. *Group 1* has eleven stocks, but *Group 3* has only three. This would mean that if all shares within a group are weighted equally, the shares of *Group 3* would be weighted much higher than those of *Group 1*. Second, you would have to explain to an investor why ABB is in a group with UBS but not with Geberit, which is intuitively very contradictory.
+Using the cluster analysis, the 20 stocks can now be divided into three groups. The dendrogram in figure \@ref(fig:distheatmap) clearly shows the breakdown. As a result three, according to number and sector, very different groups are created. This division makes mathematical sense, but is hardly ever used in practice. First, the groups are very different in terms of number of shares. *Group 1* has eleven stocks, but *Group 3* has only three. This would mean that if all shares within a group are weighted equally, the shares of *Group 3* would be weighted much higher than those of *Group 1*. Second, you would have to explain to an investor why ABB is in a group with UBS but not with Geberit, which is intuitively very contradictory.
 
 Nevertheless, figure \@ref(fig:gefplot) can be used to provide some clarity. This plot underlines the division and makes clear how the groups are formed. The groups contain stocks with similar volatility and return, so it makes sense that ABB is grouped with UBS because of its high risk and not with Geberit.
 

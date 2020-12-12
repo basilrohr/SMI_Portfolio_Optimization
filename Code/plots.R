@@ -9,7 +9,7 @@ custom_theme_shiny = theme(axis.title.x = element_text(margin = margin(t = 10, r
                            legend.key =  element_blank(),
                            text = element_text(size = 15))
                            
-custom_theme_markdown = custom_theme_shiny + theme(text = element_text(family = "Times", size = 15))
+custom_theme_markdown = custom_theme_shiny + theme(text = element_text(family = "Times"))
 
 gg_cor = function(cor, lab_size, tl.cex, title = " ", theme = NULL) {
   gg = ggcorrplot(cor, lab = T, lab_size = lab_size, tl.cex = tl.cex, title = title, ggtheme = theme) +

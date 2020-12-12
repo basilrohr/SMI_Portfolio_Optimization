@@ -8,6 +8,7 @@ library(DT)
 library(shinycssloaders)
 library(cowplot)
 library(ggrepel)
+library(heatmap3)
 
 sourceDirectory("./Code", modifiedOnly = F)
 
@@ -54,7 +55,7 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                              dataTableOutput("seVolatility", width = "90%")),
                                     tabPanel("Risk-free rate",
                                              dataTableOutput("rf", width = "90%")))))),
-                tabPanel("Grouping",
+                tabPanel("Groups",
                          fluidRow(
                            column(7,
                                   strong("Groups"),
@@ -99,17 +100,20 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                       text = "Exclude",
                                       labels = c())),
                                   textOutput("errorGroupNames"),
-                                  tags$head(tags$style("#errorGroupNames{color: red; font-size: 16px;
-                                                       font-weight: bold;}"))),
+                                  tags$style("#errorGroupNames{color: red; font-size: 16px; font-weight: bold;}")),
                            column(5,
                                   tabsetPanel(
                                     tabPanel("Return and volatility",
                                              dataTableOutput("gr_mr_vol", width = "90%")),
                                     tabPanel("Correlation", br(),
-                                             plotOutput("gr_cor", height = "500px")),
+                                             plotOutput("gr_cor", height = "600px")),
                                     tabPanel("Standard error", br(),
                                              plotOutput("seGroupsReturnPlot", width = "90%"),
-                                             dataTableOutput("seGroupsVolatility", width = "90%")))))),
+                                             dataTableOutput("seGroupsVolatility", width = "90%")),
+                                    tabPanel("Cluster", br(),
+                                             tags$div(style="font-size: 17px; font-weight: bold; text-align: center;",
+                                                      "Grouped by euclidean distance of correlation coefficients"),
+                                             plotOutput("distHeatmap", height = "600px")))))),
                 tabPanel("Markovitz Optimization",
                          fluidRow(
                            column(6,
@@ -253,7 +257,7 @@ server = function(input, output, session) {
     gr = gr_react()
     gr_mr_vol = data.frame(colnames(gr[-1]), mean_returns(gr), volatilities(cov_mat(gr)))
     gr_mr_vol %>% datatable(colnames = c("Group","Return [%]", "Volatility [%]"), rownames = NULL,
-                            options = list(dom = "t")) %>%
+                            options = list(dom = "tip", pageLength = 10)) %>%
       formatRound(columns = c(2:3), digits = 3)
   })
   
@@ -267,9 +271,9 @@ server = function(input, output, session) {
     se_r = apply(r[,-1], 2, se_mean); se_gr = apply(gr[,-1], 2, se_mean)
     min = min(c(mr - se_r, gmr - se_gr)); max = max(c(mr + se_r, gmr + se_gr))
     gg1 = gg_errorbar(colnames(r[-1]), mr, se_r, c(min, max), "Return [%]", 
-                      "Standard error return", custom_theme_shiny)
+                      "Standard error of return", custom_theme_shiny)
     gg2 = gg_errorbar(colnames(gr[-1]), gmr, se_gr, c(min, max), "Return [%]",
-                      "Standard error return", custom_theme_shiny)
+                      "Standard error of return", custom_theme_shiny)
     align_plots(gg1, gg2, align = "h")
   })
   
@@ -284,7 +288,7 @@ server = function(input, output, session) {
   output$seVolatility = renderDataTable({
     r = r_react()
     se_volr = data.frame(colnames(r[-1]), apply(r[,-1], 2, se_sd))
-    se_volr %>% datatable(colnames = c("Stock", "Standard error volatility [%]"), rownames = NULL,
+    se_volr %>% datatable(colnames = c("Stock", "Standard error of volatility [%]"), rownames = NULL,
                           options = list(dom = "tip", pageLength = 5)) %>%
       formatRound(columns = 2, digits = 5)
   })
@@ -292,9 +296,15 @@ server = function(input, output, session) {
   output$seGroupsVolatility = renderDataTable({
     gr = gr_react()
     se_volgr = data.frame(colnames(gr[-1]), apply(gr[,-1], 2, se_sd))
-    se_volgr %>% datatable(colnames = c("Group", "Standard error volatility [%]"), rownames = NULL,
+    se_volgr %>% datatable(colnames = c("Group", "Standard error of volatility [%]"), rownames = NULL,
                            options = list(dom = "tip", pageLength = 5)) %>%
       formatRound(columns = 2, digits = 5)
+  })
+  
+  output$distHeatmap = renderPlot({
+    cor = cor_mat(r_react())
+    heatmap3(as.matrix(dist(cor)), method = "complete", symm = T, cexRow = 1.2, cexCol = 1.2, margins = c(8, 8),
+             col = colorRampPalette(c("orangered4", "orangered2", "honeydew"))(1000))
   })
   
   ef_react = reactive({
