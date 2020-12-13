@@ -385,17 +385,17 @@ The Sharpe ratio measures the performance of an investment which means the retur
 # Methodology {#methodology}
 
 ## Grouping {#grouping}
-Grouping of stocks is an approach to reduce the noise given by individual assets and therefore increase the Sharpe ratio. A more qualitative approach and a mathematical approach are applied in this paper.
+Grouping of stocks is an approach to reduce the noise given by individual assets and therefore increase the Sharpe ratio. A more qualitative and a mathematical approach are applied.
 
 ### Grouping by industry
-An intuitive approach to group stocks is to do so by industry. In the case of the SMI the stocks can be grouped as follows resulting in four groups:
+An intuitive approach is grouping stocks by industry. In the case of the SMI the stocks can be grouped as follows:
 
 <p> **Consumer:** *Adecco, Nestle, Richemont, Swatch, Swisscom* <p>
 <p> **Finance:** *Credit Suisse, Julius Baer, Swiss Life, Swiss Re, UBS, Zurich Insurance* <p>
 <p> **Industrial:** *ABB, Geberit, Givaudan, LafargeHolcim, SGS* <p>
 <p> **Pharma:** *Lonza, Novartis, Roche, Sika* <p>
 
-To obtain the group returns, the daily mean value of the daily returns of all stocks within the group is calculated. Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. From this time series the mean returns, volatility and correlation matrix can be calculated from which the first two are shown in table \@ref(tab:grmrvoltab).
+To obtain the group returns, the mean value of the daily returns of all stocks within the group is calculated. Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. From this time series the mean returns, volatility and correlation matrix can be calculated as shown in table \@ref(tab:grmrvoltab).
 
 ```{r grmrvoltab}
 gr = groups_returns(returns, groups)
@@ -408,34 +408,45 @@ kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"),
 \newpage
 
 ### Grouping with cluster analysis {#groupclust}
-In a second approach the grouping is made by sorting the euclidean distance. The group formation is based on the similarity measure, which is calculated here with euclidean distances between two correlation coefficients. The formula is illustrated below.
+In a second approach grouping is based on the similarity measure, which is calculated with Euclidean distances between two correlation coefficients. The formula is illustrated below.
 
 \begin{equation}
-  d_{1,2} = \sqrt{\sum_{j = 1}^{p}(x_{1} - x_{2})^{2}}
+  d_{i,j} = \sqrt{\vec{1}^\intercal(\vec{x_{i}} - \vec{x_{j}})^{2}}
   \label{eq:eucledean}
 \end{equation}
 
-<p> *$d_{1,2}$ = euclidean distance between stock 1 and stock 2* <p>
-<p> *$x_{1}$ = stock 1* <p>
-<p> *$x_{2}$ = stock 2* <p>
+<p> *$d_{i,j}$ = Euclidean distance between stock i and stock j* <p>
+<p> *$\vec{x_{i}}$ = correlation coefficients of stock i (column in corr. matrix)* <p>
+<p> *$\vec{x_{j}}$ = correlation coefficients of stock j (column in corr. matrix)* <p>
+<p> *$\vec{1}$ = all-ones vector* <p>
 
-The Formula takes all column values of a first stock and calculates the squared difference to the column values of the second stock. These 20 values are summed up and the root is extracted from them. The result is the distance between the two stocks, and if it is done for all 20 stocks it results in a distance matrix. The algorithm sorts the values of the distance matrix with the method “complete”. The first step is (independent of methods) grouping the two stocks with the smallest distance value. 
-The second step is comparing the created group to single stocks or groups. The distance between a group ($x_{1},x_{2}$) and a stock $x_{3}$ is the possible maximum distance between a stock of the group and the single stock.\newline
-$d\langle \{x_{1},x_{2}\} , x_{3} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{2}, x_{3} \rangle)$. \newline
-For distances between groups, the maximum value is taken from the distances between each object of a group with the object of another group. For distance between group ($x_{1},x_{2}$) and ($x_{3},x_{4}$) with two objects (stocks) applies \newline
-$d\langle \{x_{1},x_{2}\} , \{x_{3},x_{4}\} \rangle = max(d\langle x_{1}, x_{3} \rangle, d\langle x_{1}, x_{4} \rangle, d\langle x_{2}, x_{3} \rangle, d\langle x_{2}, x_{4} \rangle)$. The third step is repeating the procedure with the new created distance matrix until only two groups remain. The outcome is a dendogram which is also part of the illustration in figure \@ref(fig:distheatmap). It can be seen that the first step of grouping is the connection which is drawn lowest. The color scaling describes the different distances. [10]
+When equation \@ref{eq:eucledean} is applied to the correlation matrix shown in figure \@ref{fig:corplot}, it results in a distance matrix with the same dimensions. The algorithm sorts the values of the distance matrix with the complete-linkage method. 
 
-```{r distheatmap, fig.cap = "Grouped by euclidean distance of correlation coefficients", fig.height = 7}
+**Step 1**
+Group the two stocks with the smallest distance value. 
+
+**Step 2**
+Compare the created group with individual stocks or other created groups. The distance between a group $(i,j)$ and a individual stock $k$ is the largest possible distance between a stock within the group and the individual stock.\newline
+$d\langle \{i,j\} , k \rangle = max(d\langle i, k \rangle, d\langle j, k \rangle)$. \newline
+For distances between groups, the largest possible distance is taken from the distances between each stock of a group with a stock of another group. For distance between group $(i,j)$ and $(k,l)$ with two stocks applies \newline
+$d\langle \{i,j\} , \{k,l\} \rangle = max(d\langle i, k \rangle, d\langle i, l \rangle, d\langle j, k \rangle, d\langle j, l \rangle)$.
+
+**Step 3**
+Repeat the procedure with the new created distance matrix until only two groups remain. The outcome is a dendogram which is also part of the illustration in figure \@ref(fig:distheatmap). It can be seen that the first step of grouping is the connection which is drawn lowest. The color scaling describes the different distances. [10]
+
+```{r distheatmap, fig.cap = "Grouped by Euclidean distance of correlation coefficients", fig.height = 7}
 cor = cor_mat(returns)
 heatmap3(as.matrix(dist(cor)), method = "complete", symm = T, margins = c(7, 7),
          col = colorRampPalette(c("orangered4", "orangered2", "honeydew"))(1000))
 ```
 
+\newpage
+
 <p> **Group 1:** *ABB, Adecco, Credit Suisse, Julius Baer, LafargeHolcim, Richemont, Swatch, Swiss Life, Swiss Re, UBS, Zurich Insurance* <p>
 <p> **Group 2:** *Givaudan, Lonza, Nestle, Novartis, Roche, Swisscom* <p>
 <p> **Group 3:** *Geberit, SGS, Sika* <p>
 
-Using the cluster analysis, the 20 stocks can now be divided into three groups. The dendrogram in figure \@ref(fig:distheatmap) clearly shows the breakdown. As a result three, according to number and sector, very different groups are created. This division makes mathematical sense, but is hardly ever used in practice. First, the groups are very different in terms of number of shares. *Group 1* has eleven stocks, but *Group 3* has only three. This would mean that if all shares within a group are weighted equally, the shares of *Group 3* would be weighted much higher than those of *Group 1*. Second, you would have to explain to an investor why ABB is in a group with UBS but not with Geberit, which is intuitively very contradictory.
+Using  cluster analysis, 20 stocks can now be divided into three groups. The dendrogram in figure \@ref(fig:distheatmap) clearly shows the allocation. This division makes mathematical sense, but is hardly ever used in practice. First, the groups are different in terms of number of shares. *Group 1* has eleven stocks, but *Group 3* has only three. This would mean that if all shares within a group are weighted equally, the shares of *Group 3* would be weighted much higher than those of *Group 1*. Second, you would have to explain to an investor why a stock from the industrial sector is grouped with a stock from the financial sector. For example ABB is grouped with UBS but not with Geberit, which is intuitively very contradictory.
 
 Nevertheless, figure \@ref(fig:gefplot) can be used to provide some clarity. This plot underlines the division and makes clear how the groups are formed. The groups contain stocks with similar volatility and return, so it makes sense that ABB is grouped with UBS because of its high risk and not with Geberit.
 
@@ -487,29 +498,28 @@ kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"),
 ## Bootstrap {#bootstrap}
 Bootstrapping is a statistical method of resampling. It allows to create a new sample with drawing from the existing sample. With 100 or more resampled data, each mean and variance of the samples can be analyzed. This method can be used to draw conclusion about a population from its sample.
 
-In this method a bootstrap process was made to analyze the robustness of the tangency portfolio weights when resampling all historical returns.
+In this method a bootstrap process is applied to analyze the robustness of the tangency portfolio weights when resampling all historical returns.
 
 **Step 1**
-The dates of the historical data is being sampled (using `sample()`) in the same dimension, with replacing included. In other words, the row numbers of the historical is being sampled. With the argument `replace = TRUE` ensures, that certain dates, respectively rows can occur multiple times. If replacing would not be included in the sampling method, the correlation matrix would remain constant to the one of the original data.
+The dates of the historical data are sampled (using `sample()`) in the same dimension, with replacing included. In other words, the row numbers of the historical data are sampled. With the argument `replace = TRUE` ensures, that certain dates, respectively rows can occur multiple times. If replacing would not be included in the sampling method, the correlation matrix would remain constant to the one of the original data.
 
 **Step 2**
-A new dataset is created with the new sorted dates or row numbers. From each sampled date or row, the corresponding returns of each stock are added to the new dataset, consequently maintaining the daily differences between stocks. This new dataset is one Bootstrap sample.
+A new data set is created with the new sorted dates or row numbers. From each sampled date, the corresponding returns of each stock are added to the new data set, consequently maintaining the daily differences between stocks. This new data set is considered as a bootstrap sample.
 
 **Step 3**
-From the Bootstrap sample, new mean return of each stock and the corresponding covariance matrix is being calculated. Those two variables are now used as input of the optimization function to calculate minimum variance portfolio, tangency portfolio of the stocks. The weights of this two portfolios are now being saved in a mvp-weights-matrix and a tp-weights-matrix.
+From the bootstrap sample, new mean return of each stock and the corresponding covariance matrix is being calculated. Those two variables are now used as input of the optimization function to calculate minimum variance portfolio and tangency portfolio. The weights of this two portfolios are now being saved in a mvp-weights-matrix and a tp-weights-matrix.
 
 **Step 4**
-Repeat the steps 1-3 100 times. This results in two matrices with each 100 rows of weights. Those MVP and TP weights can now be compared and analyzed. Additionally, the standard deviation of the resulting weights over those number of bootstrap samples can be studied. The standard deviation is computed with the 84-Quantil minus the 50-Quantil to achieve a more robust result, because this calculation is less vulnerable to outliers.
+Repeat the steps 1-3 100 times. This results in two matrices, each with 100 rows of weights. Those MVP and TP weights can now be compared and analyzed. Additionally, the standard deviation of the resulting weights over those number of bootstrap samples can be investigated. The standard deviation is computed with the 84-quantile minus the 50-quantile to achieve a more robust result, because this calculation is less vulnerable to outliers.
 
-**: the extended cloud of red dots demonstrates the huge estimation error of the risk and return of the TP**
+
+In figure \@ref(fig:gg4) all bootstrap samples can be seen with their minimum variance portfolio, tangency portfolio and their efficiency frontier. Noticeable is the variance of the tangency portfolio in comparison to the minimum variance portfolio. This is due to the high standard errors of returns. Since the return is included in the calculation of the TP, but not in the MVP, a larger deviation can be seen.
 
 ```{r gg4, fig.cap = 'Bootstrap samples efficiency frontier', fig.height = 4}
 bs_r = bootstrap(r); bs_gr = bootstrap(gr)
 suppressMessages(suppressWarnings(print(gg_bootstrap_ef(bs_r$samples_ef_points,
                                                         theme = custom_theme_markdown))))
 ```
-
-In figure \@ref(fig:gg4) all bootstrap samples can be seen with their minimum variance portfolio, tangency portfolio and their efficiency frontier. Noticeable is the variance of the tangency portfolio in comparison to the minimum variance portfolio. This is due to the high standard errors of returns. Since the return is included in the calculation of the TP, but not in the MVP, a larger deviation can be seen.
 
 \newpage
 
@@ -522,7 +532,7 @@ In this case, the historical data is split into five sections and consequentiall
 knitr::include_graphics("./www/Cross_validation.jpg")
 ```
 
-In the case of the Markovitz model, the mean returns and covariance matrix of the training set are used to calculate the asset weights. These weights are then applied to the test set asset returns according to \@ref(eq:weightedreturn).
+In the case of the Markovitz model, the mean returns and covariance matrix of the training set are used to calculate the asset weights. These weights are then applied to the test set asset returns according to equation \@ref(eq:weightedreturn).
 
 \begin{equation}
 R_{i,w} = \vec{w}^\intercal * \vec{R_i}
@@ -533,9 +543,11 @@ R_{i,w} = \vec{w}^\intercal * \vec{R_i}
 <p> *$\vec{w}$ = asset weights* <p>
 <p> *$\vec{R_i}$ = asset returns day i* <p>
 
-At the end of the cross validation, all five test sets are combined into one time series consisting of the daily weighted returns and equaling the length of the historical data. This time series is completely out of sample and is used to calculate the Sharpe ratio and hence measure the performance of the model. The implicit assumption behind this procedure is that the returns at different points in time are independent random variables (and, in particular, do not “remember” the past).
+At the end of the cross validation, all five test sets are combined into one time series consisting daily weighted returns and equaling the length of the historical data. This time series is entirely out of sample and is used to calculate the Sharpe ratio and hence measure the performance of the model. The implicit assumption behind this procedure is that the returns at different points in time are independent random variables (and, in particular, do not “remember” the past).
 
 It is to note that the training and test sets of the five sections vary significantly in some cases. To give one cause for this, the financial crisis from 2007–2008 can be looked at. During this period, most assets yielded negative returns. For example, model two in figure \@ref(fig:crossvalidation) includes this time period as part of the test set and model four of the training set. This results in fluctuating asset weights across the five models which are illustrated in figure \@ref(fig:tpwbymodel).
+
+\newpage
 
 ```{r tpwbymodel, fig.cap = "Tangency portfolio weights by model", fig.height = 5}
 is_r = in_sample(r); is_gr = in_sample(gr); is_g2r = in_sample(g2r)
@@ -566,15 +578,11 @@ ggplot(sets_tpw) +
   custom_theme_markdown
 ```
 
-Stocks like *Julius Baer* and *Sika* have similar weights across all models while *Lonza* for example varies significantly.Another potential approach could be to investigate what exactly happened to the individual stocks during this period. Perhaps the individual outliers could then be better explained.
-
-\newpage
-
 ## Shrinkage {#shrinkage}
-Shrinkage is an approach with the goal to increase the out of sample Sharpe ratio by altering the inputs of the Markovitz optimization, namely the mean returns and covariance matrix.
+Shrinkage is an approach with the objective to increase the out of sample Sharpe ratio by altering the inputs of the Markovitz optimization, namely the mean returns and covariance matrix.
 
 ### Shrinkage of mean returns
-The shrunk mean returns are calculated as in \@ref(eq:shrinkr).
+The shrunk mean returns are calculated as in equation \@ref(eq:shrinkr).
 
 \begin{equation}
 \vec{R}(\lambda) = \lambda*\vec{R} + (1 - \lambda) * \vec{\overline{R}}
@@ -586,23 +594,23 @@ The shrunk mean returns are calculated as in \@ref(eq:shrinkr).
 <p> *$\vec{R}$ = mean returns* <p>
 <p> *$\vec{\overline{R}}$ = mean of mean returns* <p>
 
-When the shrinkage factor $\lambda$ is set to one, the mean returns remain unchanged. When it is decreased from one towards zero, the mean returns converge towards their mean value. Once the shrinkage factor $\lambda$ is zero and therefore all mean returns are equal, the tangency portfolio \@ref(eq:tpw) obtains the same asset weights as the minimum variance portfolio \@ref(eq:mvpw).
+When the shrinkage factor $\lambda$ is set to one, the mean returns remain unchanged. When it is decreased from one towards zero, the mean returns converge towards their mean value. Once the shrinkage factor $\lambda$ is zero and therefore all mean returns are equal, the tangency portfolio eq. \@ref(eq:tpw) obtains the same asset weights as the minimum variance portfolio eq. \@ref(eq:mvpw).
 
-There is an important constraint in mean returns shrinkage. Take the scaling factor of the tangency portfolio \@ref(eq:tpw) and replace $\vec{R}$ with \@ref(eq:shrinkr) as in \@ref(eq:tpwsf).
+There is an important constraint in mean returns shrinkage. Take the scaling factor of the tangency portfolio eq. \@ref(eq:tpw) and replace $\vec{R}$ with eq. \@ref(eq:shrinkr) as shown in eq. \@ref(eq:tpwsf).
 
 \begin{equation}
 \vec{w}_{tp,sf} = \frac{1}{\vec{1}\Sigma^{-1}(\lambda*\vec{R} + (1 - \lambda) * \vec{\overline{R}})}
   \label{eq:tpwsf}
 \end{equation}
 
-It is clear that for some value of $\lambda$ the denominator becomes zero. Computationally, it is already problematic if the denominator is close to zero. When setting the denominator equal to zero, the value of $\lambda$ at the zero crossing can be calculated as in \@ref(eq:lambdazero).
+It is clear that for some value of $\lambda$ the denominator becomes zero. Computationally, it is already problematic if the denominator is close to zero. When setting the denominator equal to zero, the value of $\lambda$ at the zero crossing can be calculated as in eq. \@ref(eq:lambdazero).
 
 \begin{equation}
 \lambda_0 = \frac{-\vec{1}\Sigma^{-1}\vec{\overline{R}}}{\vec{1}\Sigma^{-1}\vec{R} - \vec{1}\Sigma^{-1}\vec{\overline{R}}}
   \label{eq:lambdazero}
 \end{equation}
 
-If the zero crossing is in the shrinkage interval of $[0, 1]$, this results in extreme asset weights. As the denominator approaches zero, the scaling factor \@ref(eq:tpwsf) becomes very large which carries over to the weights. To illustrate this effect, the weights of the five cross validation models from figure \@ref(fig:crossvalidation) are plotted as a function of $\lambda$ in figure \@ref(fig:tpwshrinkbymodel).
+If the zero crossing is in the shrinkage interval of $[0, 1]$, this results in extreme asset weights. As the denominator approaches zero, the scaling factor in eq. \@ref(eq:tpwsf) becomes very large which affects the weights. To illustrate this effect, the weights of the five cross validation models from figure \@ref(fig:crossvalidation) are plotted as a function of $\lambda$ in figure \@ref(fig:tpwshrinkbymodel).
 
 ```{r tpwshrinkbymodel, fig.cap = "Tangency portfolio weights by model as a function of $\\lambda$", fig.height = 5}
 n = ncol(r[-1]); start = 0; stop = 1; size = 0.2
@@ -639,7 +647,7 @@ gg5 = gg5 + labs(x = expression(lambda), y = "Weight", title = "Model 5")
 ggarrange(gg1, gg2, gg3, gg4, gg5)
 ```
 
-Model three shows such extreme asset weights ranging from about -20 to 20. The asymptote is visualized as a vertical red line. It is not optimal when such extreme weights are applied to returns as done in the cross validation. This can negatively influence further calculations and lead to undesired results. The other four models do show asset weights in a normal scale.
+Model three in figure \@ref(fig:tpwshrinkbymodel) shows such extreme asset weights ranging from approximately -20 to 20. The asymptote is visualized as a vertical red line. It is not optimal when such extreme weights are applied to returns as done in the cross validation. This can negatively influence further calculations and lead to undesired results. The other four models do show asset weights in a normal scale.
 
 The scaling factor as a function of $\lambda$ is shown in figure \@ref(fig:tpwsfshrinkbymodel).
 
@@ -669,10 +677,10 @@ gg5 = gg5 + geom_line(aes(x = seq(start, stop, 0.01), y = out5[1,]), size = size
 ggarrange(gg1, gg2, gg3, gg4, gg5)
 ```
 
-The zero crossing of the scaling factor in model three can be seen clearly. When working with mean returns shrinkage one has to be aware of this behavior.
+The zero crossing of the scaling factor in model three can be seen clearly. When working with mean returns shrinkage, one has to be aware of this behavior.
 
 ### Shrinkage of correlation matrix
-The shrunk correlation matrix is calculated as in \@ref(eq:shrinkcor).
+The shrunk correlation matrix is calculated as in equation \@ref(eq:shrinkcor).
 
 \begin{equation}
 \rho_{i,j}(\epsilon) = I_{i,j} + \epsilon * \tilde{\rho}_{i,j}
@@ -684,11 +692,9 @@ The shrunk correlation matrix is calculated as in \@ref(eq:shrinkcor).
 <p> *$I_{i,j}$ = identity matrix at i,j* <p>
 <p> *$\tilde{\rho}_{i,j}$ = correlation matrix with diagonal zero at i,j* <p>
 
-When the shrinkage factor $\epsilon$ is set to one, the correlation matrix remains unchanged. When it is decreased from one towards zero, the correlation coefficients converge towards zero, except for the diagonal which always remains one. As the tangency portfolio \@ref(eq:tpw) requires the covariance matrix, it is first standardized to the correlation matrix according to \@ref(eq:cor), then shrunk with \@ref(eq:shrinkcor) and scaled up to the covariance matrix again according to \@ref(eq:cor).
+When the shrinkage factor $\epsilon$ is set to one, the correlation matrix remains unchanged. When it is decreased from one towards zero, the correlation coefficients converge towards zero, except for the diagonal which always remains one. As the tangency portfolio eq. \@ref(eq:tpw) requires the covariance matrix, it is first standardized to the correlation matrix according to eq. \@ref(eq:cor), then shrunk with eq. \@ref(eq:shrinkcor) and scaled up to the covariance matrix again according to eq. \@ref(eq:cor).
 
-There can also arise the case where for some shrinkage factor $\epsilon$ the scaling factor denominator of the tangency portfolio \@ref(eq:tpw) becomes zero or close to zero. However, this is not further elaborated on.
-
-\newpage
+There can also arise the case, where for some shrinkage factor $\epsilon$ the denominator of the tangency portfolio eq. \@ref(eq:tpw) becomes zero or close to zero. However, this is not further elaborated on.
 
 # Results
 In this section the different approaches which were described in chapter methodology \@ref(methodology) are applied on the historical data. Section \@ref(res1) optimizes the 20 single stocks included in the SMI. Section \@ref(res2) includes the optimization of the different grouping methods. Section \@ref(res3) applies the shrinkage.
