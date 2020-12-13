@@ -9,13 +9,14 @@ date: "`r format(Sys.time(), '%d. %B %Y')`"
 abstract: "Markowitz optimization requires estimates of the expected return, standard deviation, and correlations of individual stocks, all of which are subject to estimation errors. This leads to the risk of overfitting historical data and, in the case of portfolio optimization, creating portfolios that perform well in backtesting but poorly in the future. To overcome these problems, several robust approaches are investigated, such as asset grouping, shrinkage estimators for historical returns and correlations, and bootstrapping. The goal is to provide a recommended methodology for optimizing a portfolio that includes all stocks from the Swiss Market Index. In summary, two key observations are made. First, asset grouping leads to better portfolio performance relative to individual assets. Similarly, shrinkage leads to increased performance for assets with noisy historical data.\\par\\textbf{Keywords:} Portfolio optimization, Robust optimization, Markowitz model, Covariance matrix, Shrinkage, Sharpe ratio\\newpage"
 output:
   bookdown::pdf_book:
-    toc: F
+    toc: false
 classoption: twocolumn
 geometry: margin = 20mm
 documentclass: extarticle
 fontsize: 8pt
 bibliography: references.bib
-csl: ieee.csl
+csl: ieee-with-url.csl
+link-citations: true
 header-includes:
   - \usepackage{float}
   - \floatplacement{figure}{H}
@@ -45,7 +46,7 @@ R.utils::sourceDirectory("./Code", modifiedOnly = F)
 Markowitz' Optimization and other models of Finance require estimates of the expected return, the standard deviation and the correlations of individual assets.
 These estimates are subject to estimation errors, especially when they are based on short historical time series. This leads to the danger of over- fitting historical data and - in the case of portfolio optimization - of producing portfolios that perform well in backtesting, but perform poorly in the future.
 To overcome these problems, several approaches have been proposed. This includes Bayesian approaches, including shrinking Estimators for historical returns, volatilites and correlations. It also includes resampling/bootstrapping approaches, where expected returns, volatilites and correlations are modelled as random variables.
-We will analyze a variety of such approaches, identify those that add most value in the context of investment management, and combine/improve them. The goal is a recommended methodology for computing the strategic asset allocation of pension funds and other institutional investors. [@R-base]
+We will analyze a variety of such approaches, identify those that add most value in the context of investment management, and combine/improve them. The goal is a recommended methodology for computing the strategic asset allocation of pension funds and other institutional investors. [@R-base] [@yahoo]
 
 Lange, min. eine halbe Seite
 
@@ -169,7 +170,7 @@ In statistics the standard deviation of the sampling distribution is known as th
 <p> *$\sigma$ = standard deviation of sample* <p>
 <p> *$n$ = sample size* <p>
 
-Figure \@ref(fig:serplot) shows the logarithmic mean return with the standard errors for each stock. It is easy to see that stocks such as *Swisscom* and *Nestle* with low volatility (table @\ref(tab:rmrvoltab)) also have a lower standard error. As well *ABB* and *Credit Suisse* have a high volatility and accordingly show higher values for the standard error.
+Figure \@ref(fig:serplot) shows the logarithmic mean return with the standard errors for each stock. It is easy to see that stocks such as *Swisscom* and *Nestle* with low volatility (table \@ref(tab:rmrvoltab)) also have a lower standard error. As well *ABB* and *Credit Suisse* have a high volatility and accordingly show higher values for the standard error.
 
 ```{r serplot, fig.cap = 'Expected mean return with standard error', fig.height = 4}
 mr = mean_returns(r)
@@ -275,7 +276,7 @@ kable(mvpw_r, col.names = c("Stock", "Weight"), caption = "Weights of minimum va
 \newpage
 
 ## Tangency portfolio 
-The tangency portfolio, short TP, results from the tangent of the capital market line and the efficient frontier, which will be shown more detailed in chapter @\ref(EF). The capital market line is an important component of the capital asset pricing model (CAPM). The slope of the capital market line indicates how much more return is expected per additional volatility. This is exactly the situation when the capital market line is tangential to the efficient frontier. Therefore, the best possible diversified portfolio results from the weightings of the tangency portfolio. 
+The tangency portfolio, short TP, results from the tangent of the capital market line and the efficient frontier, which will be shown more detailed in chapter \@ref(EF). The capital market line is an important component of the capital asset pricing model (CAPM). The slope of the capital market line indicates how much more return is expected per additional volatility. This is exactly the situation when the capital market line is tangential to the efficient frontier. Therefore, the best possible diversified portfolio results from the weightings of the tangency portfolio. 
 
 The tangency portfolio is often referred to in the literature as the market portfolio. In the equation for the capital market line, shown as equation \@ref(eq:cml), the expected return of the market portfolio respectively the tangency portfolio is written as $R_{tp}$.
 
