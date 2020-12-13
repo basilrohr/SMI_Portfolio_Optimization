@@ -6,7 +6,7 @@ author:
   - Maurice Gerber
   - Basil Rohr
 date: "`r format(Sys.time(), '%d. %B %Y')`"
-abstract: "Markowitz' optimization requires estimates of the expected return, standard deviation and correlations of the individual stocks. These estimates are subject to estimation errors, especially if they are based on short historical time series. This leads to the risk of overfitting historical data and, in the case of portfolio optimization, creating portfolios that perform well in backtesting but poorly in the future. To overcome these problems are several approaches including shrinkable estimators for historical returns and correlations. Also included are bootstrapping approaches in which expected returns, volatilities, and correlations are modeled as random variables. The goal is to provide a recommended methodology for optimizing a portfolio that includes all stocks from the Swiss Market Index.\\par\\textbf{Keywords:} Portfolio optimization, Robust optimization, Markowitz model, Covariance matrix, Shrinkage, Sharpe ratio\\newpage"
+abstract: "Markowitz optimization requires estimates of the expected return, standard deviation, and correlations of individual stocks, all of which are subject to estimation errors. This leads to the risk of overfitting historical data and, in the case of portfolio optimization, creating portfolios that perform well in backtesting but poorly in the future. To overcome these problems, several robust approaches are investigated, such as asset grouping, shrinkage estimators for historical returns and correlations, and bootstrapping. The goal is to provide a recommended methodology for optimizing a portfolio that includes all stocks from the Swiss Market Index. In summary, two key observations are made. First, asset grouping leads to better portfolio performance relative to individual assets. Similarly, shrinkage leads to increased performance for assets with noisy historical data.\\par\\textbf{Keywords:} Portfolio optimization, Robust optimization, Markowitz model, Covariance matrix, Shrinkage, Sharpe ratio\\newpage"
 output:
   bookdown::pdf_book:
     toc: F
@@ -50,10 +50,10 @@ Lange, min. eine halbe Seite
 \newpage
 
 # Data
-For this paper, historical data of the constituent companies of the Swiss Market Index or (SMI) were used, the data originates from the period from `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. The SMI covers approximately 80% of the total capitalization of the Swiss stock market. It is also a price index, which means that dividends are not included in the index. The SMI is always reviewed twice a year and, if necessary, reassembled. In our case, we use the composition per end of 2018. The reason for the 2018 composition is, that enough historical data for all those companies is available. The results shown in table \@ref(tab:rmrvoltab) are calculated with following two equations, daily logarithmic return \@ref(eq:LogR) and volatility \@ref(eq:Volatility). [1] [2]
+For this paper, historical data of the constituent assets of the Swiss Market Index, short SMI, are used. The data originates from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. It is also a price index, which means that dividends are not included in the index. The SMI is always reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is, that enough historical data for all companies is available. The key numbers shown in table \@ref(tab:rmrvoltab) are calculated with following two equations, daily logarithmic return \@ref(eq:LogR) and volatility \@ref(eq:Volatility). [1] [2]
 
 ## Logarithmic return
-The reason for using logarithmic returns is that the numbers take smaller values than discrete returns. Due to smaller values there is also a smaller variance, which influences fitting positively. Furthermore, stock returns are generally assumed to be log-normally and not normally distributed. For later calculations the risk-free return has to be subtracted from the returns. For the sake of simplicity the risk-free rate is already deducted now. For the risk-free return $R_{f}$, shown in table \@ref(tab:annrftab), the LIBOR interest rate is commonly used. Due to several negative incidents in the past the Swiss Average Rate Overnight (SARON) is used for the time period 2014-2020. SARON is a rate that is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [3] [4]
+The reason for calculating logarithmic returns, is that stock returns are generally assumed to be log-normally and not normally distributed. In later calculations the risk-free return has to be subtracted from the returns, for the sake of simplicity it is already done from beginning. For the risk-free return $R_{f}$, shown in table \@ref(tab:annrftab), the LIBOR interest rate is commonly used. Due to several negative incidents in the past the Swiss Average Rate Overnight (SARON) is used for the time period 2014-2020. SARON is a rate that is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [3] [4]
 
 \begin{equation}
   R = R_{ln} - R_{f} = ln\left(\frac{x_t}{x_{t-1}}\right) - R_{f}
@@ -63,7 +63,7 @@ The reason for using logarithmic returns is that the numbers take smaller values
 <p> *$R$ = return* <p>
 <p> *$R_{ln}$ = natural logarithmic return* <p>
 <p> *$R_{f}$ = risk-free rate of return* <p>
-<p> *$x_{t}$ = closing stock price at time t* <p>
+<p> *$x_\intercal$ = closing stock price at time t* <p>
 
 ```{r annrftab}
 ann_rf = data.frame(names(rf), rf * 252, row.names = NULL)
@@ -75,8 +75,6 @@ kable(ann_rf, col.names = c("Year", "Rate [%]"),
 \newpage
 
 ## Volatility (standard deviation)
-
-**sample standard deviation instead of standard deviation**
 Volatility describes the risk of a stock or market index and is a statistical measure of the dispersion of the calculated logarithmic returns \@ref(eq:LogR). In general, the higher the volatility, the riskier the security.
 
 \begin{equation}
@@ -98,7 +96,9 @@ kable(r_mr_vol, col.names = c("Stock","Return [%]", "Volatility [%]"),
 ```
 
 ## Covariance and correlation
-The covariance is a numerical measure that describes the linear statistical relationship between two variables. In this case, it represents the strength of the relationship between two return time series. Equally, the correlation describes the standardized covariance, the correlation is also generally liked to be seen as a value for the connection of two companies and their behave. By definition, the correlation ranges in an interval of [-1, 1] and the diagonal values are always 1. A value of 1 or -1 means that the returns of two shares move in the same direction respectively in opposite directions. In Markowitz' portfolio theory the dependency (correlation) of two individual stocks is an important matter, which will be discussed later on in chapter [Markovitz Model].
+The covariance is a numerical measure that describes the linear statistical relationship between two variables. In this case, it represents the strength of the relationship between two return time series. Equally, the correlation describes the standardized covariance. The correlation is also generally liked to be seen as a value for the connection of two companies. By definition, the correlation ranges in an interval of [-1, 1] and the diagonal values of a correlation matrix are always 1. A value of 1 or -1 means that the returns of two shares move in the same direction respectively in opposite directions. In Markowitz' portfolio theory the dependency (correlation) of two individual stocks is an important matter, which will be discussed later on in chapter \@ref(Markovitz).
+
+\newpage
 
 \begin{equation}
   cov(x,y) = \frac{\sum_{i = 1}^{n}(x_{i} - \overline{x})(y_{i} - \overline{y})}{n - 1}
@@ -106,11 +106,9 @@ The covariance is a numerical measure that describes the linear statistical rela
 \end{equation}
 
 <p> *$cov_{x,y}$ = covariance between x and y* <p>
-<p> *$x$ = variable x* <p>
-<p> *$y$ = variable y* <p>
+<p> *$x$ = return of asset x* <p>
+<p> *$y$ = return of asset y* <p>
 <p> *$n$ = sample size* <p>
-
-\newpage
 
 \begin{equation}
   \rho_{i,j} = \frac{cov_{i,j}}{\sigma_{i}*\sigma_{j}}
@@ -122,9 +120,9 @@ The covariance is a numerical measure that describes the linear statistical rela
 <p> *$\sigma_{i}$ = volatility of return i* <p>
 <p> *$\sigma_{j}$ = volatility of return j* <p>
 
-The matrix in figure \@ref(fig:corplot) shows the correlations of all 20 stocks included in the SMI. As the SMI only contains shares that are traded on the Swiss stock exchange, there is a rather high correlation between the individual companies. The correlation between companies from the same sector is also higher than that between companies from different sectors or which have less in common. From this it can be concluded that economic similarities are reflected in a higher correlation of stock returns. Another way to demonstrate a connection between two companies is the t-statistic which is described in chapter \@ref(t-statistic).
+The matrix in figure \@ref(fig:corplot) shows the correlations of all 20 stocks included in the SMI. As the SMI only contains shares that are traded on the Swiss stock exchange, there is a rather high correlation between the individual companies. The correlation between companies from the same sector is also higher than between companies from different sectors or which have less in common. From this it can be concluded that economic similarities are reflected in a higher correlation of stock returns. Another way to demonstrate a connection between two companies is the t-statistic which is described in chapter \@ref(t-statistic).
 
-```{r corplot, fig.cap = "SMI correlation", fig.height = 6}
+```{r corplot, fig.cap = "Correlation between SMI constituents", fig.height = 6}
 suppressWarnings(suppressMessages(print(gg_cor(cor_mat(r), 2, 8, theme = custom_theme_markdown))))
 ```
 
@@ -139,7 +137,7 @@ suppressWarnings(suppressMessages(print(gg_cor(cor_mat(r), 2, 8, theme = custom_
 \end{equation}
 
 <p> *$t$ = t-statistic* <p>
-<p> *$\rho_{i,j}$ = correlation coefficient* <p>
+<p> *$\rho_{i,j}$ = correlation coefficient between return i und j* <p>
 <p> *$n$ = sample size* <p>
 
 ```{r}
@@ -155,13 +153,10 @@ To show that each correlation coefficient is significantly different from zero, 
   \label{eq:secr}
 \end{equation}
 
-**The probability of measuring this correlation would be 0, IF the true correlation was zero. So we can be sure that the observed correlation is not just an estimation error.**
-The students t-distribution with `r nrow(r)` degrees of freedom tells us that the probability of getting a test-statistic in the interval of [-`r tvalue`,`r tvalue`] equals 1. Therefore, the probability of getting a test-statistic out of the interval equals 0.
-Since the P-value is smaller than 0.05, we can reject the null hypothesis. There is sufficient statistical evidence at the $\alpha$ = 0.05 level to conclude that there is a significant linear relationship between `r mincorname[1]` and
-`r mincorname[2]`. 
+The probability of measuring this correlation would be zero, if the true correlation was zero. Since the result is `r tvalue`, there is statistical evidence at the $\alpha$ = 0.05 level to conclude a significant linear relationship. Furthermore we can be sure that the observed correlation is not just an estimation error.
 
 ### Standard error of expected return
-In statistics the standard deviation of the sampling distribution is known as the standard error and it provides a statement about the quality of the estimated parameter. The more individual values there are, the smaller is the standard error, and the more accurately the unknown parameter can be estimated. The standard error for the expected return and the volatility are explained in the following two chapters.
+In statistics the standard deviation of the sampling distribution is known as the standard error and it provides a statement about the quality of the estimated parameter. The more individual values there are, the smaller is the standard error, and the more accurately the unknown parameter can be estimated.
 
 \begin{equation}
   \sigma_{\overline{R}} = \frac{\sigma}{\sqrt{n}}
@@ -172,15 +167,14 @@ In statistics the standard deviation of the sampling distribution is known as th
 <p> *$\sigma$ = standard deviation of sample* <p>
 <p> *$n$ = sample size* <p>
 
+Figure \@ref(fig:serplot) shows the logarithmic mean return with the standard errors for each stock. It is easy to see that stocks such as *Swisscom* and *Nestle* with low volatility (table @\ref(tab:rmrvoltab)) also have a lower standard error. As well *ABB* and *Credit Suisse* have a high volatility and accordingly show higher values for the standard error.
+
 ```{r serplot, fig.cap = 'Expected mean return with standard error', fig.height = 4}
 mr = mean_returns(r)
 se_r = apply(r[,-1], 2, se_mean)
 min = min(mr - se_r); max = max(mr + se_r)
 gg_errorbar(stocks, mr, se_r, c(min, max), "Return [%]", theme = custom_theme_markdown)
 ```
-
-
-In Figure \@ref(fig:serplot) above you can see the logarithmic mean return with the standard errors for each stock. It is easy to see that stocks such as *Swisscom* and *Nestle* with low volatility also have a lower standard error. As well *ABB* and *Credit Suisse* show a high volatility and accordingly have higher values for the standard error. Figure \@ref(fig:serplot) and table \@ref(tab:rmrvoltab) can therefore be compared well together.
 
 \newpage
 
@@ -196,7 +190,7 @@ This formula is an approximation for the standard error of volatility, which is 
 <p> *$\sigma$ = standard deviation* <p>
 <p> *$n$ = sample size* <p>
 
-As shown in table \@ref(tab:sevolrtab) the values of the standard error of volatility are much lower as the one of the logarithmic mean returns. This behavior will be clearly visible later in the chapter bootstrap. Furthermore, we will neglect the values for any further calculations since these values can be estimated nearly exactly.
+As shown in table \@ref(tab:sevolrtab) the values of the standard error of volatility are much lower as the ones of the logarithmic mean returns. This behavior will be clearly visible later in chapter \@ref(bootstrap). Furthermore, we will neglect the values for any further calculations since these values can be estimated nearly exactly.
 
 ```{r sevolrtab}
 se_volr = data.frame(colnames(r[-1]), apply(r[,-1], 2, se_sd), row.names = NULL)
@@ -207,14 +201,14 @@ kable(se_volr, col.names = c("Stock", "Standard error [%]"),
 
 \newpage
 
-# Review of classical markovitz optimization
+# Review of classical markovitz optimization {#Markovitz}
 Modern portfolio theory is a theory that deals with the construction of portfolios to maximize the expected return based on a given market risk. Markowitz' portfolio theory shows that efficient risk reduction is only possible if the extent of the correlation of the individual investments is taken into account when putting together the portfolio. Risk reduction through risk diversification is a key finding of the aforementioned portfolio theory. Harry Markowitz pioneered this theory in his article "Portfolio Selection”. The main point is that the risk and return characteristics of an investment should not be considered in isolation, but should be evaluated according to how the investment affects the risk and return of the overall portfolio. It is shown that an investor can construct a portfolio of multiple assets that maximizes returns for a given level of risk. Similarly, an investor can construct a portfolio with the lowest possible risk at a desired level of expected return. Based on statistical measures such as volatility and correlation, the performance of an individual investment is less important than how it affects the portfolio as a whole. [5] 
 
 It is also assumed that the return, volatility and covariance matrix is known. The portfolio volatility is accordingly given as a function of the covariance matrix and the weight vector and it can be minimized as much as desired by sufficient diversification. Also the sum of all weights equals 1. The portfolio weights being searched for are described by the vector $\vec{w} = (w_{1}, \dots, w_{n})$. The weights that are calculated are those weights that match the portfolio with minimal volatility (variance) to a given expected portfolio return $R_{p}$. This is a linear optimization problem, as well a formulation of the fundamental problem of balancing return and risk. Furthermore, in practice negative weightings are defined as short sales. [9]
 
 
 \begin{equation}
-minimize: \frac{1}{2}\vec{w}^{T}\Sigma\vec{w}
+minimize: \frac{1}{2}\vec{w}^\intercal\Sigma\vec{w}
   \label{eq:minimum}
 \end{equation}
 
@@ -222,24 +216,24 @@ minimize: \frac{1}{2}\vec{w}^{T}\Sigma\vec{w}
 
 *I.*
 \begin{equation}
-1 = \vec{w}^{T}\vec{1}
+1 = \vec{w}^\intercal\vec{1}
   \label{eq:constraint1}
 \end{equation}
 
 *II.*
 \begin{equation}
-R_{p} = \vec{w}^{T}\vec{R}
+R_{p} = \vec{w}^\intercal\vec{R}
   \label{eq:constraint2}
 \end{equation}
 
 According to the method of the Lagrange Multiplier, the Lagrange function is formed with the factors $\lambda$ and $\epsilon$. 
 
 \begin{equation}
-L(\vec{w}) = min \frac{1}{2}\vec{w}^{T}\Sigma\vec{w} - \lambda(\vec{w}^{T}\vec{R} - R_{p}) - \epsilon(\vec{w}^{T}\vec{1} - 1)
+L(\vec{w}) = min \frac{1}{2}\vec{w}^\intercal\Sigma\vec{w} - \lambda(\vec{w}^\intercal\vec{R} - R_{p}) - \epsilon(\vec{w}^\intercal\vec{1} - 1)
   \label{eq:lagrangemw}
 \end{equation}
 
-The disappearance of the gradient is the necessary condition for a minimum. This is together with the two constraints (\@ref(eq:constraint1), (\@ref(eq:constraint2) an inhomogeneous linear system of equations of the dimension $n + 2$ with $n + 2$ variables. The solution is a known standard problem from linear algebra.
+The disappearance of the gradient is the necessary condition for a minimum. This is together with the two constraints (\@ref(eq:constraint1), \@ref(eq:constraint2)) an inhomogeneous linear system of equations of the dimension $n + 2$ with $n + 2$ variables. The solution is a known standard problem from linear algebra.
 
 \begin{equation}
 \nabla_{w}L = \Sigma\vec{w} - \lambda*\vec{R} - \epsilon*\vec{1} = 0
@@ -256,11 +250,10 @@ The disappearance of the gradient is the necessary condition for a minimum. This
 \newpage
 
 ## Problem
-In order to apply the optimization, some assumptions have to be made at the beginning. As already mentioned before, the returns, risk and correlation coefficients are known. It is also important that the risk is described by the standard deviation. This also leads to the conclusion that a normal distribution is irrelevant, because the standard deviation is used as risk. Another condition applies to the linear relationship of the stocks. The log returns must not have a perfect correlation among themselves, neither negative nor positive. This is described by a correlation coefficient of -1 or 1. If the determinant is 0, the system cannot be solved exactly. This situation occurs when stocks have a correlation coefficient of 1 or -1. The system must be uniquely solvable to form the inverse of the covariance matrix $\Sigma^{-1}$.
-
+In order to apply the optimization, some assumptions have to be made at the beginning. As already mentioned before, the returns, risk and correlation coefficients must be known. It is also important that the risk is described by the standard deviation. This leads to the conclusion that a normal distribution is irrelevant, because the standard deviation is used as risk. Another condition applies to the linear relationship of the stocks. The log returns must not have a perfect correlation among themselves, neither negative nor positive. This is described by a correlation coefficient of -1 or 1. If the determinant of the correlation matrix is zero, the system cannot be solved. This situation occurs when stocks have a correlation coefficient of 1 or -1. The system must be uniquely solvable to form the inverse of the covariance matrix $\Sigma^{-1}$.
 
 ## Minimum variance portfolio 
-The Minimum Variance Portfolio, or MVP for short, describes the portfolio of all possible weightings with the minimum volatility. Since only the volatility is minimized, constraint *II* (\@ref(eq:constraint2) is not included in the equation. Negative returns do not necessarily have to result in a negative weighting, since in the calculation of the MVP the return is not directly included in the calculation but only the covariance matrix. Therefore, the correlation coefficients are the important factor.
+The minimum variance portfolio, short MVP, describes the portfolio of all possible weightings with the minimum volatility. Since only the volatility is minimized, constraint *II* \@ref(eq:constraint2) is not included in the equation. Negative returns do not necessarily have to result in a negative weighting, since in the calculation of the MVP the return is not directly included in the calculation but only the covariance matrix. Therefore, the correlation coefficients are the important factor. The MVP weights are shown in table \@ref(tab:mvpwrtab).
 
 \begin{equation}
 \vec{w}_{mvp} = \frac{1}{\vec{1}^T\Sigma^{-1}\vec{1}}*\Sigma^{-1}\vec{1}
@@ -277,11 +270,12 @@ kable(mvpw_r, col.names = c("Stock", "Weight"), caption = "Weights of minimum va
       digits = 3, booktabs = T, linesep = "")
 ```
 
+\newpage
 
 ## Tangency portfolio 
-The tangency portfolio, or TP for short results from the tangent of the capital market line and the efficient frontier, which will be shown more detailed in chapter [Efficient Frontier]. The capital market line is an important component of the Capital Asset Pricing Model. The slope of the capital market line indicates how much more return is expected per additional volatility, therefore a steeper slope of the capital market line gives a better Sharpe ratio. This is exactly the situation when the capital market line is tangential to the efficient frontier. Therefore, the best possible diversified portfolio results from the weightings of the tangency portfolio. 
+The tangency portfolio, short TP, results from the tangent of the capital market line and the efficient frontier, which will be shown more detailed in chapter @\ref(EF). The capital market line is an important component of the capital asset pricing model (CAPM). The slope of the capital market line indicates how much more return is expected per additional volatility. This is exactly the situation when the capital market line is tangential to the efficient frontier. Therefore, the best possible diversified portfolio results from the weightings of the tangency portfolio. 
 
-In this paper the MVP and TP serve as useful reference points to compare the Sharpe ratio of different optimization, the Sharpe ratio will be explained in chapter {sharpe}. The tangency portfolio is often referred to in the literature as the market portfolio. In the equation for the capital market line, shown as equation \@ref(eq:cml), the expected return of the market portfolio respectively the tangency portfolio is written as $R_{tp}$.
+The tangency portfolio is often referred to in the literature as the market portfolio. In the equation for the capital market line, shown as equation \@ref(eq:cml), the expected return of the market portfolio respectively the tangency portfolio is written as $R_{tp}$.
 
 *Capital Market Line:*
 \begin{equation}
@@ -315,8 +309,8 @@ kable(tpw_r, col.names = c("Stock", "Weight"), caption = "Weights of tangency po
 
 \newpage
 
-## Efficient Frontier
-The efficient frontier is a set of points that extends in the return-volatility diagram (figure \@ref(fig:refplot)) between the minimum variance portfolio at the left edge of the reachable area and the tangency portfolio. All possible weightings of portfolios on this line are efficient because they have the maximum return at a defined level of volatility.
+## Efficient Frontier {#EF}
+The efficient frontier is a set of points that extends in the return-volatility diagram (figure \@ref(fig:refplot)) between the minimum variance portfolio at the left edge of the reachable area and the tangency portfolio. All possible portfolio weights above the MVP on this line are efficient because they have the maximum return at a defined level of volatility.
 
 \begin{equation}
 \vec{w}_{tp} = \alpha * \vec{w}_{mvp} + (1 - \alpha) * \vec{w}_{tp}
@@ -347,7 +341,7 @@ R_{P} = \vec{w}^T * \vec{R}
 <p> *$\Sigma$ = covariance matrix* <p>
 
 
-```{r refplot, fig.cap = 'Efficient frontier with stocks', fig.height = 5}
+```{r refplot, fig.cap = 'Return-volatility diagram with efficient frontier', fig.height = 5}
 cm = cov_mat(r); mr = mean_returns(r)
 efw_r = ef_weights(mvp_weights(cm), tp_weights(cm, mr), seq(-3, 3, 0.1))
 efp_r = ef_points(efw_r, cm, mr)
@@ -368,11 +362,12 @@ suppressMessages(
 ```
 
 
-In figure \@ref(fig:refplot) it is clearly visible that the efficiency line covers the range in which all possible portfolio compositions can be located. Through the optimization, the TP was created, which achieves a significantly higher return than the individual stocks included in the SMI. Also, the MVP is at the extreme left of the achievable area on the efficiency line, which means that there is no portfolio that has a lower volatility.
+In figure \@ref(fig:refplot) it is clearly visible that the efficient frontier covers the range in which all possible portfolio compositions can be located. Through the optimization, the TP is created, which achieves a significantly higher return than the individual stocks included in the SMI. Also, the MVP is at the extreme left of the achievable area on the efficient frontier, which means that there is no portfolio that have a lower volatility.
 
+\newpage
 
 ## Sharpe ratio {#sharpe}
-The Sharpe ratio measures the performance of an investment which means the return of an investment compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the risk-adjusted return. In practice, the value of the Sharpe Ratio is not only positively received. In this paper, however, we will rely on the Sharpe ratio because it is a key figure by which performance can be measured. It is calculated by the average return earned in excess of the risk-free rate per unit of volatility. In this case it is the natural logarithmic return per day $R$ divided by $\sigma$. $R$ is already calculated in equation \@ref(eq:LogR). [6] [7]
+The Sharpe ratio measures the performance of an investment which means the return of an investment compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the portfolio. In practice, the value of the Sharpe ratio is not only positively received. In this paper, however, we will rely on the Sharpe ratio because it is a key figure by which performance can be measured. It is calculated by the average return earned in excess of the risk-free rate per unit of volatility. In this case it is the natural logarithmic return per day $R$ divided by $\sigma$. $R$ is already calculated in equation \@ref(eq:LogR). Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. [6] [7]
 
 \begin{equation}
   Sharpe ratio = \frac{R_{ln} - R_{f}}{\sigma} = \frac{R}{\sigma}
@@ -383,9 +378,6 @@ The Sharpe ratio measures the performance of an investment which means the retur
 <p> *$R_{ln}$ = mean logarithmic return* <p>
 <p> *$R_{f}$ = risk-free rate of return* <p>
 <p> *$\sigma_{i}$ = volatility of return* <p>
-
-Before any weighting of a portfolio is optimized, the Sharpe ratio of the 20 shares is calculated. This is done by weighting all stocks equally, 1/20 each, and then applying the weightings to the actual returns of the historical data. This results in a Sharpe ratio of XX. Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. As mentioned above, the Sharpe ratio is used as a measure of the optimization and robustness. A robust optimization leads to a lower volatility which results in a higher Sharpe ratio. The higher the value the better the optimization.
-
 
 # Methodology {#methodology}
 
