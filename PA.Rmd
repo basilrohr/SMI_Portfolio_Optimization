@@ -14,6 +14,8 @@ classoption: twocolumn
 geometry: margin = 20mm
 documentclass: extarticle
 fontsize: 8pt
+bibliography: references.bib
+csl: ieee.csl
 header-includes:
   - \usepackage{float}
   - \floatplacement{figure}{H}
@@ -43,7 +45,7 @@ R.utils::sourceDirectory("./Code", modifiedOnly = F)
 Markowitz' Optimization and other models of Finance require estimates of the expected return, the standard deviation and the correlations of individual assets.
 These estimates are subject to estimation errors, especially when they are based on short historical time series. This leads to the danger of over- fitting historical data and - in the case of portfolio optimization - of producing portfolios that perform well in backtesting, but perform poorly in the future.
 To overcome these problems, several approaches have been proposed. This includes Bayesian approaches, including shrinking Estimators for historical returns, volatilites and correlations. It also includes resampling/bootstrapping approaches, where expected returns, volatilites and correlations are modelled as random variables.
-We will analyze a variety of such approaches, identify those that add most value in the context of investment management, and combine/improve them. The goal is a recommended methodology for computing the strategic asset allocation of pension funds and other institutional investors.
+We will analyze a variety of such approaches, identify those that add most value in the context of investment management, and combine/improve them. The goal is a recommended methodology for computing the strategic asset allocation of pension funds and other institutional investors. [@R-base]
 
 Lange, min. eine halbe Seite
 
@@ -871,6 +873,10 @@ Published by: Oxford University Press, New York.
 School of Engineering, Zurich University of Applied Science
 
 \newpage
+
+# References
+
+<div id="refs"></div>
 
 \listoffigures
 
