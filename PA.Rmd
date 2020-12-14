@@ -529,7 +529,7 @@ Cross validation is a model validation technique for assessing how a model will 
 In this case, the historical data is split into five sections and consequentially five models are trained as depicted in figure \@ref(fig:crossvalidation). The gray sections are the training sets and the red ones the test sets.
 
 ```{r crossvalidation, fig.cap = "Cross validation training and test sets", out.width="95%"}
-knitr::include_graphics("./www/Cross_validation.jpg")
+knitr::include_graphics("./Images/Cross_validation.jpg")
 ```
 
 In the case of the Markovitz model, the mean returns and covariance matrix of the training set are used to calculate the asset weights. These weights are then applied to the test set asset returns according to equation \@ref(eq:weightedreturn).
