@@ -256,7 +256,7 @@ In order to apply the optimization, some assumptions have to be made at the begi
 The minimum variance portfolio, short MVP, describes the portfolio of all possible weightings with the minimum volatility. Since only the volatility is minimized, constraint *II* \@ref(eq:constraint2) is not included in the equation. Negative returns do not necessarily have to result in a negative weighting, since in the calculation of the MVP the return is not directly included in the calculation but only the covariance matrix. Therefore, the correlation coefficients are the important factor. The MVP weights are shown in table \@ref(tab:mvpwrtab).
 
 \begin{equation}
-\vec{w}_{mvp} = \frac{1}{\vec{1}^T\Sigma^{-1}\vec{1}}*\Sigma^{-1}\vec{1}
+\vec{w}_{mvp} = \frac{1}{\vec{1}^\intercal\Sigma^{-1}\vec{1}}*\Sigma^{-1}\vec{1}
   \label{eq:mvpw}
 \end{equation}
 
@@ -291,7 +291,7 @@ R_{P}(\sigma_{P}) = R_{f} + \frac{R_{tp} - R_{f}}{\sigma_{tp}} * \sigma_{P}
 
 *Tangency Portfolio:*
 \begin{equation}
-\vec{w}_{tp} = \frac{1}{\vec{1}\Sigma^{-1}(\vec{R}-R_{f}\vec{1})}*\Sigma^{-1}(\vec{R}-R_{f}\vec{1})
+\vec{w}_{tp} = \frac{1}{\vec{1}^\intercal\Sigma^{-1}\vec{R}}*\Sigma^{-1}\vec{R}
   \label{eq:tpw}
 \end{equation}
 
@@ -323,7 +323,7 @@ The efficient frontier is a set of points that extends in the return-volatility 
 <p> *$\vec{w}_{tp}$ = weight of tangency portfolio* <p>
 
 \begin{equation}
-R_{P} = \vec{w}^T * \vec{R}
+R_{P} = \vec{w}^\intercal * \vec{R}
   \label{eq:cord}
 \end{equation}
 
@@ -332,7 +332,7 @@ R_{P} = \vec{w}^T * \vec{R}
 <p> *$\vec{R}$ = mean return* <p>
 
 \begin{equation}
-\sigma_{P} = \sqrt{\vec{w}^T\Sigma\vec{w}}    
+\sigma_{P} = \sqrt{\vec{w}^\intercal\Sigma\vec{w}}    
   \label{eq:cord2}
 \end{equation}
 
