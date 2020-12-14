@@ -14,8 +14,8 @@ classoption: twocolumn
 geometry: margin = 20mm
 documentclass: extarticle
 fontsize: 8pt
-bibliography: references.bib
-csl: ieee-with-url.csl
+bibliography: references/references.bib
+csl: references/ieee-with-url.csl
 link-citations: true
 header-includes:
   - \usepackage{float}
