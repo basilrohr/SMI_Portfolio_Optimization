@@ -596,14 +596,14 @@ When the shrinkage factor $\lambda$ is set to one, the mean returns remain uncha
 There is an important constraint in mean returns shrinkage. Take the scaling factor of the tangency portfolio eq. \@ref(eq:tpw) and replace $\vec{R}$ with eq. \@ref(eq:shrinkr) as shown in eq. \@ref(eq:tpwsf).
 
 \begin{equation}
-\vec{w}_{tp,sf} = \frac{1}{\vec{1}\Sigma^{-1}(\lambda*\vec{R} + (1 - \lambda) * \vec{\overline{R}})}
+\vec{w}_{tp,sf} = \frac{1}{\vec{1}^\intercal\Sigma^{-1}(\lambda*\vec{R} + (1 - \lambda) * \vec{\overline{R}})}
   \label{eq:tpwsf}
 \end{equation}
 
 It is clear that for some value of $\lambda$ the denominator becomes zero. Computationally, it is already problematic if the denominator is close to zero. When setting the denominator equal to zero, the value of $\lambda$ at the zero crossing can be calculated as in eq. \@ref(eq:lambdazero).
 
 \begin{equation}
-\lambda_0 = \frac{-\vec{1}\Sigma^{-1}\vec{\overline{R}}}{\vec{1}\Sigma^{-1}\vec{R} - \vec{1}\Sigma^{-1}\vec{\overline{R}}}
+\lambda_0 = \frac{-\vec{1}^\intercal\Sigma^{-1}\vec{\overline{R}}}{\vec{1}^\intercal\Sigma^{-1}\vec{R} - \vec{1}^\intercal\Sigma^{-1}\vec{\overline{R}}}
   \label{eq:lambdazero}
 \end{equation}
 
@@ -675,6 +675,8 @@ ggarrange(gg1, gg2, gg3, gg4, gg5)
 ```
 
 The zero crossing of the scaling factor in model three can be seen clearly. When working with mean returns shrinkage, one has to be aware of this behavior.
+
+\newpage
 
 ### Shrinkage of correlation matrix
 The shrunk correlation matrix is calculated as in equation \@ref(eq:shrinkcor).
