@@ -755,12 +755,12 @@ In chapter \@ref(groupclust), cluster analysis is used to optimize the group com
 
 In the following two illustrations, bootstrapped weights of the groups by industry can be seen. As mentioned in section \@ref(res1), the same is shown for the groups. Figure \@ref(fig:mvpsegr) illustrates the MVP weights and figure \@ref(fig:tpsegr) the TP weights.
 
-```{r mvpsegr, fig.cap = 'MVP weights with standard error', fig.height = 4}
+```{r mvpsegr, fig.cap = 'MVP weights with standard error', fig.height = 3}
 gg_errorbar(colnames(gr[-1]), mvpw_gr, mvpw_sd_gr, c(minmvp, maxmvp), "Weights",
             theme = custom_theme_markdown)
 ```
 
-```{r tpsegr, fig.cap = 'Tangency portfolio weights with standard error by group', fig.height = 4}
+```{r tpsegr, fig.cap = 'Tangency portfolio weights with standard error by group', fig.height = 3}
 gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(mintp, maxtp), "Weights",
             theme = custom_theme_markdown)
 ```
@@ -776,7 +776,7 @@ When looking at the SMI constituents curve it can be seen that the highest Sharp
 
 For the two group curves the result is inverted. As the grouping of the stocks already reduces the noise significantly, shrinkage does show almost no improvement over non-shrunk mean returns. The groups by correlation do show a significantly higher Sharpe ratio than the grouping by industry and it is also higher than the one of the SMI constituents.
 
-```{r srplot, fig.cap = 'Sharpe ratio as a function of return shrinking factor',fig.height = 4}
+```{r srplot, fig.cap = 'Sharpe ratio as a function of return shrinking factor', fig.height = 4}
 os_r_sr = unlist(out_of_sample_vec(sets_r, seq(0, 1, 0.01)))
 os_gr_sr = unlist(out_of_sample_vec(sets_gr, seq(0, 1, 0.01)))
 os_g2r_sr = unlist(out_of_sample_vec(sets_g2r, seq(0, 1, 0.01)))
@@ -799,29 +799,29 @@ gg_shrink2D(list(os_r_scor, os_gr_scor, os_g2r_scor),
 ### Shrinkage factors analyzed simultaneously
 A further visualization is a three dimensional plot where the Sharpe ratio is plotted as a function of both shrinkage factors. The darker the area, the higher the Sharpe ratio.
 
-Figure \@ref(fig:srcorplot1) shows such a plot for the SMI. In the lower and left part of the plot the contour lines are very chaotic which is caused by the Sharpe ratio dropping quickly and below zero. The highest Sharpe ratio is achieved with a mean returns shrinkage factor of about 0.05 and a correlation shrinkage factor of close to one. This matches the result of the previous plots where the mean return shrinkage is better at improving the Sharpe ratio.
+Figure \@ref(fig:srcorplot1) shows such a plot for the SMI constituents. In the bottom part and left part of the plot the contour lines are very chaotic which is caused by the Sharpe ratio dropping quickly and below zero. The highest Sharpe ratio is achieved with a mean returns shrinkage factor of about 0.05 and a correlation shrinkage factor of close to one. This matches the result of the previous plots where the mean return shrinkage is better at improving the Sharpe ratio and the correlation shrinkage factor does not matter in this case.
 
-```{r srcorplot1, fig.cap = 'SMI constituents Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
+```{r srcorplot1, fig.cap = 'SMI constituents Sharpe ratio as a function of return and correlation shrinkage factor', fig.height = 4}
 grid = expand.grid(seq(0, 1, by = 0.05), seq(0, 1, by = 0.05))
 os_r_sr_scor = unlist(out_of_sample_vec(sets_r, grid[,1], grid[,2]))
 gg_shrink3D(grid, os_r_sr_scor, theme = custom_theme_markdown)
 ```
 
-Figure \@ref(fig:srcorplot2) shows the three dimensional plot for the groups by industry and figure \@ref(fig:srcorplot3) for the groups by correlation. Both plots are very similar in their general structure. The groups by industry also show a drop in Sharpe ratio in the lower portion while the groups by correlation does not. Overall, latter do show a Sharpe ratio which is about 0.3 greater than the groups by industry.
+Figure \@ref(fig:srcorplot2) shows a heatmap plot for the groups by industry and figure \@ref(fig:srcorplot3) for the groups by correlation. Both plots are very similar in their general structure. The groups by industry also show a sudden decrease in Sharpe ratio in the lower portion while the groups by correlation do not. Overall, latter does show a Sharpe ratio which is about 0.3 greater than the groups by industry.
 
-**simultaneous shrinking: if returns are shrunk to 5%, then correlation shrinking does not add more value**
-
-```{r srcorplot2, fig.cap = 'Groups by industry Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
+```{r srcorplot2, fig.cap = 'Groups by industry Sharpe ratio as a function of return and correlation shrinkage factor', fig.height = 4}
 os_gr_sr_scor = unlist(out_of_sample_vec(sets_gr, grid[,1], grid[,2]))
 gg_shrink3D(grid, os_gr_sr_scor, theme = custom_theme_markdown)
 ```
 
-```{r srcorplot3, fig.cap = 'Groups by correlation Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
+```{r srcorplot3, fig.cap = 'Groups by correlation Sharpe ratio as a function of return and correlation shrinkage factor', fig.height = 4}
 os_g2r_sr_scor = unlist(out_of_sample_vec(sets_g2r, grid[,1], grid[,2]))
 gg_shrink3D(grid, os_g2r_sr_scor, theme = custom_theme_markdown)
 ```
 
-Table \@ref(tab:srcomptab) provides an overview over all Sharpe investigated Sharpe ratios, namely in sample (IS), out of sample (OS) and out of sample with applied Shrinkage (OS Shrinkage).
+\newpage
+
+Table \@ref(tab:srcomptab) provides an overview over all investigated Sharpe ratios, namely in sample (IS), out of sample (OS) and out of sample with applied Shrinkage (OS Shrinkage).
 
 ```{r srcomptab}
 t20 = data.frame(c(is_r, is_gr, is_g2r),
