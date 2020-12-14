@@ -29,12 +29,10 @@ knitr::opts_chunk$set(echo = F)
 library(knitr)
 library(ggplot2)
 library(ggcorrplot)
-library(cowplot)
-library(ggpubr)
 library(ggrepel)
-library(dplyr)
-library(grid)
 library(heatmap3)
+library(ggpubr)
+library(dplyr)
 
 load("./Data/data_1d.Rda")
 load("./Data/rf_1d.Rda")
@@ -47,83 +45,82 @@ Markowitz' Optimization and other models of Finance require estimates of the exp
 These estimates are subject to estimation errors, especially when they are based on short historical time series. This leads to the danger of over- fitting historical data and - in the case of portfolio optimization - of producing portfolios that perform well in backtesting, but perform poorly in the future.
 To overcome these problems, several approaches have been proposed. This includes Bayesian approaches, including shrinking Estimators for historical returns, volatilites and correlations. It also includes resampling/bootstrapping approaches, where expected returns, volatilites and correlations are modelled as random variables.
 We will analyze a variety of such approaches, identify those that add most value in the context of investment management, and combine/improve them. The goal is a recommended methodology for computing the strategic asset allocation of pension funds and other institutional investors. [@R-base] [@yahoo]
-
-Lange, min. eine halbe Seite
+**min. halbe Seite lang**
 
 \newpage
 
 # Data
-For this paper, historical data of the constituent assets of the Swiss Market Index, short SMI, are used. The data originates from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. It is also a price index, which means that dividends are not included in the index. The SMI is always reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is, that enough historical data for all companies is available. The key numbers shown in table \@ref(tab:rmrvoltab) are calculated with following two equations, daily logarithmic return \@ref(eq:LogR) and volatility \@ref(eq:Volatility). [1] [2]
+In this paper, daily historical data from the Swiss Market Index, short SMI, and its constituents is used. The data stems from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. The SMI is also a price index which means that dividends are not included. It is reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is that enough historical data for all companies is available. The key numbers shown in table \@ref(tab:rmrvoltab) are calculated with equations \@ref(eq:logr) and \@ref(eq:vol). [1] [2]
 
 ## Logarithmic return
-The reason for calculating logarithmic returns, is that stock returns are generally assumed to be log-normally and not normally distributed. In later calculations the risk-free return has to be subtracted from the returns, for the sake of simplicity it is already done from beginning. For the risk-free return $R_{f}$, shown in table \@ref(tab:annrftab), the LIBOR interest rate is commonly used. Due to several negative incidents in the past the Swiss Average Rate Overnight (SARON) is used for the time period 2014-2020. SARON is a rate that is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [3] [4]
+The reason for calculating logarithmic returns is that stock returns are generally assumed to be log-normally and not normally distributed. In later calculations, the risk-free rate of return has to be subtracted from the return and for the sake of simplicity, this is already done from the start. For the risk-free rate $R_{f}$ shown in table \@ref(tab:annrftab), the LIBOR is commonly used. Due to several negative incidents in the past, the Swiss Average Rate Overnight (SARON) is used for the time period 2014 to 2020. The SARON is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [3] [4]
 
 \begin{equation}
-  R = R_{ln} - R_{f} = ln\left(\frac{x_t}{x_{t-1}}\right) - R_{f}
-  \label{eq:LogR}
+R = R_{ln} - R_{f} = ln\left(\frac{x_{t}}{x_{t-1}}\right) - R_{f}
+\label{eq:logr}
 \end{equation}
 
 <p> *$R$ = return* <p>
 <p> *$R_{ln}$ = natural logarithmic return* <p>
 <p> *$R_{f}$ = risk-free rate of return* <p>
-<p> *$x_\intercal$ = closing stock price at time t* <p>
+<p> *$x_{t}$ = closing stock price at time t* <p>
 
 ```{r annrftab}
 ann_rf = data.frame(names(rf), rf * 252, row.names = NULL)
 kable(ann_rf, col.names = c("Year", "Rate [%]"),
-      caption = "Average overnight risk-free return per year in \\%",
+      caption = "Annualized risk-free rate of return",
       digits = 3, booktabs = T, linesep = "")
 ```
 
 \newpage
 
 ## Volatility (standard deviation)
-Volatility describes the risk of a stock or market index and is a statistical measure of the dispersion of the calculated logarithmic returns \@ref(eq:LogR). In general, the higher the volatility, the riskier the security.
+The volatility describes the risk of an asset and is a statistical measure of the dispersion of returns. In general, the higher the volatility, the riskier the asset.
 
 \begin{equation}
-  \sigma = \sqrt{\frac{\sum_{i = 1}^{n}(R_{i} - \overline{R})^2}{n-1}}
-  \label{eq:Volatility}
+\sigma = \sqrt{\frac{\sum_{i = 1}^{n}(R_{i} - \overline{R})^2}{n-1}}
+\label{eq:vol}
 \end{equation}
 
 <p> *$\sigma$ = volatility (standard deviation)* <p>
-<p> *$R_{i}$ = each return from the sample* <p>
-<p> *$\overline{R}$ = sample mean return* <p>
+<p> *$R$ = return* <p>
+<p> *$\overline{R}$ = mean return* <p>
 <p> *$n$ = sample size* <p>
 
 ```{r rmrvoltab}
 r = returns
 r_mr_vol = data.frame(colnames(r[-1]), mean_returns(r), volatilities(cov_mat(r)), row.names = NULL)
 kable(r_mr_vol, col.names = c("Stock","Return [%]", "Volatility [%]"),
-      caption = "SMI constituents with expected return and volatility",
+      caption = "Mean return and volatility of SMI constituents",
       digits = 3, booktabs = T, linesep = "")
 ```
 
 ## Covariance and correlation
-The covariance is a numerical measure that describes the linear statistical relationship between two variables. In this case, it represents the strength of the relationship between two return time series. Equally, the correlation describes the standardized covariance. The correlation is also generally liked to be seen as a value for the connection of two companies. By definition, the correlation ranges in an interval of [-1, 1] and the diagonal values of a correlation matrix are always 1. A value of 1 or -1 means that the returns of two shares move in the same direction respectively in opposite directions. In Markowitz' portfolio theory the dependency (correlation) of two individual stocks is an important matter, which will be discussed later on in chapter \@ref(Markovitz).
+The covariance is a numerical measure that describes the linear relationship between two variables. In this case, it represents the strength of the relationship between two return time series. The correlation is the standardized covariance and ranges in an interval of $[-1, 1]$ with the diagonal values of a correlation matrix always being one. A value of one or minus one means that the returns of two assets move in the same direction respectively in opposite directions. In Markowitz' portfolio theory the correlation of two assets is an important matter which will be discussed later in chapter&nbsp;\@ref(markovitz).
 
 \newpage
 
 \begin{equation}
-  cov(x,y) = \frac{\sum_{i = 1}^{n}(x_{i} - \overline{x})(y_{i} - \overline{y})}{n - 1}
-  \label{eq:cov}
+cov_{x,y} = \frac{\sum_{i = 1}^{n}(x_{i} - \overline{x})(y_{i} - \overline{y})}{n - 1}
+\label{eq:cov}
 \end{equation}
 
-<p> *$cov_{x,y}$ = covariance between x and y* <p>
+<p> *$cov_{x,y}$ = covariance between returns of assets x and y* <p>
 <p> *$x$ = return of asset x* <p>
 <p> *$y$ = return of asset y* <p>
 <p> *$n$ = sample size* <p>
 
 \begin{equation}
-  \rho_{i,j} = \frac{cov_{i,j}}{\sigma_{i}*\sigma_{j}}
-  \label{eq:cor}
+\rho_{i,j} = \frac{cov_{i,j}}{\sigma_{i}*\sigma_{j}}
+\label{eq:cor}
 \end{equation}
 
-<p> *$\rho_{i,j}$ = correlation coefficient between return i und j* <p>
-<p> *$cov_{i,j}$ = covariance between return i und j* <p>
-<p> *$\sigma_{i}$ = volatility of return i* <p>
-<p> *$\sigma_{j}$ = volatility of return j* <p>
+<p> *$\rho_{i,j}$ = correlation between returns of assets i und j* <p>
+<p> *$cov_{i,j}$ = covariance between returns of assets i und j* <p>
+<p> *$\sigma_{i}$ = volatility of return of asset i* <p>
+<p> *$\sigma_{j}$ = volatility of return of asset j* <p>
 
-The matrix in figure \@ref(fig:corplot) shows the correlations of all 20 stocks included in the SMI. As the SMI only contains shares that are traded on the Swiss stock exchange, there is a rather high correlation between the individual companies. The correlation between companies from the same sector is also higher than between companies from different sectors or which have less in common. From this it can be concluded that economic similarities are reflected in a higher correlation of stock returns. Another way to demonstrate a connection between two companies is the t-statistic which is described in chapter \@ref(t-statistic).
+The correlation matrix of all 20 stocks is shown in figure \@ref(fig:corplot). As the SMI only contains stocks that are traded on the Swiss stock exchange, there is a rather high correlation between them. The correlation between companies from the same industry is also higher than between companies from different industries. It can be concluded that economic similarities are reflected in a higher correlation between stocks. A correlation significance test is performed in chapter \@ref(t-statistic).
 
 ```{r corplot, fig.cap = "Correlation between SMI constituents", fig.height = 6}
 suppressWarnings(suppressMessages(print(gg_cor(cor_mat(r), 2, 8, theme = custom_theme_markdown))))
@@ -140,7 +137,7 @@ suppressWarnings(suppressMessages(print(gg_cor(cor_mat(r), 2, 8, theme = custom_
 \end{equation}
 
 <p> *$t$ = t-statistic* <p>
-<p> *$\rho_{i,j}$ = correlation coefficient between return i und j* <p>
+<p> *$\rho_{i,j}$ = correlation between return i und j* <p>
 <p> *$n$ = sample size* <p>
 
 ```{r}
@@ -204,7 +201,7 @@ kable(se_volr, col.names = c("Stock", "Standard error [%]"),
 
 \newpage
 
-# Review of classical markovitz optimization {#Markovitz}
+# Review of classical markovitz optimization {#markovitz}
 Modern portfolio theory is a theory that deals with the construction of portfolios to maximize the expected return based on a given market risk. Markowitz' portfolio theory shows that efficient risk reduction is only possible if the extent of the correlation of the individual investments is taken into account when putting together the portfolio. Risk reduction through risk diversification is a key finding of the aforementioned portfolio theory. Harry Markowitz pioneered this theory in his article "Portfolio Selection”. The main point is that the risk and return characteristics of an investment should not be considered in isolation, but should be evaluated according to how the investment affects the risk and return of the overall portfolio. It is shown that an investor can construct a portfolio of multiple assets that maximizes returns for a given level of risk. Similarly, an investor can construct a portfolio with the lowest possible risk at a desired level of expected return. Based on statistical measures such as volatility and correlation, the performance of an individual investment is less important than how it affects the portfolio as a whole. [5] 
 
 It is also assumed that the return, volatility and covariance matrix is known. The portfolio volatility is accordingly given as a function of the covariance matrix and the weight vector and it can be minimized as much as desired by sufficient diversification. Also the sum of all weights equals 1. The portfolio weights being searched for are described by the vector $\vec{w} = (w_{1}, \dots, w_{n})$. The weights that are calculated are those weights that match the portfolio with minimal volatility (variance) to a given expected portfolio return $R_{p}$. This is a linear optimization problem, as well a formulation of the fundamental problem of balancing return and risk. Furthermore, in practice negative weightings are defined as short sales. [9]
@@ -370,7 +367,7 @@ In figure \@ref(fig:refplot) it is clearly visible that the efficient frontier c
 \newpage
 
 ## Sharpe ratio {#sharpe}
-The Sharpe ratio measures the performance of an investment which means the return of an investment compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the portfolio. In practice, the value of the Sharpe ratio is not only positively received. In this paper, however, we will rely on the Sharpe ratio because it is a key figure by which performance can be measured. It is calculated by the average return earned in excess of the risk-free rate per unit of volatility. In this case it is the natural logarithmic return per day $R$ divided by $\sigma$. $R$ is already calculated in equation \@ref(eq:LogR). Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. [6] [7]
+The Sharpe ratio measures the performance of an investment which means the return of an investment compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the portfolio. In practice, the value of the Sharpe ratio is not only positively received. In this paper, however, we will rely on the Sharpe ratio because it is a key figure by which performance can be measured. It is calculated by the average return earned in excess of the risk-free rate per unit of volatility. In this case it is the natural logarithmic return per day $R$ divided by $\sigma$. $R$ is already calculated in equation \@ref(eq:logr). Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. [6] [7]
 
 \begin{equation}
   Sharpe ratio = \frac{R_{ln} - R_{f}}{\sigma} = \frac{R}{\sigma}
