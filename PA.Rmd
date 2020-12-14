@@ -131,14 +131,21 @@ suppressWarnings(suppressMessages(print(gg_cor(cor_mat(r), 2, 8, theme = custom_
 ## Statistical key numbers
 
 ### T-statistic {#t-statistic}
+A t-test for the correlation as in equation \@ref(eq:ttest) is conducted to investigate if the true correlation is different from zero. 
+
 \begin{equation}
-  t = \frac{\rho_{i,j}*\sqrt{n-2}}{\sqrt{1 - \rho_{i,j}^2}}
-  \label{sec2}
+t = \frac{\rho_{i,j}*\sqrt{n-2}}{\sqrt{1 - \rho_{i,j}^2}}
+\label{eq:ttest}
 \end{equation}
 
 <p> *$t$ = t-statistic* <p>
 <p> *$\rho_{i,j}$ = correlation between return i und j* <p>
 <p> *$n$ = sample size* <p>
+
+The null hypothesis says that the correlation is not significantly different from zero and the alternative hypothesis that it is significant different from zero.
+
+<p> *$H_{0}:$ $\rho = 0$* <p>
+<p> *$H_{1}:$ $\rho \neq 0$* <p>
 
 ```{r}
 mincor = round(min(abs(cor_mat(r))), 3)
@@ -146,14 +153,23 @@ mincorname = row.names(which(round(cor_mat(r),3) == mincor, arr.ind = TRUE))
 tvalue = round(cor.test(r[,-1][,mincorname[1]], r[,-1][,mincorname[2]])[[1]], 3)
 ```
 
-To show that each correlation coefficient is significantly different from zero, the t-test is performed for the two shares with the correlation closest to zero, which are `r mincorname[1]` and `r mincorname[2]`.
+The test is performed for the two stocks with the smallest correlation which are `r mincorname[1]` and `r mincorname[2]`.
 
 \begin{equation}
   t = \frac{`r mincor`*\sqrt{`r nrow(r)`-2}}{\sqrt{1 - `r mincor`^2}} = `r tvalue`
   \label{eq:secr}
 \end{equation}
 
-The probability of measuring this correlation would be zero, if the true correlation was zero. Since the result is `r tvalue`, there is statistical evidence at the $\alpha$ = 0.05 level to conclude a significant linear relationship. Furthermore we can be sure that the observed correlation is not just an estimation error.
+The obtained result `r tvalue`, when compared to the t-distribution in figure \@ref(fig:tdist), has a p-value clearly below the threshold of $\alpha = 0.05$. Therefore, the null hyptothesis can be rejected meaning that the true correlation is significantly different from zero.
+
+```{r tdist, fig.cap = paste0("t-distribution with ", nrow(r), "-2 degrees of freedom"), fig.height = 3}
+seq = seq(-5, 5, 0.01)
+ggplot() +
+  geom_line(aes(x = seq, y = dt(seq, nrow(r)))) +
+  geom_hline(yintercept = 0.05, col = "orangered3", linetype = "dashed") +
+  labs(x = "x", y = "P(x)") +
+  custom_theme_markdown
+```
 
 ### Standard error of expected return
 In statistics the standard deviation of the sampling distribution is known as the standard error and it provides a statement about the quality of the estimated parameter. The more individual values there are, the smaller is the standard error, and the more accurately the unknown parameter can be estimated.
@@ -175,8 +191,6 @@ se_r = apply(r[,-1], 2, se_mean)
 min = min(mr - se_r); max = max(mr + se_r)
 gg_errorbar(stocks, mr, se_r, c(min, max), "Return [%]", theme = custom_theme_markdown)
 ```
-
-\newpage
 
 ### Standard error of volatility (standard deviation)
 This formula is an approximation for the standard error of volatility, which is appropriate for n > 10. [8]
