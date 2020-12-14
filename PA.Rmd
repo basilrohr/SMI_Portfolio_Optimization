@@ -50,7 +50,7 @@ We will analyze a variety of such approaches, identify those that add most value
 \newpage
 
 # Data
-In this paper, daily historical data from the Swiss Market Index, short SMI, and its constituents is used. The data stems from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. The SMI is also a price index which means that dividends are not included. It is reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is that enough historical data for all companies is available. The key numbers shown in table \@ref(tab:rmrvoltab) are calculated with equations \@ref(eq:logr) and \@ref(eq:vol). [1] [2]
+In this paper, daily historical data from the Swiss Market Index, short SMI, and its constituents is used. The data stems from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. The SMI is also a price index which means that dividends are not included. It is reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is that enough historical data for all companies is available. The key numbers shown in table \@ref(tab:rmrvoltab) are calculated with eqs. \@ref(eq:logr) and \@ref(eq:vol). [1] [2]
 
 ## Logarithmic return
 The reason for calculating logarithmic returns is that stock returns are generally assumed to be log-normally and not normally distributed. In later calculations, the risk-free rate of return has to be subtracted from the return and for the sake of simplicity, this is already done from the start. For the risk-free rate $R_{f}$ shown in table \@ref(tab:annrftab), the LIBOR is commonly used. Due to several negative incidents in the past, the Swiss Average Rate Overnight (SARON) is used for the time period 2014 to 2020. The SARON is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [3] [4]
@@ -131,7 +131,7 @@ suppressWarnings(suppressMessages(print(gg_cor(cor_mat(r), 2, 8, theme = custom_
 ## Statistical key numbers
 
 ### T-statistic {#t-statistic}
-A t-test for the correlation as in equation \@ref(eq:ttest) is conducted to investigate if the true correlation is different from zero. 
+A t-test for the correlation as in eq. \@ref(eq:ttest) is conducted to investigate if the true correlation is different from zero. 
 
 \begin{equation}
 t = \frac{\rho_{i,j}*\sqrt{n-2}}{\sqrt{1 - \rho_{i,j}^2}}
@@ -247,7 +247,7 @@ L(\vec{w}) = min \frac{1}{2}\vec{w}^\intercal\Sigma\vec{w} - \lambda(\vec{w}^\in
   \label{eq:lagrangemw}
 \end{equation}
 
-The disappearance of the gradient is the necessary condition for a minimum. This is together with the two constraints (\@ref(eq:constraint1), \@ref(eq:constraint2)) an inhomogeneous linear system of equations of the dimension $n + 2$ with $n + 2$ variables. The solution is a known standard problem from linear algebra.
+The disappearance of the gradient is the necessary condition for a minimum. This is together with the two constraints (\@ref(eq:constraint1), \@ref(eq:constraint2)) an inhomogeneous linear system of eqs. of the dimension $n + 2$ with $n + 2$ variables. The solution is a known standard problem from linear algebra.
 
 \begin{equation}
 \nabla_{w}L = \Sigma\vec{w} - \lambda*\vec{R} - \epsilon*\vec{1} = 0
@@ -267,7 +267,7 @@ The disappearance of the gradient is the necessary condition for a minimum. This
 In order to apply the optimization, some assumptions have to be made at the beginning. As already mentioned before, the returns, risk and correlation coefficients must be known. It is also important that the risk is described by the standard deviation. This leads to the conclusion that a normal distribution is irrelevant, because the standard deviation is used as risk. Another condition applies to the linear relationship of the stocks. The log returns must not have a perfect correlation among themselves, neither negative nor positive. This is described by a correlation coefficient of -1 or 1. If the determinant of the correlation matrix is zero, the system cannot be solved. This situation occurs when stocks have a correlation coefficient of 1 or -1. The system must be uniquely solvable to form the inverse of the covariance matrix $\Sigma^{-1}$.
 
 ## Minimum variance portfolio 
-The minimum variance portfolio, short MVP, describes the portfolio of all possible weightings with the minimum volatility. Since only the volatility is minimized, constraint *II* \@ref(eq:constraint2) is not included in the equation. Negative returns do not necessarily have to result in a negative weighting, since in the calculation of the MVP the return is not directly included in the calculation but only the covariance matrix. Therefore, the correlation coefficients are the important factor. The MVP weights are shown in table \@ref(tab:mvpwrtab).
+The minimum variance portfolio, short MVP, describes the portfolio of all possible weightings with the minimum volatility. Since only the volatility is minimized, constraint *II* \@ref(eq:constraint2) is not included in the eq.. Negative returns do not necessarily have to result in a negative weighting, since in the calculation of the MVP the return is not directly included in the calculation but only the covariance matrix. Therefore, the correlation coefficients are the important factor. The MVP weights are shown in table \@ref(tab:mvpwrtab).
 
 \begin{equation}
 \vec{w}_{mvp} = \frac{1}{\vec{1}^\intercal\Sigma^{-1}\vec{1}}*\Sigma^{-1}\vec{1}
@@ -289,7 +289,7 @@ kable(mvpw_r, col.names = c("Stock", "Weight"), caption = "Weights of minimum va
 ## Tangency portfolio 
 The tangency portfolio, short TP, results from the tangent of the capital market line and the efficient frontier, which will be shown more detailed in chapter \@ref(EF). The capital market line is an important component of the capital asset pricing model (CAPM). The slope of the capital market line indicates how much more return is expected per additional volatility. This is exactly the situation when the capital market line is tangential to the efficient frontier. Therefore, the best possible diversified portfolio results from the weightings of the tangency portfolio. 
 
-The tangency portfolio is often referred to in the literature as the market portfolio. In the equation for the capital market line, shown as equation \@ref(eq:cml), the expected return of the market portfolio respectively the tangency portfolio is written as $R_{tp}$.
+The tangency portfolio is often referred to in the literature as the market portfolio. In the equation for the capital market line, shown as eq. \@ref(eq:cml), the expected return of the market portfolio respectively the tangency portfolio is written as $R_{tp}$.
 
 *Capital Market Line:*
 \begin{equation}
@@ -381,7 +381,7 @@ In figure \@ref(fig:refplot) it is clearly visible that the efficient frontier c
 \newpage
 
 ## Sharpe ratio {#sharpe}
-The Sharpe ratio measures the performance of an investment which means the return of an investment compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the portfolio. In practice, the value of the Sharpe ratio is not only positively received. In this paper, however, we will rely on the Sharpe ratio because it is a key figure by which performance can be measured. It is calculated by the average return earned in excess of the risk-free rate per unit of volatility. In this case it is the natural logarithmic return per day $R$ divided by $\sigma$. $R$ is already calculated in equation \@ref(eq:logr). Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. [6] [7]
+The Sharpe ratio measures the performance of an investment which means the return of an investment compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the portfolio. In practice, the value of the Sharpe ratio is not only positively received. In this paper, however, we will rely on the Sharpe ratio because it is a key figure by which performance can be measured. It is calculated by the average return earned in excess of the risk-free rate per unit of volatility. In this case it is the natural logarithmic return per day $R$ divided by $\sigma$. $R$ is already calculated in eq. \@ref(eq:logr). Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. [6] [7]
 
 \begin{equation}
   Sharpe ratio = \frac{R_{ln} - R_{f}}{\sigma} = \frac{R}{\sigma}
@@ -431,7 +431,7 @@ In a second approach grouping is based on the similarity measure, which is calcu
 <p> *$\vec{x_{j}}$ = correlation coefficients of stock j (column in corr. matrix)* <p>
 <p> *$\vec{1}$ = all-ones vector* <p>
 
-When equation \@ref{eq:eucledean} is applied to the correlation matrix shown in figure \@ref{fig:corplot}, it results in a distance matrix with the same dimensions. The algorithm sorts the values of the distance matrix with the complete-linkage method. 
+When eq. \@ref{eq:eucledean} is applied to the correlation matrix shown in figure \@ref{fig:corplot}, it results in a distance matrix with the same dimensions. The algorithm sorts the values of the distance matrix with the complete-linkage method. 
 
 **Step 1**
 Group the two stocks with the smallest distance value. 
@@ -543,7 +543,7 @@ In this case, the historical data is split into five sections and consequentiall
 knitr::include_graphics("./Images/Cross_validation.jpg")
 ```
 
-In the case of the Markovitz model, the mean returns and covariance matrix of the training set are used to calculate the asset weights. These weights are then applied to the test set asset returns according to equation \@ref(eq:weightedreturn).
+In the case of the Markovitz model, the mean returns and covariance matrix of the training set are used to calculate the asset weights. These weights are then applied to the test set asset returns according to eq. \@ref(eq:weightedreturn).
 
 \begin{equation}
 R_{i,w} = \vec{w}^\intercal * \vec{R_i}
@@ -593,7 +593,7 @@ ggplot(sets_tpw) +
 Shrinkage is an approach with the objective to increase the out of sample Sharpe ratio by altering the inputs of the Markovitz optimization, namely the mean returns and covariance matrix.
 
 ### Shrinkage of mean returns
-The shrunk mean returns are calculated as in equation \@ref(eq:shrinkr).
+The shrunk mean returns are calculated as in eq. \@ref(eq:shrinkr).
 
 \begin{equation}
 \vec{R}(\lambda) = \lambda*\vec{R} + (1 - \lambda) * \vec{\overline{R}}
@@ -693,7 +693,7 @@ The zero crossing of the scaling factor in model three can be seen clearly. When
 \newpage
 
 ### Shrinkage of correlation matrix
-The shrunk correlation matrix is calculated as in equation \@ref(eq:shrinkcor).
+The shrunk correlation matrix is calculated as in eq. \@ref(eq:shrinkcor).
 
 \begin{equation}
 \rho_{i,j}(\epsilon) = I_{i,j} + \epsilon * \tilde{\rho}_{i,j}
@@ -765,51 +765,43 @@ gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(mintp, maxtp), "Weights",
             theme = custom_theme_markdown)
 ```
 
-It is obvious to see in figure \@ref(fig:mvpsegr) and \@ref(fig:tpsegr) and also visualized before in figure \@ref(fig:gg4), that TP weights have a higher standard deviation than MVP weights. That means the TP is more sensible to changes of returns than the MVP. If the equation \@ref(eq:mvpw) of MVP and the equation \@ref(eq:tpw) of TP are considered, the MVP does not depend on the returns directly. Consequently different returns samples have not a large impact on the MVP. The small differences arise from the varying covariance matrix. But it can also be noticed that this matrix has not large deviations following the standard deviation of the MVP. Therefore bootstrap sampling of the returns does not influence the covariance matrix as much as the returns itself.
+It is obvious to see in figure \@ref(fig:mvpsegr) and \@ref(fig:tpsegr) and also visualized before in figure \@ref(fig:gg4), that TP weights have a higher standard deviation than MVP weights. That means the TP is more sensible to changes of returns than the MVP. If the eq. \@ref(eq:mvpw) of MVP and the eq. \@ref(eq:tpw) of TP are considered, the MVP does not depend on the returns directly. Consequently different returns samples have not a large impact on the MVP. The small differences arise from the varying covariance matrix. But it can also be noticed that this matrix has not large deviations following the standard deviation of the MVP. Therefore bootstrap sampling of the returns does not influence the covariance matrix as much as the returns itself.
 
 ## Results of shrinkage method {#res3}
 
 ### Shrinkage factors analyzed separately
-The Sharpe ratio can be visualized as a function of the shrinking factor. Figure \@ref(fig:srplot) shows such a plot for the mean returns shrinkage factor.
+The Sharpe ratio can be visualized as a function of the shrinkage factor. Figure \@ref(fig:srplot) shows such a plot for the mean returns shrinkage factor.
 
-When looking at the SMI curve it can be seen that the highest Sharpe ratio is achieved with a shrinkage factor of about 0.05. This means that the mean returns are shrunk almost completely and therefore there is not much trust in them. This result is plausible, as the returns are very noisy. Further can be seen that the Sharpe ratio has a sharp bend and drop below zero. This is caused by the close to zero denominator of the tangency portfolio \@ref(eq:tpw) as described in chapter \@ref(shrinkage)
+When looking at the SMI constituents curve it can be seen that the highest Sharpe ratio is achieved with a shrinkage factor of about 0.05. If past returns are taken too seriously (higher shrinkage factor) or not considered at all (shrinkage factor 0), the out of sample Sharpe ratio drops. They can be trusted to about 5%. This result is plausible, as the returns are very noisy. Further can be seen that the Sharpe ratio has a sharp bend and drop below zero. This is caused by the close to zero denominator of the tangency portfolio eq. \@ref(eq:tpw) as described in chapter \@ref(shrinkage).
 
-For the two group curves the result is inverted. As the grouping of the stocks already reduces the noise significantly, shrinkage does show almost no improvement over non-shrunk mean returns. The groups by correlation do show a significantly higher Sharpe ratio than the grouping by industry and it is also higher than the one of the SMI.
-
-o	Single stock optimization: clear maximum for return shrinking factor 0.05. If past returns are taken too seriously (higher shrinking factor), the out of sample Sharpe drops. If they are not considered at all (shrinking factor 0), it also drops. We see that they can be trusted to about 5%.
-o	Single stock optimization with 5% return shrinking is better out of sample than the best result from forming groups 
-o	Single stock optimization: clear maximum for correlation shrinking factor 0.4. If past correlations are taken too seriously (higher shrinking factor), the out of sample Sharpe drops. If they are taken less seriously (shrinking factor 0), it also drops. We see that they can be trusted to about 40%.
-o	Single stock optimization with 40% correlation shrinking is better out of sample than the best result from forming groups
+For the two group curves the result is inverted. As the grouping of the stocks already reduces the noise significantly, shrinkage does show almost no improvement over non-shrunk mean returns. The groups by correlation do show a significantly higher Sharpe ratio than the grouping by industry and it is also higher than the one of the SMI constituents.
 
 ```{r srplot, fig.cap = 'Sharpe ratio as a function of return shrinking factor',fig.height = 4}
 os_r_sr = unlist(out_of_sample_vec(sets_r, seq(0, 1, 0.01)))
 os_gr_sr = unlist(out_of_sample_vec(sets_gr, seq(0, 1, 0.01)))
 os_g2r_sr = unlist(out_of_sample_vec(sets_g2r, seq(0, 1, 0.01)))
 gg_shrink2D(list(os_r_sr, os_gr_sr, os_g2r_sr),
-            c("SMI", "Groups by industry", "Groups by correlation"), "Return",
+            c("SMI constituents", "Groups by industry", "Groups by correlation"), "Return",
             theme = custom_theme_markdown)
 ```
 
-Figure \@ref(fig:scorplot) shows the same plot for the correlation shrinkage factor. The highest Sharpe ratio for the SMI is achieved with a shrinkage factor of about one third. This result is similar to the one obtained in figure \@ref(fig:srplot) as for the groups shrinkage does not have a great impact.
-The highest Sharpe ratio is again achieved by the groups by correlation.
+Figure \@ref(fig:scorplot) shows the same plot for the correlation shrinkage factor. There is a clear maximum for correlation shrinkage factor 0.4. If past correlations are taken too seriously (higher shrinkage factor), the out of sample Sharpe drops. If they are taken less seriously (shrinkage factor 0), it also drops. This result is similar to the one obtained in figure \@ref(fig:srplot) as for the groups shrinkage does not have a great impact. The highest Sharpe ratio is again achieved by the groups by correlation.
 
 ```{r scorplot, fig.cap = 'Sharpe ratio as a function of correlation shrinking factor', fig.height = 4}
 os_r_scor = unlist(out_of_sample_vec(sets_r, 1, seq(0, 1, 0.01)))
 os_gr_scor = unlist(out_of_sample_vec(sets_gr, 1, seq(0, 1, 0.01)))
 os_g2r_scor = unlist(out_of_sample_vec(sets_g2r, 1, seq(0, 1, 0.01)))
 gg_shrink2D(list(os_r_scor, os_gr_scor, os_g2r_scor),
-            c("SMI", "Groups by industry", "Groups by correlation"), "Correlation",
+            c("SMI constituents", "Groups by industry", "Groups by correlation"), "Correlation",
             theme = custom_theme_markdown)
 ```
-
-\newpage
 
 ### Shrinkage factors analyzed simultaneously
 A further visualization is a three dimensional plot where the Sharpe ratio is plotted as a function of both shrinkage factors. The darker the area, the higher the Sharpe ratio.
 
 Figure \@ref(fig:srcorplot1) shows such a plot for the SMI. In the lower and left part of the plot the contour lines are very chaotic which is caused by the Sharpe ratio dropping quickly and below zero. The highest Sharpe ratio is achieved with a mean returns shrinkage factor of about 0.05 and a correlation shrinkage factor of close to one. This matches the result of the previous plots where the mean return shrinkage is better at improving the Sharpe ratio.
 
-```{r srcorplot1, fig.cap = 'SMI Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
+```{r srcorplot1, fig.cap = 'SMI constituents Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
 grid = expand.grid(seq(0, 1, by = 0.05), seq(0, 1, by = 0.05))
 os_r_sr_scor = unlist(out_of_sample_vec(sets_r, grid[,1], grid[,2]))
 gg_shrink3D(grid, os_r_sr_scor, theme = custom_theme_markdown)
@@ -819,12 +811,12 @@ Figure \@ref(fig:srcorplot2) shows the three dimensional plot for the groups by 
 
 **simultaneous shrinking: if returns are shrunk to 5%, then correlation shrinking does not add more value**
 
-```{r srcorplot2, fig.cap = 'Groups Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
+```{r srcorplot2, fig.cap = 'Groups by industry Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
 os_gr_sr_scor = unlist(out_of_sample_vec(sets_gr, grid[,1], grid[,2]))
 gg_shrink3D(grid, os_gr_sr_scor, theme = custom_theme_markdown)
 ```
 
-```{r srcorplot3, fig.cap = 'Groups Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
+```{r srcorplot3, fig.cap = 'Groups by correlation Sharpe ratio as a function of return and correlation shrinking factor', fig.height = 4}
 os_g2r_sr_scor = unlist(out_of_sample_vec(sets_g2r, grid[,1], grid[,2]))
 gg_shrink3D(grid, os_g2r_sr_scor, theme = custom_theme_markdown)
 ```
@@ -834,7 +826,7 @@ Table \@ref(tab:srcomptab) provides an overview over all Sharpe investigated Sha
 ```{r srcomptab}
 t20 = data.frame(c(is_r, is_gr, is_g2r),
                  c(os_r, os_gr, os_g2r),
-                 c(max(os_r_sr_scor), max(os_gr_sr_scor), max(os_g2r_sr_scor)), row.names = c("SMI", "Groups 4", "Groups 3"))
+                 c(max(os_r_sr_scor), max(os_gr_sr_scor), max(os_g2r_sr_scor)), row.names = c("SMI constituents", "Groups by industry", "Groups by correlation"))
 
 kable(t20, caption = "Sharpe ratio",  digits = 3,
        booktabs = T, linesep = "", col.names = c("IS", "OS", "OS Shrinkage"))
