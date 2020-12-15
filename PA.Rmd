@@ -754,6 +754,24 @@ In table \@ref(tab:tabplot12), the Sharpe ratio of in and out of sample of the f
 
 In chapter \@ref(groupclust), cluster analysis is used to optimize the group composition. Hence, higher correlating stocks are grouped together to have better diversified portfolio than is achieved with grouping by industry. Consequently, the correlation between the groups by correlation shrunk in comparison to the correlation between the groups by industry.
 
+\newpage
+
+To give further insights, the in sample tangency portfolio weights of the groups by industry and groups by correlation are shown in tables \@ref(tab:tpwgrtab) and \@ref(tab:tpwg2rtab). The in sample weights are displayed instead of the out of sample weights due to the fact that the cross validation produces five models and therefore five different sets of weights. It is seen that the groups by correlation, where the noise is best reduced, the in sample and out of sample Sharpe ratio are close together.
+
+```{r tpwgrtab}
+tpw_gr_df = data.frame(colnames(gr[-1]), tp_weights(cov_mat(gr), mean_returns(gr)))
+kable(tpw_gr_df, col.names = c("Group", "Weight"), caption = "Groups by industry in sample tangency portfolio weights",
+      digits = 3, booktabs = T, linesep = "")
+```
+
+```{r tpwg2rtab}
+tpw_g2r_df = data.frame(colnames(g2r[-1]), tp_weights(cov_mat(g2r), mean_returns(g2r)))
+kable(tpw_g2r_df, col.names = c("Group", "Weight"), caption = "Groups by correlation in sample tangency portfolio weights",
+      digits = 3, booktabs = T, linesep = "")
+```
+
+Compared to the weights of the individual stocks already shown in table \@ref(tab:tpwrtab), the weights of the groups are significantly higher. To recall, the weights must sum up to one according to constraint \@ref(eq:constraint1). If the groups perform differently, like it is the case for *Finance* (negative mean return) and *Pharma* (positive mean return) in the groups by industry, the weights drift apart. This becomes even more prominent in the groups by correlation between *Group 1* and *Group 3*. As mentioned in chapter \@ref(markovitz), negative weights correspond to short sales.
+
 In the following two illustrations, bootstrapped weights of the groups by industry can be seen. As mentioned in section \@ref(res1), the same is shown for the groups. Figure \@ref(fig:mvpsegr) illustrates the MVP weights and figure \@ref(fig:tpsegr) the TP weights.
 
 ```{r mvpsegr, fig.cap = 'MVP weights with standard error', fig.height = 3}
@@ -767,6 +785,8 @@ gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(mintp, maxtp), "Weights",
 ```
 
 It is obvious to see in figure \@ref(fig:mvpsegr) and \@ref(fig:tpsegr) and also visualized before in figure \@ref(fig:gg4), that TP weights have a higher standard deviation than MVP weights. That means the TP is more sensible to changes of returns than the MVP. If the eq. \@ref(eq:mvpw) of MVP and the eq. \@ref(eq:tpw) of TP are considered, the MVP does not depend on the returns directly. Consequently different returns samples have not a large impact on the MVP. The small differences arise from the varying covariance matrix. But it can also be noticed that this matrix has not large deviations following the standard deviation of the MVP. Therefore bootstrap sampling of the returns does not influence the covariance matrix as much as the returns itself.
+
+
 
 ## Results of shrinkage method {#res3}
 
@@ -833,20 +853,6 @@ kable(t20, caption = "Sharpe ratio",  digits = 3,
        booktabs = T, linesep = "", col.names = c("IS", "OS", "OS Shrinkage"))
 ```
 
-To give further insights, the tangency portfolio weights of the groups by industry and groups by correlation are shown in tables \@ref(tab:tpwgrtab) and \@ref(tab:tpwg2rtab). Compared to the weights of the individual stocks already shown in table \@ref(tab:tpwrtab), the weights of the groups are significantly higher. To recall, the weights must sum up to one according to constraint \@ref(eq:constraint1). If the groups perform differently, like it is the case for *Finance* (negative mean return) and *Pharma* (positive mean return) in the groups by industry, the weights drift apart. This becomes even more prominent in the groups by correlation between *Group 1* and *Group 3*. As mentioned in chapter \@ref(markovitz), negative weights correspond to short sales. In practice it is unlikely that one would include short sales to such a degree or even at all in a portfolio.
-
-```{r tpwgrtab}
-tpw_gr = data.frame(colnames(gr[-1]), tp_weights(cov_mat(gr), mean_returns(gr)))
-kable(tpw_gr, col.names = c("Group", "Weight"), caption = "Groups by industry tangency portfolio weights",
-      digits = 3, booktabs = T, linesep = "")
-```
-
-```{r tpwg2rtab}
-tpw_g2r = data.frame(colnames(g2r[-1]), tp_weights(cov_mat(g2r), mean_returns(g2r)))
-kable(tpw_g2r, col.names = c("Group", "Weight"), caption = "Groups by correlation tangency portfolio weights",
-      digits = 3, booktabs = T, linesep = "")
-```
-
 # Conclusion
 
 It can be concluded, that the best improvement of Sharpe ratio is achieved by grouping by correlation with the help of cluster analysis methods. Shrinkage can also improve the Sharpe ratio slightly on already optimized groups and more significantly on ungrouped assets as in the case of the SMI.
@@ -856,9 +862,7 @@ Kapitel noch ausbauen, aber Kernaussage ist jene von oben
 \newpage
 
 # References
-
 <div id="refs"></div>
 
-\listoffigures
-
 \listoftables
+\listoffigures
