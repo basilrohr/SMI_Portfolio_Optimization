@@ -49,10 +49,10 @@ We will analyze a variety of such approaches, identify those that add most value
 \newpage
 
 # Data
-In this paper, daily historical data from the Swiss Market Index, short SMI, and its constituents is used. The data stems from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. The SMI is also a price index which means that dividends are not included. It is reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is that enough historical data for all companies is available. The key numbers shown in table \@ref(tab:rmrvoltab) are calculated with eqs. \@ref(eq:logr) and \@ref(eq:vol). [@yahoo] [@six]
+In this paper, daily historical data from the Swiss Market Index, short SMI, and its constituents is used. The data stems from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. The SMI is also a price index which means that dividends are not included. It is reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is that enough historical data for all companies is available. The key numbers shown in table \@ref(tab:rmrvoltab) are calculated with eqs. \@ref(eq:logr) and \@ref(eq:vol). [@yahoo], [@six]
 
 ## Logarithmic return
-The reason for calculating logarithmic returns is that stock returns are generally assumed to be log-normally and not normally distributed. In later calculations, the risk-free rate of return has to be subtracted from the return and for the sake of simplicity, this is already done from the start. For the risk-free rate $R_{f}$ shown in table \@ref(tab:annrftab), the LIBOR is commonly used. Due to several negative incidents in the past, the Swiss Average Rate Overnight (SARON) is used for the time period 2014 to 2020. The SARON is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [@saron] [@libor]
+The reason for calculating logarithmic returns is that stock returns are generally assumed to be log-normally and not normally distributed. In later calculations, the risk-free rate of return has to be subtracted from the return and for the sake of simplicity, this is already done from the start. For the risk-free rate $R_{f}$ shown in table \@ref(tab:annrftab), the LIBOR is commonly used. Due to several negative incidents in the past, the Swiss Average Rate Overnight (SARON) is used for the time period 2014 to 2020. The SARON is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [@saron], [@libor]
 
 \begin{equation}
 R = R_{ln} - R_{f} = ln\left(\frac{x_{t}}{x_{t-1}}\right) - R_{f}
@@ -281,7 +281,7 @@ The minimum variance portfolio, short MVP, describes the portfolio of all possib
 
 ```{r mvpwrtab}
 mvpw_r = data.frame(colnames(r[-1]), mvp_weights(cov_mat(r)))
-kable(mvpw_r, col.names = c("Stock", "Weight"), caption = "Weights of minimum variance portfolio",
+kable(mvpw_r, col.names = c("Stock", "Weight"), caption = "Minimum variance portfolio weights",
       digits = 3, booktabs = T, linesep = "")
 ```
 
@@ -318,7 +318,7 @@ R_{P}(\sigma_{P}) = R_{f} + \frac{R_{tp} - R_{f}}{\sigma_{tp}} * \sigma_{P}
 
 ```{r tpwrtab}
 tpw_r = data.frame(colnames(r[-1]), tp_weights(cov_mat(r), mean_returns(r)))
-kable(tpw_r, col.names = c("Stock", "Weight"), caption = "Weights of tangency portfolio",
+kable(tpw_r, col.names = c("Stock", "Weight"), caption = "Tangency portfolio weights",
       digits = 3, booktabs = T, linesep = "")
 ```
 
@@ -833,8 +833,19 @@ kable(t20, caption = "Sharpe ratio",  digits = 3,
        booktabs = T, linesep = "", col.names = c("IS", "OS", "OS Shrinkage"))
 ```
 
-**optimale gewichtungen**
+To give further insights, the tangency portfolio weights of the groups by industry and groups by correlation are shown in tables \@ref(tab:tpwgrtab) and \@ref(tab:tpwg2rtab). Compared to the weights of the individual stocks already shown in table \@ref(tab:tpwrtab), the weights of the groups are significantly higher. To recall, the weights must sum up to one according to constraint \@ref(eq:constraint1). If the groups perform differently, like it is the case for *Finance* (negative mean return) and *Pharma* (positive mean return) in the groups by industry, the weights drift apart. This becomes even more prominent in the groups by correlation between *Group 1* and *Group 3*. As mentioned in chapter \@ref(markovitz), negative weights correspond to short sales. In practice it is unlikely that one would include short sales to such a degree or even at all in a portfolio.
 
+```{r tpwgrtab}
+tpw_gr = data.frame(colnames(gr[-1]), tp_weights(cov_mat(gr), mean_returns(gr)))
+kable(tpw_gr, col.names = c("Group", "Weight"), caption = "Groups by industry tangency portfolio weights",
+      digits = 3, booktabs = T, linesep = "")
+```
+
+```{r tpwg2rtab}
+tpw_g2r = data.frame(colnames(g2r[-1]), tp_weights(cov_mat(g2r), mean_returns(g2r)))
+kable(tpw_g2r, col.names = c("Group", "Weight"), caption = "Groups by correlation tangency portfolio weights",
+      digits = 3, booktabs = T, linesep = "")
+```
 
 # Conclusion
 
