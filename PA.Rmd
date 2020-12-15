@@ -6,7 +6,7 @@ author:
   - Maurice Gerber
   - Basil Rohr
 date: "`r format(Sys.time(), '%d. %B %Y')`"
-abstract: "Markowitz optimization requires estimates of the expected return, standard deviation, and correlations of individual stocks, all of which are subject to estimation errors. This leads to the risk of overfitting historical data and, in the case of portfolio optimization, creating portfolios that perform well in backtesting but poorly in the future. To overcome these problems, several robust approaches are investigated, such as asset grouping, shrinkage estimators for historical returns and correlations, and bootstrapping. The goal is to provide a recommended methodology for optimizing a portfolio that includes all stocks from the Swiss Market Index. In summary, two key observations are made. First, asset grouping leads to better portfolio performance relative to individual assets. Similarly, shrinkage leads to increased performance for assets with noisy historical data.\\par\\textbf{Keywords:} Portfolio optimization, Robust optimization, Markowitz model, Covariance matrix, Shrinkage, Sharpe ratio\\newpage"
+abstract: "Markowitz optimization requires estimates of the expected return, standard deviation, and correlations of individual stocks, all of which are subject to estimation errors. This leads to the risk of overfitting historical data and, in the case of portfolio optimization, creating portfolios that perform well in backtesting but poorly in the future. To overcome these problems, several robust approaches are investigated, such as asset grouping, shrinkage estimators for historical returns and correlations, and bootstrapping. The goal is to provide a recommended methodology for optimizing a portfolio that includes all assets from the Swiss Market Index. In summary, two key observations are made. First, asset grouping leads to better portfolio performance relative to individual assets. Similarly, shrinkage leads to increased performance for assets with noisy historical data.\\par\\textbf{Keywords:} Portfolio optimization, Robust optimization, Markowitz model, Covariance matrix, Shrinkage, Sharpe ratio\\newpage"
 output:
   bookdown::pdf_book:
     toc: false
@@ -41,10 +41,11 @@ R.utils::sourceDirectory("./Code", modifiedOnly = F)
 ```
 
 # Introduction
-Markowitz' Optimization and other models of Finance require estimates of the expected return, the standard deviation and the correlations of individual assets.
-These estimates are subject to estimation errors, especially when they are based on short historical time series. This leads to the danger of over- fitting historical data and - in the case of portfolio optimization - of producing portfolios that perform well in backtesting, but perform poorly in the future.
-To overcome these problems, several approaches have been proposed. This includes Bayesian approaches, including shrinking Estimators for historical returns, volatilites and correlations. It also includes resampling/bootstrapping approaches, where expected returns, volatilites and correlations are modelled as random variables.
-We will analyze a variety of such approaches, identify those that add most value in the context of investment management, and combine/improve them. The goal is a recommended methodology for computing the strategic asset allocation of pension funds and other institutional investors. **min. halbe Seite lang**
+In order to make the best possible use of returns and volatilities when selecting assets in a portfolio, the US economist Harry M. Markowitz developed a mathematical method in 1952 to determine efficient portfolios. This method has since been known as modern portfolio theory. Since then, it is formalized how to create the most efficient portfolio from different stocks with given variables such as returns and volatilities. The disadvantage of this optimization is that the calculations are based on historical data. This data, namely the returns, are strongly affected by noise and therefore will not perform well in the future. 
+
+The fundamental question is how to create an optimization from historical data that delivers robust results on independent data. In this paper, the Sharpe ratio is used as a performance measurement of the optimization. The data used in this paper are the assets included in the SMI, afterwards a short review of Markovitz theory is presented. To achieve more robust results, several approaches are investigated. The first method described is grouping where a qualitative and a quantitative approach are applied and compared. Followed by a description of the bootstrap which is used to determine the standard errors of the asset weights. To measure the performance on to an independent data set, cross validation is applied to obtain an out of sample time series. As a final approach, shrinkage of the mean returns and correlations is discussed. 
+
+All these methods are applied to 20 years of historical data and their performance in terms of Sharpe ratio is compared. At the end of this paper, the aim is to provide a general approach to create a robust portfolio optimization.
 
 \newpage
 
@@ -732,6 +733,8 @@ maxmvp = max(c(mvpw_r + mvpw_sd_r, mvpw_gr + mvpw_sd_gr))
 gg_errorbar(stocks, mvpw_r, mvpw_sd_r, c(minmvp, maxmvp), "Weights", theme = custom_theme_markdown)
 ```
 
+\newpage
+
 ```{r tpse, fig.cap = 'tangency portfolio weights with standard error', fig.height = 4}
 tpw_r = tp_weights(cov_mat(r), mean_returns(r)); tpw_gr = tp_weights(cov_mat(gr), mean_returns(gr))
 tpw_sd_r = bs_r$tp_weights_sd; tpw_sd_gr = bs_gr$tp_weights_sd
@@ -754,8 +757,6 @@ In table \@ref(tab:tabplot12), the Sharpe ratio of in and out of sample of the f
 
 In chapter \@ref(groupclust), cluster analysis is used to optimize the group composition. Hence, higher correlating stocks are grouped together to have better diversified portfolio than is achieved with grouping by industry. Consequently, the correlation between the groups by correlation shrunk in comparison to the correlation between the groups by industry.
 
-\newpage
-
 To give further insights, the in sample tangency portfolio weights of the groups by industry and groups by correlation are shown in tables \@ref(tab:tpwgrtab) and \@ref(tab:tpwg2rtab). The in sample weights are displayed instead of the out of sample weights due to the fact that the cross validation produces five models and therefore five different sets of weights. It is seen that the groups by correlation, where the noise is best reduced, the in sample and out of sample Sharpe ratio are close together.
 
 ```{r tpwgrtab}
@@ -763,6 +764,8 @@ tpw_gr_df = data.frame(colnames(gr[-1]), tp_weights(cov_mat(gr), mean_returns(gr
 kable(tpw_gr_df, col.names = c("Group", "Weight"), caption = "Groups by industry in sample tangency portfolio weights",
       digits = 3, booktabs = T, linesep = "")
 ```
+
+\newpage
 
 ```{r tpwg2rtab}
 tpw_g2r_df = data.frame(colnames(g2r[-1]), tp_weights(cov_mat(g2r), mean_returns(g2r)))
@@ -786,7 +789,7 @@ gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(mintp, maxtp), "Weights",
 
 It is obvious to see in figure \@ref(fig:mvpsegr) and \@ref(fig:tpsegr) and also visualized before in figure \@ref(fig:gg4), that TP weights have a higher standard deviation than MVP weights. That means the TP is more sensible to changes of returns than the MVP. If the eq. \@ref(eq:mvpw) of MVP and the eq. \@ref(eq:tpw) of TP are considered, the MVP does not depend on the returns directly. Consequently different returns samples have not a large impact on the MVP. The small differences arise from the varying covariance matrix. But it can also be noticed that this matrix has not large deviations following the standard deviation of the MVP. Therefore bootstrap sampling of the returns does not influence the covariance matrix as much as the returns itself.
 
-
+\newpage
 
 ## Results of shrinkage method {#res3}
 
@@ -840,8 +843,6 @@ os_g2r_sr_scor = unlist(out_of_sample_vec(sets_g2r, grid[,1], grid[,2]))
 gg_shrink3D(grid, os_g2r_sr_scor, theme = custom_theme_markdown)
 ```
 
-\newpage
-
 Table \@ref(tab:srcomptab) provides an overview over all investigated Sharpe ratios, namely in sample (IS), out of sample (OS) and out of sample with applied Shrinkage (OS Shrinkage).
 
 ```{r srcomptab}
@@ -855,9 +856,9 @@ kable(t20, caption = "Sharpe ratio",  digits = 3,
 
 # Conclusion
 
-It can be concluded, that the best improvement of Sharpe ratio is achieved by grouping by correlation with the help of cluster analysis methods. Shrinkage can also improve the Sharpe ratio slightly on already optimized groups and more significantly on ungrouped assets as in the case of the SMI.
+Considered in isolation, the highest increase of Sharpe ratio is achieved by grouping by correlation using cluster analysis. Nevertheless the highest Sharpe ratio is obtained with a combination of grouping and shrinkage. It should be noted that when one method is applied after the other, its influence on the Sharpe ratio is significantly lower. This has to do with the fact that the noise can only be reduced to a certain degree. In this case, the first method grouping, has a larger increase in Sharpe ratio, while shrinkage, as the second method, has only a small additional increase. However, it is well apparent that for the SMI constituents where only shrinkage is applied, the rise in Sharpe ratio is similarly high compared with grouping as the first method. 
 
-Kapitel noch ausbauen, aber Kernaussage ist jene von oben
+With these insights, the best procedure for optimizing multiple assets can be derived. In a first step, one would group by correlation to reduce noise by a significant amount. The second step would be applying shrinkage to mean returns and correlation. Examining the groups implies that returns remain unshrunk, while correlation is shrunk by a factor of 0.95. While this is not generally valid, overall it can be said that shrinkage offers only a small gain in addition to the previous grouping. But if grouping is omitted, it is possible that a higher Sharpe ratio can be achieved with the shrinkage approach, especially with a high number of assets. 
 
 \newpage
 
@@ -865,4 +866,7 @@ Kapitel noch ausbauen, aber Kernaussage ist jene von oben
 <div id="refs"></div>
 
 \listoftables
+
+\newpage
+
 \listoffigures
