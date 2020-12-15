@@ -49,10 +49,10 @@ We will analyze a variety of such approaches, identify those that add most value
 \newpage
 
 # Data
-In this paper, daily historical data from the Swiss Market Index, short SMI, and its constituents is used. The data stems from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. The SMI is also a price index which means that dividends are not included. It is reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is that enough historical data for all companies is available. The key numbers shown in table \@ref(tab:rmrvoltab) are calculated with eqs. \@ref(eq:logr) and \@ref(eq:vol). [1] [2] [@yahoo]
+In this paper, daily historical data from the Swiss Market Index, short SMI, and its constituents is used. The data stems from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. The SMI is also a price index which means that dividends are not included. It is reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is that enough historical data for all companies is available. The key numbers shown in table \@ref(tab:rmrvoltab) are calculated with eqs. \@ref(eq:logr) and \@ref(eq:vol). [@yahoo] [@six]
 
 ## Logarithmic return
-The reason for calculating logarithmic returns is that stock returns are generally assumed to be log-normally and not normally distributed. In later calculations, the risk-free rate of return has to be subtracted from the return and for the sake of simplicity, this is already done from the start. For the risk-free rate $R_{f}$ shown in table \@ref(tab:annrftab), the LIBOR is commonly used. Due to several negative incidents in the past, the Swiss Average Rate Overnight (SARON) is used for the time period 2014 to 2020. The SARON is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [3] [4]
+The reason for calculating logarithmic returns is that stock returns are generally assumed to be log-normally and not normally distributed. In later calculations, the risk-free rate of return has to be subtracted from the return and for the sake of simplicity, this is already done from the start. For the risk-free rate $R_{f}$ shown in table \@ref(tab:annrftab), the LIBOR is commonly used. Due to several negative incidents in the past, the Swiss Average Rate Overnight (SARON) is used for the time period 2014 to 2020. The SARON is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [@saron] [@libor]
 
 \begin{equation}
 R = R_{ln} - R_{f} = ln\left(\frac{x_{t}}{x_{t-1}}\right) - R_{f}
@@ -841,41 +841,6 @@ kable(t20, caption = "Sharpe ratio",  digits = 3,
 It can be concluded, that the best improvement of Sharpe ratio is achieved by grouping by correlation with the help of cluster analysis methods. Shrinkage can also improve the Sharpe ratio slightly on already optimized groups and more significantly on ungrouped assets as in the case of the SMI.
 
 Kapitel noch ausbauen, aber Kernaussage ist jene von oben
-
-\newpage
-
-# References
-
-[1] Yahoo Finance, SMI Equities - EBS in CHF [online]. Available from:
-https://finance.yahoo.com. [Accessed 28 October 2020]
-
-[2] SIX Group, SMI® – the Blue-Chip Index [online]. Available from:
-https://www.six-group.com/exchanges/indices/data_centre/shares/smi_en.html [Accessed 15 October 2020]
-
-[3] SIX Group, Swiss Reference Rates (SARON) [online]. Available from:
-https://www.six-group.com/exchanges/indices/data_centre/swiss_reference_rates/reference_rates_en.html [Accessed 30 October 2020]
-
-[4] global-rates, CHF LIBOR interest rate [online]. Available from:
-https://www.global-rates.com/en/interest-rates/libor/swiss-franc/swiss-franc.aspx [Accessed 28 October 2020]
-
-<!-- [5] H. Makovitz (1952). Portfolio Selection. -->
-<!-- The Journal of Finance Vol. 7, No. 1, pp. 77-91 (15 pages). Published By: Wiley. -->
-
-<!-- [6] W. F. Sharpe (1966). Mutual Fund Performance. -->
-<!-- The Journal of Business, Vol. 39, No. 1, Part 2: Supplement on Security Prices, pp. 119-138.  -->
-<!-- Published by: The University of Chicago Press, -->
-
-<!-- [7] A. W. Lo (2003). The Statistics of Sharpe Ratios. -->
-<!-- Sloan School of Management, Massachusetts Instintute of Technology, Cambridge. -->
-
-<!-- [8] Ahn, S. and Fessler, J. (2003). Standard Errors of Mean, Variance and, Standard Deviation Estimators.  -->
-<!-- EECS Department, The University of Michigan, pp.1-2. -->
-
-<!-- [9] D. G. Leuenberger (1998). Investment Science.  -->
-<!-- Published by: Oxford University Press, New York. -->
-
-<!-- [10] A. Ruckstuhl (2020). Statistisches Data Mining. -->
-<!-- School of Engineering, Zurich University of Applied Science -->
 
 \newpage
 
