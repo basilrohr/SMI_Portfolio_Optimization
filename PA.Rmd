@@ -115,12 +115,12 @@ cov_{x,y} = \frac{\sum_{i = 1}^{n}(x_{i} - \overline{x})(y_{i} - \overline{y})}{
 \label{eq:cor}
 \end{equation}
 
-<p> *$\rho_{i,j}$ = correlation between returns of assets i und j* <p>
-<p> *$cov_{i,j}$ = covariance between returns of assets i und j* <p>
+<p> *$\rho_{i,j}$ = correlation between returns of assets i and j* <p>
+<p> *$cov_{i,j}$ = covariance between returns of assets i and j* <p>
 <p> *$\sigma_{i}$ = volatility of return of asset i* <p>
 <p> *$\sigma_{j}$ = volatility of return of asset j* <p>
 
-The correlation matrix of all 20 stocks is shown in figure \@ref(fig:corplot). As the SMI only contains stocks that are traded on the Swiss stock exchange, there is a rather high correlation between them. The correlation between companies from the same industry is also higher than between companies from different industries. It can be concluded that economic similarities are reflected in a higher correlation between stocks. A correlation significance test is performed in chapter \@ref(t-statistic).
+The correlation matrix of all 20 stocks is shown in figure \@ref(fig:corplot). As the SMI only contains stocks that are traded on the Swiss stock exchange, there is a rather high correlation between them. The correlation between companies from the same industry is also higher than between companies from different industries. It can be concluded that economic similarities are reflected in a higher correlation between stocks.
 
 ```{r corplot, fig.cap = "Correlation between SMI constituents", fig.height = 6}
 suppressWarnings(suppressMessages(print(gg_cor(cor_mat(r), 2, 8, theme = custom_theme_markdown))))
@@ -130,39 +130,39 @@ suppressWarnings(suppressMessages(print(gg_cor(cor_mat(r), 2, 8, theme = custom_
 
 ## Statistical key numbers
 
-### T-statistic {#t-statistic}
-A t-test for the correlation as in eq. \@ref(eq:ttest) is conducted to investigate if the true correlation is different from zero. 
+### t-Test
+A t-test for the correlation as in eq. \@ref(eq:ttest) is conducted to investigate if the true correlation is significantly different from zero.
 
 \begin{equation}
-t = \frac{\rho_{i,j}*\sqrt{n-2}}{\sqrt{1 - \rho_{i,j}^2}}
+t = \frac{\rho_{i,j}*\sqrt{n-2}}{\sqrt{1-\rho_{i,j}^2}}
 \label{eq:ttest}
 \end{equation}
 
-<p> *$t$ = t-statistic* <p>
-<p> *$\rho_{i,j}$ = correlation between return i und j* <p>
+<p> *$t$ = test statistic* <p>
+<p> *$\rho_{i,j}$ = correlation between returns of assets i and j* <p>
 <p> *$n$ = sample size* <p>
 
-The null hypothesis says that the correlation is not significantly different from zero and the alternative hypothesis that it is significant different from zero.
+The null hypothesis says that the correlation is not significantly different from zero and the alternative hypothesis that it is significantly different from zero.
 
 <p> *$H_{0}:$ $\rho = 0$* <p>
 <p> *$H_{1}:$ $\rho \neq 0$* <p>
 
 ```{r}
-mincor = round(min(abs(cor_mat(r))), 3)
-mincorname = row.names(which(round(cor_mat(r),3) == mincor, arr.ind = TRUE))
-tvalue = round(cor.test(r[,-1][,mincorname[1]], r[,-1][,mincorname[2]])[[1]], 3)
+min_cor = round(min(abs(cor_mat(r))), 3)
+min_cor_names = row.names(which(round(cor_mat(r),3) == min_cor, arr.ind = T))
+tstatistic = round(cor.test(r[,-1][,min_cor_names[1]], r[,-1][,min_cor_names[2]])[[1]], 3)
 ```
 
-The test is performed for the two stocks with the smallest correlation which are `r mincorname[1]` and `r mincorname[2]`.
+The test is performed for the two stocks with the smallest correlation which are *`r min_cor_names[1]`* and *`r min_cor_names[2]`*. When inserting the numbers in eq. \@ref(eq:ttest) as shown in eq. \@ref(eq:tteststatistic), one obtains `r tstatistic`.
 
 \begin{equation}
-  t = \frac{`r mincor`*\sqrt{`r nrow(r)`-2}}{\sqrt{1 - `r mincor`^2}} = `r tvalue`
-  \label{eq:secr}
+t = \frac{`r min_cor`*\sqrt{`r nrow(r)`-2}}{\sqrt{1-`r min_cor`^2}} = `r tstatistic`
+\label{eq:tteststatistic}
 \end{equation}
 
-The obtained result `r tvalue`, when compared to the t-distribution in figure \@ref(fig:tdist), has a p-value clearly below the threshold of $\alpha = 0.05$. Therefore, the null hyptothesis can be rejected meaning that the true correlation is significantly different from zero.
+With the help of the t-distribution in figure \@ref(fig:tdist) it is seen clearly that a value of approximately 2 is already below the threshold of $\alpha = 0.05$. Therefore, with the obtained test statistic value of `r tstatistic` which is far to the right in figure \@ref(fig:tdist), the p-value is almost zero. Consequentially, the null hypothesis can be rejected meaning that the true correlation is significantly different from zero.
 
-```{r tdist, fig.cap = paste0("t-distribution with ", nrow(r), "-2 degrees of freedom"), fig.height = 3}
+```{r tdist, fig.cap = paste0("t-distribution with ", nrow(r), " $-$ 2 degrees of freedom"), fig.height = 3}
 seq = seq(-5, 5, 0.01)
 ggplot() +
   geom_line(aes(x = seq, y = dt(seq, nrow(r)))) +
@@ -171,21 +171,23 @@ ggplot() +
   custom_theme_markdown
 ```
 
-### Standard error of expected return
-In statistics the standard deviation of the sampling distribution is known as the standard error and it provides a statement about the quality of the estimated parameter. The more individual values there are, the smaller is the standard error, and the more accurately the unknown parameter can be estimated.
+### Standard error of mean return
+The standard deviation of the sampling distribution is known as the standard error and it provides a statement about the quality of the estimated parameter. The more observations there are, the smaller the standard error is and the more accurately the unknown parameter can be estimated. The standard error of mean return is shown in eq. \@ref(eq:semr).
 
 \begin{equation}
-  \sigma_{\overline{R}} = \frac{\sigma}{\sqrt{n}}
-  \label{eq:ser}
+\sigma_{\overline{R}} = \frac{\sigma}{\sqrt{n}}
+\label{eq:semr}
 \end{equation}
 
-<p> *$\sigma_{\overline{R}}$ = standard error* <p>
-<p> *$\sigma$ = standard deviation of sample* <p>
+<p> *$\sigma_{\overline{R}}$ = standard error of mean return* <p>
+<p> *$\sigma$ = standard deviation* <p>
 <p> *$n$ = sample size* <p>
 
-Figure \@ref(fig:serplot) shows the logarithmic mean return with the standard errors for each stock. It is easy to see that stocks such as *Swisscom* and *Nestle* with low volatility (table \@ref(tab:rmrvoltab)) also have a lower standard error. As well *ABB* and *Credit Suisse* have a high volatility and accordingly show higher values for the standard error.
+\newpage
 
-```{r serplot, fig.cap = 'Expected mean return with standard error', fig.height = 4}
+Figure \@ref(fig:serplot) depicts the standard error of mean return for each stock. It is seen clearly that stocks as *Nestle* and *Swisscom* with a low volatility (see table \@ref(tab:rmrvoltab)) also have a lower standard error. Likewise, *ABB* and *Credit Suisse* with a high volatility show a higher standard error.
+
+```{r serplot, fig.cap = 'Standard error of mean return', fig.height = 4}
 mr = mean_returns(r)
 se_r = apply(r[,-1], 2, se_mean)
 min = min(mr - se_r); max = max(mr + se_r)
@@ -193,18 +195,18 @@ gg_errorbar(stocks, mr, se_r, c(min, max), "Return [%]", theme = custom_theme_ma
 ```
 
 ### Standard error of volatility (standard deviation)
-This formula is an approximation for the standard error of volatility, which is appropriate for n > 10. [8]
+Eq. \@ref(eq:sevol) is an approximation for the standard error of volatility which is appropriate for n > 10. [8]
 
 \begin{equation}
-  \sigma_{\sigma} = \sigma * \frac{1}{\sqrt{2 * (n - 1)}}
-  \label{eq:sev2}
+\sigma_{\sigma} = \frac{\sigma}{\sqrt{2 * (n - 1)}}
+\label{eq:sevol}
 \end{equation}
 
-<p> *$\sigma_{\sigma}$ = standard error* <p>
-<p> *$\sigma$ = standard deviation* <p>
+<p> *$\sigma_{\sigma}$ = standard error of volatility (standard deviation)* <p>
+<p> *$\sigma$ = volatility (standard deviation)* <p>
 <p> *$n$ = sample size* <p>
 
-As shown in table \@ref(tab:sevolrtab) the values of the standard error of volatility are much lower as the ones of the logarithmic mean returns. This behavior will be clearly visible later in chapter \@ref(bootstrap). Furthermore, we will neglect the values for any further calculations since these values can be estimated nearly exactly.
+As shown in table \@ref(tab:sevolrtab), the standard errors of volatility are much lower than the ones of the mean returns in figure \@ref(fig:serplot). This property will be clearly visible in chapter \@ref(bootstrap). Furthermore, the standard errors of volatility are neglected for further investigations as they can be estimated almost exactly.
 
 ```{r sevolrtab}
 se_volr = data.frame(colnames(r[-1]), apply(r[,-1], 2, se_sd), row.names = NULL)
