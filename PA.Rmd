@@ -44,13 +44,12 @@ R.utils::sourceDirectory("./Code", modifiedOnly = F)
 Markowitz' Optimization and other models of Finance require estimates of the expected return, the standard deviation and the correlations of individual assets.
 These estimates are subject to estimation errors, especially when they are based on short historical time series. This leads to the danger of over- fitting historical data and - in the case of portfolio optimization - of producing portfolios that perform well in backtesting, but perform poorly in the future.
 To overcome these problems, several approaches have been proposed. This includes Bayesian approaches, including shrinking Estimators for historical returns, volatilites and correlations. It also includes resampling/bootstrapping approaches, where expected returns, volatilites and correlations are modelled as random variables.
-We will analyze a variety of such approaches, identify those that add most value in the context of investment management, and combine/improve them. The goal is a recommended methodology for computing the strategic asset allocation of pension funds and other institutional investors. [@R-base] [@yahoo]
-**min. halbe Seite lang**
+We will analyze a variety of such approaches, identify those that add most value in the context of investment management, and combine/improve them. The goal is a recommended methodology for computing the strategic asset allocation of pension funds and other institutional investors. **min. halbe Seite lang**
 
 \newpage
 
 # Data
-In this paper, daily historical data from the Swiss Market Index, short SMI, and its constituents is used. The data stems from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. The SMI is also a price index which means that dividends are not included. It is reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is that enough historical data for all companies is available. The key numbers shown in table \@ref(tab:rmrvoltab) are calculated with eqs. \@ref(eq:logr) and \@ref(eq:vol). [1] [2]
+In this paper, daily historical data from the Swiss Market Index, short SMI, and its constituents is used. The data stems from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. The SMI is also a price index which means that dividends are not included. It is reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is that enough historical data for all companies is available. The key numbers shown in table \@ref(tab:rmrvoltab) are calculated with eqs. \@ref(eq:logr) and \@ref(eq:vol). [1] [2] [@yahoo]
 
 ## Logarithmic return
 The reason for calculating logarithmic returns is that stock returns are generally assumed to be log-normally and not normally distributed. In later calculations, the risk-free rate of return has to be subtracted from the return and for the sake of simplicity, this is already done from the start. For the risk-free rate $R_{f}$ shown in table \@ref(tab:annrftab), the LIBOR is commonly used. Due to several negative incidents in the past, the Swiss Average Rate Overnight (SARON) is used for the time period 2014 to 2020. The SARON is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [3] [4]
@@ -195,7 +194,7 @@ gg_errorbar(stocks, mr, se_r, c(min, max), "Return [%]", theme = custom_theme_ma
 ```
 
 ### Standard error of volatility (standard deviation)
-Eq. \@ref(eq:sevol) is an approximation for the standard error of volatility which is appropriate for n > 10. [8]
+Eq. \@ref(eq:sevol) is an approximation for the standard error of volatility which is appropriate for n > 10. [@se]
 
 \begin{equation}
 \sigma_{\sigma} = \frac{\sigma}{\sqrt{2 * (n - 1)}}
@@ -218,9 +217,9 @@ kable(se_volr, col.names = c("Stock", "Standard error [%]"),
 \newpage
 
 # Review of classical markovitz optimization {#markovitz}
-Modern portfolio theory is a theory that deals with the construction of portfolios to maximize the expected return based on a given market risk. Markowitz' portfolio theory shows that efficient risk reduction is only possible if the extent of the correlation of the individual investments is taken into account when putting together the portfolio. Risk reduction through risk diversification is a key finding of the aforementioned portfolio theory. Harry Markowitz pioneered this theory in his article "Portfolio Selection”. The main point is that the risk and return characteristics of an investment should not be considered in isolation, but should be evaluated according to how the investment affects the risk and return of the overall portfolio. It is shown that an investor can construct a portfolio of multiple assets that maximizes returns for a given level of risk. Similarly, an investor can construct a portfolio with the lowest possible risk at a desired level of expected return. Based on statistical measures such as volatility and correlation, the performance of an individual investment is less important than how it affects the portfolio as a whole. [5] 
+Modern portfolio theory is a theory that deals with the construction of portfolios to maximize the expected return based on a given market risk. Markowitz' portfolio theory shows that efficient risk reduction is only possible if the extent of the correlation of the individual investments is taken into account when putting together the portfolio. Risk reduction through risk diversification is a key finding of the aforementioned portfolio theory. Harry Markowitz pioneered this theory in his article "Portfolio Selection”. The main point is that the risk and return characteristics of an investment should not be considered in isolation, but should be evaluated according to how the investment affects the risk and return of the overall portfolio. It is shown that an investor can construct a portfolio of multiple assets that maximizes returns for a given level of risk. Similarly, an investor can construct a portfolio with the lowest possible risk at a desired level of expected return. Based on statistical measures such as volatility and correlation, the performance of an individual investment is less important than how it affects the portfolio as a whole. [@markovitz]
 
-It is also assumed that the return, volatility and covariance matrix is known. The portfolio volatility is accordingly given as a function of the covariance matrix and the weight vector and it can be minimized as much as desired by sufficient diversification. Also the sum of all weights equals 1. The portfolio weights being searched for are described by the vector $\vec{w} = (w_{1}, \dots, w_{n})$. The weights that are calculated are those weights that match the portfolio with minimal volatility (variance) to a given expected portfolio return $R_{p}$. This is a linear optimization problem, as well a formulation of the fundamental problem of balancing return and risk. Furthermore, in practice negative weightings are defined as short sales. [9]
+It is also assumed that the return, volatility and covariance matrix is known. The portfolio volatility is accordingly given as a function of the covariance matrix and the weight vector and it can be minimized as much as desired by sufficient diversification. Also the sum of all weights equals 1. The portfolio weights being searched for are described by the vector $\vec{w} = (w_{1}, \dots, w_{n})$. The weights that are calculated are those weights that match the portfolio with minimal volatility (variance) to a given expected portfolio return $R_{p}$. This is a linear optimization problem, as well a formulation of the fundamental problem of balancing return and risk. Furthermore, in practice negative weightings are defined as short sales.
 
 
 \begin{equation}
@@ -289,7 +288,7 @@ kable(mvpw_r, col.names = c("Stock", "Weight"), caption = "Weights of minimum va
 \newpage
 
 ## Tangency portfolio 
-The tangency portfolio, short TP, results from the tangent of the capital market line and the efficient frontier, which will be shown more detailed in chapter \@ref(EF). The capital market line is an important component of the capital asset pricing model (CAPM). The slope of the capital market line indicates how much more return is expected per additional volatility. This is exactly the situation when the capital market line is tangential to the efficient frontier. Therefore, the best possible diversified portfolio results from the weightings of the tangency portfolio. 
+The tangency portfolio, short TP, results from the tangent of the capital market line and the efficient frontier, which will be shown more detailed in chapter \@ref(EF). The capital market line is an important component of the capital asset pricing model (CAPM). The slope of the capital market line indicates how much more return is expected per additional volatility. This is exactly the situation when the capital market line is tangential to the efficient frontier. Therefore, the best possible diversified portfolio results from the weightings of the tangency portfolio. [@sharpe]
 
 The tangency portfolio is often referred to in the literature as the market portfolio. In the equation for the capital market line, shown as eq. \@ref(eq:cml), the expected return of the market portfolio respectively the tangency portfolio is written as $R_{tp}$.
 
@@ -383,7 +382,7 @@ In figure \@ref(fig:refplot) it is clearly visible that the efficient frontier c
 \newpage
 
 ## Sharpe ratio {#sharpe}
-The Sharpe ratio measures the performance of an investment which means the return of an investment compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the portfolio. In practice, the value of the Sharpe ratio is not only positively received. In this paper, however, we will rely on the Sharpe ratio because it is a key figure by which performance can be measured. It is calculated by the average return earned in excess of the risk-free rate per unit of volatility. In this case it is the natural logarithmic return per day $R$ divided by $\sigma$. $R$ is already calculated in eq. \@ref(eq:logr). Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. [6] [7]
+The Sharpe ratio measures the performance of an investment which means the return of an investment compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the portfolio. In practice, the value of the Sharpe ratio is not only positively received. In this paper, however, we will rely on the Sharpe ratio because it is a key figure by which performance can be measured. It is calculated by the average return earned in excess of the risk-free rate per unit of volatility. In this case it is the natural logarithmic return per day $R$ divided by $\sigma$. $R$ is already calculated in eq. \@ref(eq:logr). Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. [@sharpe]
 
 \begin{equation}
   Sharpe ratio = \frac{R_{ln} - R_{f}}{\sigma} = \frac{R}{\sigma}
@@ -445,7 +444,7 @@ For distances between groups, the largest possible distance is taken from the di
 $d\langle \{i,j\} , \{k,l\} \rangle = max(d\langle i, k \rangle, d\langle i, l \rangle, d\langle j, k \rangle, d\langle j, l \rangle)$.
 
 **Step 3**
-Repeat the procedure with the new created distance matrix until only two groups remain. The outcome is a dendogram which is also part of the illustration in figure \@ref(fig:distheatmap). It can be seen that the first step of grouping is the connection which is drawn lowest. The color scaling describes the different distances. [10]
+Repeat the procedure with the new created distance matrix until only two groups remain. The outcome is a dendogram which is also part of the illustration in figure \@ref(fig:distheatmap). It can be seen that the first step of grouping is the connection which is drawn lowest. The color scaling describes the different distances. [@stdm]
 
 ```{r distheatmap, fig.cap = "Grouped by Euclidean distance of correlation coefficients", fig.height = 7}
 cor = cor_mat(returns)
@@ -859,24 +858,24 @@ https://www.six-group.com/exchanges/indices/data_centre/swiss_reference_rates/re
 [4] global-rates, CHF LIBOR interest rate [online]. Available from:
 https://www.global-rates.com/en/interest-rates/libor/swiss-franc/swiss-franc.aspx [Accessed 28 October 2020]
 
-[5] H. Makovitz (1952). Portfolio Selection.
-The Journal of Finance Vol. 7, No. 1, pp. 77-91 (15 pages). Published By: Wiley.
+<!-- [5] H. Makovitz (1952). Portfolio Selection. -->
+<!-- The Journal of Finance Vol. 7, No. 1, pp. 77-91 (15 pages). Published By: Wiley. -->
 
-[6] W. F. Sharpe (1966). Mutual Fund Performance.
-The Journal of Business, Vol. 39, No. 1, Part 2: Supplement on Security Prices, pp. 119-138. 
-Published by: The University of Chicago Press,
+<!-- [6] W. F. Sharpe (1966). Mutual Fund Performance. -->
+<!-- The Journal of Business, Vol. 39, No. 1, Part 2: Supplement on Security Prices, pp. 119-138.  -->
+<!-- Published by: The University of Chicago Press, -->
 
-[7] A. W. Lo (2003). The Statistics of Sharpe Ratios.
-Sloan School of Management, Massachusetts Instintute of Technology, Cambridge.
+<!-- [7] A. W. Lo (2003). The Statistics of Sharpe Ratios. -->
+<!-- Sloan School of Management, Massachusetts Instintute of Technology, Cambridge. -->
 
-[8] Ahn, S. and Fessler, J. (2003). Standard Errors of Mean, Variance and, Standard Deviation Estimators. 
-EECS Department, The University of Michigan, pp.1-2.
+<!-- [8] Ahn, S. and Fessler, J. (2003). Standard Errors of Mean, Variance and, Standard Deviation Estimators.  -->
+<!-- EECS Department, The University of Michigan, pp.1-2. -->
 
-[9] D. G. Leuenberger (1998). Investment Science. 
-Published by: Oxford University Press, New York.
+<!-- [9] D. G. Leuenberger (1998). Investment Science.  -->
+<!-- Published by: Oxford University Press, New York. -->
 
-[10] A. Ruckstuhl (2020). Statistisches Data Mining.
-School of Engineering, Zurich University of Applied Science
+<!-- [10] A. Ruckstuhl (2020). Statistisches Data Mining. -->
+<!-- School of Engineering, Zurich University of Applied Science -->
 
 \newpage
 
