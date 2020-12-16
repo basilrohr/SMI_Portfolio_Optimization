@@ -120,7 +120,7 @@ cov_{x,y} = \frac{\sum_{i = 1}^{n}(x_{i} - \overline{x})(y_{i} - \overline{y})}{
 <p> *$\sigma_{i}$ = volatility of return of asset i* <p>
 <p> *$\sigma_{j}$ = volatility of return of asset j* <p>
 
-The correlation matrix of all 20 stocks is shown in figure \@ref(fig:corplot). As the SMI only contains stocks that are traded on the Swiss stock exchange, there is a rather high correlation between them. The correlation between companies from the same industry is also higher than between companies from different industries. It can be concluded that economic similarities are reflected in a higher correlation between stocks.
+The correlation matrix of all 20 stocks is shown in figure \@ref(fig:corplot). As the SMI only contains stocks that are traded on the Swiss stock exchange, there is generally a rather high correlation between them.
 
 ```{r corplot, fig.cap = "Correlation between SMI constituents", fig.height = 6}
 suppressWarnings(suppressMessages(print(gg_cor(cor_mat(r), 2, 8, theme = custom_theme_markdown))))
@@ -160,7 +160,7 @@ t = \frac{`r min_cor`*\sqrt{`r nrow(r)`-2}}{\sqrt{1-`r min_cor`^2}} = `r tstatis
 \label{eq:tteststatistic}
 \end{equation}
 
-With the help of the t-distribution in figure \@ref(fig:tdist) it is seen clearly that a value of approximately 2 is already below the threshold of $\alpha = 0.05$. Therefore, with the obtained test statistic value of `r tstatistic` which is far to the right in figure \@ref(fig:tdist), the p-value is almost zero. Consequentially, the null hypothesis can be rejected meaning that the true correlation is significantly different from zero.
+With the help of the t-distribution in figure \@ref(fig:tdist) it is seen clearly that a value of approximately 2 is already below the threshold of $\alpha = 0.05$. Therefore, with the obtained test statistic value of `r tstatistic` which is far to the right in figure \@ref(fig:tdist), the p-value is almost zero. Consequentially, the null hypothesis can be rejected, meaning that the true correlation is significantly different from zero.
 
 ```{r tdist, fig.cap = paste0("t-distribution with ", nrow(r), " $-$ 2 degrees of freedom"), fig.height = 3}
 seq = seq(-5, 5, 0.01)
@@ -224,7 +224,7 @@ It is also assumed that the return, volatility and covariance matrix is known. T
 
 
 \begin{equation}
-minimize: \frac{1}{2}\vec{w}^\intercal\Sigma\vec{w}
+min \frac{1}{2}\vec{w}^\intercal\Sigma\vec{w}
   \label{eq:minimum}
 \end{equation}
 
@@ -232,13 +232,13 @@ minimize: \frac{1}{2}\vec{w}^\intercal\Sigma\vec{w}
 
 *I.*
 \begin{equation}
-1 = \vec{w}^\intercal\vec{1}
+\vec{w}^\intercal\vec{1} = 1
   \label{eq:constraint1}
 \end{equation}
 
 *II.*
 \begin{equation}
-R_{p} = \vec{w}^\intercal\vec{R}
+\vec{w}^\intercal\vec{R} = R_{p}
   \label{eq:constraint2}
 \end{equation}
 
@@ -291,11 +291,11 @@ kable(mvpw_r, col.names = c("Stock", "Weight"), caption = "Minimum variance port
 ## Tangency portfolio 
 The tangency portfolio, short TP, results from the tangent of the capital market line and the efficient frontier, which will be shown more detailed in chapter \@ref(EF). The capital market line is an important component of the capital asset pricing model (CAPM). The slope of the capital market line indicates how much more return is expected per additional volatility. This is exactly the situation when the capital market line is tangential to the efficient frontier. Therefore, the best possible diversified portfolio results from the weightings of the tangency portfolio. [@sharpe]
 
-The tangency portfolio is often referred to in the literature as the market portfolio. In the equation for the capital market line, shown as eq. \@ref(eq:cml), the expected return of the market portfolio respectively the tangency portfolio is written as $R_{tp}$.
+The tangency portfolio is often referred to in the literature as the market portfolio. In the equation for the capital market line, shown as eq. \@ref(eq:cml), the expected return of the market portfolio respectively the tangency portfolio is written as $R_{tp}$. Note that in this paper the risk-free rate $R_f$ is already deducted from the returns directly, as shown in eq. \@ref(eq:logr). Therefore it can be set to zero in all further calculations.
 
 *Capital Market Line:*
 \begin{equation}
-R_{P}(\sigma_{P}) = R_{f} + \frac{R_{tp} - R_{f}}{\sigma_{tp}} * \sigma_{P}
+R_{P}(\sigma_{P}) = R_{f} + \frac{R_{tp} - R_{f}}{\sigma_{tp}} * \sigma_{P} = \frac{R_{tp}}{\sigma_{tp}} * \sigma_{P}
   \label{eq:cml}
 \end{equation}
 
@@ -329,11 +329,11 @@ kable(tpw_r, col.names = c("Stock", "Weight"), caption = "Tangency portfolio wei
 The efficient frontier is a set of points that extends in the return-volatility diagram (figure \@ref(fig:refplot)) between the minimum variance portfolio at the left edge of the reachable area and the tangency portfolio. All possible portfolio weights above the MVP on this line are efficient because they have the maximum return at a defined level of volatility.
 
 \begin{equation}
-\vec{w}_{tp} = \alpha * \vec{w}_{mvp} + (1 - \alpha) * \vec{w}_{tp}
+\vec{w}_{ef} = \alpha * \vec{w}_{mvp} + (1 - \alpha) * \vec{w}_{tp}
   \label{eq:efficientf}
 \end{equation}
 
-<p> *$\vec{w}_{tp}$ = weights* <p>
+<p> *$\vec{w}_{ef}$ = weights* <p>
 <p> *$\alpha$ = scale factor* <p>
 <p> *$\vec{w}_{mvp}$ = weights of minimum variance portfolio* <p>
 <p> *$\vec{w}_{tp}$ = weight of tangency portfolio* <p>
@@ -386,12 +386,11 @@ In figure \@ref(fig:refplot) it is clearly visible that the efficient frontier c
 The Sharpe ratio measures the performance of an investment which means the return of an investment compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the portfolio. In practice, the value of the Sharpe ratio is not only positively received. In this paper, however, we will rely on the Sharpe ratio because it is a key figure by which performance can be measured. It is calculated by the average return earned in excess of the risk-free rate per unit of volatility. In this case it is the natural logarithmic return per day $R$ divided by $\sigma$. $R$ is already calculated in eq. \@ref(eq:logr). Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. [@sharpe]
 
 \begin{equation}
-  Sharpe ratio = \frac{R_{ln} - R_{f}}{\sigma} = \frac{R}{\sigma}
+  Sharpe ratio = \frac{R - R_{f}}{\sigma} = \frac{R}{\sigma}
   \label{eq:sharperatio}
 \end{equation}
 
-<p> *$R$ = natural logarithmic return per day* <p>
-<p> *$R_{ln}$ = mean logarithmic return* <p>
+<p> *$R$ = mean return* <p>
 <p> *$R_{f}$ = risk-free rate of return* <p>
 <p> *$\sigma_{i}$ = volatility of return* <p>
 
@@ -714,7 +713,7 @@ There can also arise the case, where for some shrinkage factor $\epsilon$ the de
 # Results
 The results of the different approaches described in chapter \@ref(methodology) are presented and compared by their Sharpe ratio.
 
-## Results of individual SMI constituents {#res1}
+## Results of SMI constituents {#res1}
 ```{r tabplot11}
 t11 = data.frame(is_r, os_r, row.names = "SMI constituents")
 kable(t11, caption = "Sharpe ratio",  digits = 3, 
@@ -756,24 +755,6 @@ kable(t12, caption = "Sharpe ratio",  digits = 3,
 In table \@ref(tab:tabplot12), the Sharpe ratio of in and out of sample of the formed groups are presented. The first observation is, that the in sample Sharp ratio decreased after the grouping is applied. The reason being, that with 20 parameters a better fit to the data is achieved than with three or four parameters as it is the case with the groups. Nevertheless, the out of sample Sharpe ratio has increased. Due to grouping, the returns are less noisy than the individual stocks. This leads to a more reliable model which performs better out of sample than it would with noisier data.
 
 In chapter \@ref(groupclust), cluster analysis is used to optimize the group composition. Hence, higher correlating stocks are grouped together to have better diversified portfolio than is achieved with grouping by industry. Consequently, the correlation between the groups by correlation shrunk in comparison to the correlation between the groups by industry.
-
-To give further insights, the in sample tangency portfolio weights of the groups by industry and groups by correlation are shown in tables \@ref(tab:tpwgrtab) and \@ref(tab:tpwg2rtab). The in sample weights are displayed instead of the out of sample weights due to the fact that the cross validation produces five models and therefore five different sets of weights. It is seen that the groups by correlation, where the noise is best reduced, the in sample and out of sample Sharpe ratio are close together.
-
-```{r tpwgrtab}
-tpw_gr_df = data.frame(colnames(gr[-1]), tp_weights(cov_mat(gr), mean_returns(gr)))
-kable(tpw_gr_df, col.names = c("Group", "Weight"), caption = "Groups by industry in sample tangency portfolio weights",
-      digits = 3, booktabs = T, linesep = "")
-```
-
-\newpage
-
-```{r tpwg2rtab}
-tpw_g2r_df = data.frame(colnames(g2r[-1]), tp_weights(cov_mat(g2r), mean_returns(g2r)))
-kable(tpw_g2r_df, col.names = c("Group", "Weight"), caption = "Groups by correlation in sample tangency portfolio weights",
-      digits = 3, booktabs = T, linesep = "")
-```
-
-Compared to the weights of the individual stocks already shown in table \@ref(tab:tpwrtab), the weights of the groups are significantly higher. To recall, the weights must sum up to one according to constraint \@ref(eq:constraint1). If the groups perform differently, like it is the case for *Finance* (negative mean return) and *Pharma* (positive mean return) in the groups by industry, the weights drift apart. This becomes even more prominent in the groups by correlation between *Group 1* and *Group 3*. As mentioned in chapter \@ref(markovitz), negative weights correspond to short sales.
 
 In the following two illustrations, bootstrapped weights of the groups by industry can be seen. As mentioned in section \@ref(res1), the same is shown for the groups. Figure \@ref(fig:mvpsegr) illustrates the MVP weights and figure \@ref(fig:tpsegr) the TP weights.
 
@@ -853,6 +834,38 @@ t20 = data.frame(c(is_r, is_gr, is_g2r),
 kable(t20, caption = "Sharpe ratio",  digits = 3,
        booktabs = T, linesep = "", col.names = c("IS", "OS", "OS Shrinkage"))
 ```
+
+
+```{r tpwrstab}
+mr = mean_returns(r)
+smr = shrinkage_mr(mr, 0.05)
+
+tpw_r = data.frame(colnames(r[-1]), tp_weights(cov_mat(r), mr), tp_weights(cov_mat(r), smr))
+kable(tpw_r, col.names = c("Stock", "Weights before S", "Weights after S"), caption = "Tangency portfolio weights",
+      digits = 3, booktabs = T, linesep = "")
+```
+
+To give further insights, the in sample tangency portfolio weights of the groups by industry and groups by correlation are shown in tables \@ref(tab:tpwgrtab) and \@ref(tab:tpwg2rtab). The in sample weights are displayed instead of the out of sample weights due to the fact that the cross validation produces five models and therefore five different sets of weights. It is seen that the groups by correlation, where the noise is best reduced, the in sample and out of sample Sharpe ratio are close together.
+
+```{r tpwgrtab}
+gmr = mean_returns(gr)
+gscov = shrinkage_cor(cov_mat(gr), 0.95)
+
+tpw_gr_df = data.frame(colnames(gr[-1]), tp_weights(cov_mat(gr), gmr), tp_weights(gscov, gmr))
+kable(tpw_gr_df, col.names = c("Group", "Weights before S", "Weights after S"), caption = "Groups by industry in sample tangency portfolio weights",
+      digits = 3, booktabs = T, linesep = "")
+```
+
+```{r tpwg2rtab}
+g2mr = mean_returns(g2r)
+g2scov = shrinkage_cor(cov_mat(g2r), 0.95)
+
+tpw_g2r_df = data.frame(colnames(g2r[-1]), tp_weights(cov_mat(g2r), g2mr), tp_weights(g2scov, g2mr))
+kable(tpw_g2r_df, col.names = c("Group", "Weights before S", "Weights after S"), caption = "Groups by correlation in sample tangency portfolio weights",
+      digits = 3, booktabs = T, linesep = "")
+```
+
+Compared to the weights of the individual stocks already shown in table \@ref(tab:tpwrtab), the weights of the groups are significantly higher. To recall, the weights must sum up to one according to constraint \@ref(eq:constraint1). If the groups perform differently, like it is the case for *Finance* (negative mean return) and *Pharma* (positive mean return) in the groups by industry, the weights drift apart. This becomes even more prominent in the groups by correlation between *Group 1* and *Group 3*. As mentioned in chapter \@ref(markovitz), negative weights correspond to short sales.
 
 # Conclusion
 
