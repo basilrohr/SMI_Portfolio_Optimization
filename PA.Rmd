@@ -731,9 +731,11 @@ mintp = min(c(tpw_r - tpw_sd_r, tpw_gr - tpw_sd_gr))
 maxtp = max(c(tpw_r + tpw_sd_r, tpw_gr + tpw_sd_gr))
 gg_errorbar(stocks, tpw_r, tpw_sd_r, c(mintp, maxtp), "Weights", theme = custom_theme_markdown)
 ```
+
 It is obvious to see in figure \@ref(fig:mvpse) and \@ref(fig:tpse) and also visualized before in figure \@ref(fig:gg4), that TP weights have a higher standard deviation than MVP weights. That means the TP is more sensible to changes of returns than the MVP. If the eq. \@ref(eq:mvpw) of MVP and the eq. \@ref(eq:tpw) of TP are considered, the MVP does not depend on the returns directly. Consequently different returns samples have not a large impact on the MVP. The small differences arise from the varying covariance matrix. But it can also be noticed that this matrix has not large deviations following the standard deviation of the MVP. Therefore bootstrap sampling of the returns does not influence the covariance matrix as much as the returns itself.
 
 Table \@ref(tab:tabplot11) compares the in and out of sample Sharpe ratio for all 20 stocks.
+
 ```{r tabplot11}
 t11 = data.frame(is_r, os_r, row.names = "SMI constituents")
 kable(t11, caption = "Sharpe ratio SMI constituents",  digits = 3, 
@@ -754,8 +756,8 @@ gg_errorbar(colnames(gr[-1]), mvpw_gr, mvpw_sd_gr, c(minmvp, maxmvp), "Weights",
 gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(mintp, maxtp), "Weights",
             theme = custom_theme_markdown)
 ```
-The same conclusion can be drawn for weights of grouped assets as in \@ref(res1).
 
+The same conclusion can be drawn for weights of grouped assets as in \@ref(res1).
 
 ```{r tabplot12}
 t12 = data.frame(c(is_gr, is_g2r),
@@ -836,17 +838,18 @@ kable(t20, caption = "Sharpe ratio",  digits = 3,
 
 To give further insights, the tangency portfolio weights for unshrunk and shrunk mean returns and correlations are compared in tables \@ref(tab:tpwrstab), \@ref(tab:tpwgrtab) and \@ref(tab:tpwg2rtab). The weights of unshrunk mean returns are exactly the ones used to calculate the in sample Sharpe ratio. The Shrinkage factors utilized for the shrunk mean returns and correlations are the ones which obtained the highest out of sample Sharpe ratio.
 
-The weights before shrinkage in the following table \@ref(tab:tpwrstab) can be found in the previous chapter \@ref(markovitz) in table \@ref(tab:tpw).
+The weights before shrinkage in the following table \@ref(tab:tpwrstab) can be found in the previous chapter \@ref(markovitz) in table \@ref(tab:tpwrtab).
+
 ```{r tpwrstab}
 mr = mean_returns(r)
 smr = shrinkage_mr(mr, 0.05)
 
 tpw_r = data.frame(colnames(r[-1]), tp_weights(cov_mat(r), mr), tp_weights(cov_mat(r), smr))
-kable(tpw_r, col.names = c("Stock", "W. before shrinkage", "W. after shrinkage"), caption = "Tangency portfolio weights",
+kable(tpw_r, col.names = c("Stock", "before shrinkage", "after shrinkage"), caption = "Tangency portfolio weights",
       digits = 3, booktabs = T, linesep = "")
 ```
 
-When comparing the two sets of weights a significant difference can be seen. Overall the weights after shrinkage are closer too zero as they were before. This is caused by the fact that the returns are taken into account for only 5%. Therefore the weights are much closer to the MVP, seen in table \@ref(tab:mvpw).
+When comparing the two sets of weights a significant difference can be seen. Overall the weights after shrinkage are closer too zero as they were before. This is caused by the fact that the returns are taken into account for only 5%. Therefore the weights are much closer to the MVP, seen in table \@ref(tab:mvpwrtab).
 
 Compared to the weights of the individual stocks already shown in table \@ref(tab:tpwrtab), the weights of the groups are significantly higher. To recall, the weights must sum up to one according to constraint \@ref(eq:constraint1). If the groups perform differently, like it is the case for *Finance* (negative mean return) and *Pharma* (positive mean return) in the groups by industry, the weights drift apart. This becomes even more prominent in the groups by correlation between *Group 1* and *Group 3*. As mentioned in chapter \@ref(markovitz), negative weights correspond to short sales. The difference between the weights before and after shrinkage is insignificant. This is attributed to the shrinkage factor of the mean returns being one and the one for the correlation being 0.05.
 
@@ -855,7 +858,7 @@ gmr = mean_returns(gr)
 gscov = shrinkage_cor(cov_mat(gr), 0.95)
 
 tpw_gr_df = data.frame(colnames(gr[-1]), tp_weights(cov_mat(gr), gmr), tp_weights(gscov, gmr))
-kable(tpw_gr_df, col.names = c("Stock", "W. before shrinkage", "W. after shrinkage"), caption = "Groups by industry in sample tangency portfolio weights",
+kable(tpw_gr_df, col.names = c("Group", "before shrinkage", "after shrinkage"), caption = "Groups by industry in sample tangency portfolio weights",
       digits = 3, booktabs = T, linesep = "")
 ```
 
@@ -864,7 +867,7 @@ g2mr = mean_returns(g2r)
 g2scov = shrinkage_cor(cov_mat(g2r), 0.95)
 
 tpw_g2r_df = data.frame(colnames(g2r[-1]), tp_weights(cov_mat(g2r), g2mr), tp_weights(g2scov, g2mr))
-kable(tpw_g2r_df, col.names = c("Stock", "W. before shrinkage", "W. after shrinkage"), caption = "Groups by correlation in sample tangency portfolio weights",
+kable(tpw_g2r_df, col.names = c("Group", "before shrinkage", "after shrinkage"), caption = "Groups by correlation in sample tangency portfolio weights",
       digits = 3, booktabs = T, linesep = "")
 ```
 
