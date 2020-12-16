@@ -53,7 +53,7 @@ All these methods are applied to 20 years of historical data and their performan
 In this paper, daily historical data from the Swiss Market Index, short SMI, and its constituents is used. The data stems from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. The SMI is also a price index which means that dividends are not included. It is reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is that enough historical data for all companies is available. The key numbers shown in table \@ref(tab:rmrvoltab) are calculated with eqs. \@ref(eq:logr) and \@ref(eq:vol). [@yahoo], [@six]
 
 ## Logarithmic return
-The reason for calculating logarithmic returns is that stock returns are generally assumed to be log-normally and not normally distributed. In later calculations, the risk-free rate of return has to be subtracted from the return and for the sake of simplicity, this is already done from the start. For the risk-free rate $R_{f}$ shown in table \@ref(tab:annrftab), the LIBOR is commonly used. Due to several negative incidents in the past, the Swiss Average Rate Overnight (SARON) is used for the time period 2014 to 2020. The SARON is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [@saron], [@libor]
+The reason for calculating logarithmic returns is that stock returns are generally assumed to be log-normally and not normally distributed. In later calculations, the risk-free rate of return has to be subtracted from the return and for the sake of simplicity, this is already done from the start as illustrated in eq. \@ref(eq:logr). For the risk-free rate $R_{f}$ shown in table \@ref(tab:annrftab), the LIBOR is commonly used. Due to several negative incidents in the past, the Swiss Average Rate Overnight (SARON) is used for the time period 2014 to 2020. The SARON is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [@saron], [@libor]
 
 \begin{equation}
 R = R_{ln} - R_{f} = ln\left(\frac{x_{t}}{x_{t-1}}\right) - R_{f}
@@ -75,7 +75,7 @@ kable(ann_rf, col.names = c("Year", "Rate [%]"),
 \newpage
 
 ## Volatility (standard deviation)
-The volatility describes the risk of an asset and is a statistical measure of the dispersion of returns. In general, the higher the volatility, the riskier the asset.
+The volatility in eq. \@ref(eq:vol) describes the risk of an asset and is a statistical measure of the dispersion of returns. In general, the higher the volatility, the riskier the asset.
 
 \begin{equation}
 \sigma = \sqrt{\frac{\sum_{i = 1}^{n}(R_{i} - \overline{R})^2}{n-1}}
@@ -96,7 +96,7 @@ kable(r_mr_vol, col.names = c("Stock","Return [%]", "Volatility [%]"),
 ```
 
 ## Covariance and correlation
-The covariance is a numerical measure that describes the linear relationship between two variables. In this case, it represents the strength of the relationship between two return time series. The correlation is the standardized covariance and ranges in an interval of $[-1, 1]$ with the diagonal values of a correlation matrix always being one. A value of one or minus one means that the returns of two assets move in the same direction respectively in opposite directions. In Markowitz' portfolio theory the correlation of two assets is an important matter which will be discussed later in chapter&nbsp;\@ref(markovitz).
+The covariance in eq. \@ref(eq:cov) is a numerical measure that describes the linear relationship between two variables. In this case, it represents the strength of the relationship between two return time series. The correlation in eq. \@ref(eq:cor) is the standardized covariance and ranges in an interval of $[-1, 1]$ with the diagonal values of a correlation matrix always being one. A value of one or minus one means that the returns of two assets move in the same direction respectively in opposite directions. In Markowitz' portfolio theory the correlation of two assets is an important matter which will be discussed later in chapter&nbsp;\@ref(markovitz).
 
 \newpage
 
