@@ -724,6 +724,8 @@ maxmvp = max(c(mvpw_r + mvpw_sd_r, mvpw_gr + mvpw_sd_gr))
 gg_errorbar(stocks, mvpw_r, mvpw_sd_r, c(minmvp, maxmvp), "Weights", theme = custom_theme_markdown)
 ```
 
+\newpage
+
 ```{r tpse, fig.cap = 'TP weights with standard error', fig.height = 4}
 tpw_r = tp_weights(cov_mat(r), mean_returns(r)); tpw_gr = tp_weights(cov_mat(gr), mean_returns(gr))
 tpw_sd_r = bs_r$tp_weights_sd; tpw_sd_gr = bs_gr$tp_weights_sd
@@ -743,6 +745,8 @@ kable(t11, caption = "Sharpe ratio SMI constituents",  digits = 3,
 ```
 
 In sample, training and test set are equal and therefore its Sharpe ratio is higher than out of sample. This is because the model performs best on the data which built it. Out of sample, training set and test set differ. If a stock behaves differently in one test set compared to the training sets used to built the model, this stock can easily be over- or undervalued. This leads to a worse performance of the model and hence the Sharpe ratio. The conclusion that can be drawn from this insight is, that the in sample Sharpe ratio should always be higher than the out of sample Sharpe ratio.
+
+\newpage
 
 ## Results of grouped SMI constituents and bootstrapping method {#res2}
 As mentioned in section \@ref(res1), the errors from the bootstrapping method for grouped assets are presented before their Sharpe ratio performance. Figure \@ref(fig:mvpsegr) illustrates the MVP weights and figure \@ref(fig:tpsegr) the TP weights.
@@ -802,6 +806,8 @@ gg_shrink2D(list(os_r_scor, os_gr_scor, os_g2r_scor),
             theme = custom_theme_markdown)
 ```
 
+\newpage
+
 ### Shrinkage factors analyzed simultaneously
 A further visualization is a three dimensional plot where the Sharpe ratio is plotted as a function of both shrinkage factors. The darker the area, the higher the Sharpe ratio.
 
@@ -849,6 +855,8 @@ kable(tpw_r, col.names = c("Stock", "before shrinkage", "after shrinkage"), capt
       digits = 3, booktabs = T, linesep = "")
 ```
 
+\newpage
+
 When comparing the two sets of weights a significant difference can be seen. Overall the weights after shrinkage are closer too zero as they were before. This is caused by the fact that the returns are taken into account for only 5%. Therefore the weights are much closer to the MVP, seen in table \@ref(tab:mvpwrtab).
 
 Compared to the weights of the individual stocks already shown in table \@ref(tab:tpwrtab), the weights of the groups are significantly higher. To recall, the weights must sum up to one according to constraint \@ref(eq:constraint1). If the groups perform differently, like it is the case for *Finance* (negative mean return) and *Pharma* (positive mean return) in the groups by industry, the weights drift apart. This becomes even more prominent in the groups by correlation between *Group 1* and *Group 3*. As mentioned in chapter \@ref(markovitz), negative weights correspond to short sales. The difference between the weights before and after shrinkage is insignificant. This is attributed to the shrinkage factor of the mean returns being one and the one for the correlation being 0.05.
@@ -871,7 +879,7 @@ kable(tpw_g2r_df, col.names = c("Group", "before shrinkage", "after shrinkage"),
       digits = 3, booktabs = T, linesep = "")
 ```
 
-
+\newpage
 
 # Conclusion
 
