@@ -714,15 +714,7 @@ There can also arise the case, where for some shrinkage factor $\epsilon$ the de
 The results of the different approaches described in chapter \@ref(methodology) are presented and compared by their Sharpe ratio.
 
 ## Results of SMI constituents {#res1}
-```{r tabplot11}
-t11 = data.frame(is_r, os_r, row.names = "SMI constituents")
-kable(t11, caption = "Sharpe ratio",  digits = 3, 
-       booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
-```
-
-Table \@ref(tab:tabplot11) depicts the results of the cross validation (\@ref(crossvalidation)) method for 20 stocks. In in sample, the training and test set are the same and therefore the Sharpe ratio is higher than out of sample. Contrary to the out of sample where the testing set is not included in the training set. If a stock behaves differently in this one test set compared to the 4 training sets flowing into the optimization, this stock can easily be over- or undervalued. This leads to a worse Sharpe ratio than the in sample one. The consequences that can be drawn from this insight is, that the in sample Sharpe ratio should always be higher than the out of sample Sharpe ratio.
-
-In the following two illustrations, bootstrapped weights of the SMI constituents can be seen. In the graphics the mean weights and the standard deviation over the 100 samples are shown. Figure \@ref(fig:mvpse) shows the MVP weights of the 20 stocks and figure \@ref(fig:tpse) the TP weights.
+Before the results of the optimization are shown for all individual assets, the errors of the bootstrapped weights are considered in detail. In the graphics the mean weights and the standard deviation over the 100 samples are shown. Figure \@ref(fig:mvpse) depicts the MVP weights of the 20 stocks and figure \@ref(fig:tpse) the TP weights.
 
 ```{r mvpse, fig.cap = 'MVP weights with standard error', fig.height = 4}
 mvpw_r = mvp_weights(cov_mat(r)); mvpw_gr = mvp_weights(cov_mat(gr))
@@ -732,17 +724,38 @@ maxmvp = max(c(mvpw_r + mvpw_sd_r, mvpw_gr + mvpw_sd_gr))
 gg_errorbar(stocks, mvpw_r, mvpw_sd_r, c(minmvp, maxmvp), "Weights", theme = custom_theme_markdown)
 ```
 
-\newpage
-
-```{r tpse, fig.cap = 'tangency portfolio weights with standard error', fig.height = 4}
+```{r tpse, fig.cap = 'TP weights with standard error', fig.height = 4}
 tpw_r = tp_weights(cov_mat(r), mean_returns(r)); tpw_gr = tp_weights(cov_mat(gr), mean_returns(gr))
 tpw_sd_r = bs_r$tp_weights_sd; tpw_sd_gr = bs_gr$tp_weights_sd
 mintp = min(c(tpw_r - tpw_sd_r, tpw_gr - tpw_sd_gr))
 maxtp = max(c(tpw_r + tpw_sd_r, tpw_gr + tpw_sd_gr))
 gg_errorbar(stocks, tpw_r, tpw_sd_r, c(mintp, maxtp), "Weights", theme = custom_theme_markdown)
 ```
+It is obvious to see in figure \@ref(fig:mvpse) and \@ref(fig:tpse) and also visualized before in figure \@ref(fig:gg4), that TP weights have a higher standard deviation than MVP weights. That means the TP is more sensible to changes of returns than the MVP. If the eq. \@ref(eq:mvpw) of MVP and the eq. \@ref(eq:tpw) of TP are considered, the MVP does not depend on the returns directly. Consequently different returns samples have not a large impact on the MVP. The small differences arise from the varying covariance matrix. But it can also be noticed that this matrix has not large deviations following the standard deviation of the MVP. Therefore bootstrap sampling of the returns does not influence the covariance matrix as much as the returns itself.
+
+Table \@ref(tab:tabplot11) compares the in and out of sample Sharpe ratio for all 20 stocks.
+```{r tabplot11}
+t11 = data.frame(is_r, os_r, row.names = "SMI constituents")
+kable(t11, caption = "Sharpe ratio SMI constituents",  digits = 3, 
+       booktabs = T, linesep = "", col.names = c("In sample", "Out of sample"))
+```
+
+In sample, training and test set are equal and therefore its Sharpe ratio is higher than out of sample. This is because the model performs best on the data which built it. Out of sample, training set and test set differ. If a stock behaves differently in one test set compared to the training sets used to built the model, this stock can easily be over- or undervalued. This leads to a worse performance of the model and hence the Sharpe ratio. The conclusion that can be drawn from this insight is, that the in sample Sharpe ratio should always be higher than the out of sample Sharpe ratio.
 
 ## Results of grouped SMI constituents and bootstrapping method {#res2}
+As mentioned in section \@ref(res1), the errors from the bootstrapping method for grouped assets are presented before their Sharpe ratio performance. Figure \@ref(fig:mvpsegr) illustrates the MVP weights and figure \@ref(fig:tpsegr) the TP weights.
+
+```{r mvpsegr, fig.cap = 'MVP weights with standard error by group', fig.height = 3}
+gg_errorbar(colnames(gr[-1]), mvpw_gr, mvpw_sd_gr, c(minmvp, maxmvp), "Weights",
+            theme = custom_theme_markdown)
+```
+
+```{r tpsegr, fig.cap = 'TP weights with standard error by group', fig.height = 3}
+gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(mintp, maxtp), "Weights",
+            theme = custom_theme_markdown)
+```
+The same conclusion can be drawn for weights of grouped assets as in \@ref(res1).
+
 
 ```{r tabplot12}
 t12 = data.frame(c(is_gr, is_g2r),
@@ -755,20 +768,6 @@ kable(t12, caption = "Sharpe ratio",  digits = 3,
 In table \@ref(tab:tabplot12), the Sharpe ratio of in and out of sample of the formed groups are presented. The first observation is, that the in sample Sharp ratio decreased after the grouping is applied. The reason being, that with 20 parameters a better fit to the data is achieved than with three or four parameters as it is the case with the groups. Nevertheless, the out of sample Sharpe ratio has increased. Due to grouping, the returns are less noisy than the individual stocks. This leads to a more reliable model which performs better out of sample than it would with noisier data.
 
 In chapter \@ref(groupclust), cluster analysis is used to optimize the group composition. Hence, higher correlating stocks are grouped together to have better diversified portfolio than is achieved with grouping by industry. Consequently, the correlation between the groups by correlation shrunk in comparison to the correlation between the groups by industry.
-
-In the following two illustrations, bootstrapped weights of the groups by industry can be seen. As mentioned in section \@ref(res1), the same is shown for the groups. Figure \@ref(fig:mvpsegr) illustrates the MVP weights and figure \@ref(fig:tpsegr) the TP weights.
-
-```{r mvpsegr, fig.cap = 'MVP weights with standard error', fig.height = 3}
-gg_errorbar(colnames(gr[-1]), mvpw_gr, mvpw_sd_gr, c(minmvp, maxmvp), "Weights",
-            theme = custom_theme_markdown)
-```
-
-```{r tpsegr, fig.cap = 'Tangency portfolio weights with standard error by group', fig.height = 3}
-gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(mintp, maxtp), "Weights",
-            theme = custom_theme_markdown)
-```
-
-It is obvious to see in figure \@ref(fig:mvpsegr) and \@ref(fig:tpsegr) and also visualized before in figure \@ref(fig:gg4), that TP weights have a higher standard deviation than MVP weights. That means the TP is more sensible to changes of returns than the MVP. If the eq. \@ref(eq:mvpw) of MVP and the eq. \@ref(eq:tpw) of TP are considered, the MVP does not depend on the returns directly. Consequently different returns samples have not a large impact on the MVP. The small differences arise from the varying covariance matrix. But it can also be noticed that this matrix has not large deviations following the standard deviation of the MVP. Therefore bootstrap sampling of the returns does not influence the covariance matrix as much as the returns itself.
 
 \newpage
 
@@ -835,24 +834,28 @@ kable(t20, caption = "Sharpe ratio",  digits = 3,
        booktabs = T, linesep = "", col.names = c("IS", "OS", "OS Shrinkage"))
 ```
 
+To give further insights, the tangency portfolio weights for unshrunk and shrunk mean returns and correlations are compared in tables \@ref(tab:tpwrstab), \@ref(tab:tpwgrtab) and \@ref(tab:tpwg2rtab). The weights of unshrunk mean returns are exactly the ones used to calculate the in sample Sharpe ratio. The Shrinkage factors utilized for the shrunk mean returns and correlations are the ones which obtained the highest out of sample Sharpe ratio.
 
+The weights before shrinkage in the following table \@ref(tab:tpwrstab) can be found in the previous chapter \@ref(markovitz) in table \@ref(tab:tpw).
 ```{r tpwrstab}
 mr = mean_returns(r)
 smr = shrinkage_mr(mr, 0.05)
 
 tpw_r = data.frame(colnames(r[-1]), tp_weights(cov_mat(r), mr), tp_weights(cov_mat(r), smr))
-kable(tpw_r, col.names = c("Stock", "Weights before S", "Weights after S"), caption = "Tangency portfolio weights",
+kable(tpw_r, col.names = c("Stock", "W. before shrinkage", "W. after shrinkage"), caption = "Tangency portfolio weights",
       digits = 3, booktabs = T, linesep = "")
 ```
 
-To give further insights, the in sample tangency portfolio weights of the groups by industry and groups by correlation are shown in tables \@ref(tab:tpwgrtab) and \@ref(tab:tpwg2rtab). The in sample weights are displayed instead of the out of sample weights due to the fact that the cross validation produces five models and therefore five different sets of weights. It is seen that the groups by correlation, where the noise is best reduced, the in sample and out of sample Sharpe ratio are close together.
+When comparing the two sets of weights a significant difference can be seen. Overall the weights after shrinkage are closer too zero as they were before. This is caused by the fact that the returns are taken into account for only 5%. Therefore the weights are much closer to the MVP, seen in table \@ref(tab:mvpw).
+
+Compared to the weights of the individual stocks already shown in table \@ref(tab:tpwrtab), the weights of the groups are significantly higher. To recall, the weights must sum up to one according to constraint \@ref(eq:constraint1). If the groups perform differently, like it is the case for *Finance* (negative mean return) and *Pharma* (positive mean return) in the groups by industry, the weights drift apart. This becomes even more prominent in the groups by correlation between *Group 1* and *Group 3*. As mentioned in chapter \@ref(markovitz), negative weights correspond to short sales. The difference between the weights before and after shrinkage is insignificant. This is attributed to the shrinkage factor of the mean returns being one and the one for the correlation being 0.05.
 
 ```{r tpwgrtab}
 gmr = mean_returns(gr)
 gscov = shrinkage_cor(cov_mat(gr), 0.95)
 
 tpw_gr_df = data.frame(colnames(gr[-1]), tp_weights(cov_mat(gr), gmr), tp_weights(gscov, gmr))
-kable(tpw_gr_df, col.names = c("Group", "Weights before S", "Weights after S"), caption = "Groups by industry in sample tangency portfolio weights",
+kable(tpw_gr_df, col.names = c("Stock", "W. before shrinkage", "W. after shrinkage"), caption = "Groups by industry in sample tangency portfolio weights",
       digits = 3, booktabs = T, linesep = "")
 ```
 
@@ -861,11 +864,11 @@ g2mr = mean_returns(g2r)
 g2scov = shrinkage_cor(cov_mat(g2r), 0.95)
 
 tpw_g2r_df = data.frame(colnames(g2r[-1]), tp_weights(cov_mat(g2r), g2mr), tp_weights(g2scov, g2mr))
-kable(tpw_g2r_df, col.names = c("Group", "Weights before S", "Weights after S"), caption = "Groups by correlation in sample tangency portfolio weights",
+kable(tpw_g2r_df, col.names = c("Stock", "W. before shrinkage", "W. after shrinkage"), caption = "Groups by correlation in sample tangency portfolio weights",
       digits = 3, booktabs = T, linesep = "")
 ```
 
-Compared to the weights of the individual stocks already shown in table \@ref(tab:tpwrtab), the weights of the groups are significantly higher. To recall, the weights must sum up to one according to constraint \@ref(eq:constraint1). If the groups perform differently, like it is the case for *Finance* (negative mean return) and *Pharma* (positive mean return) in the groups by industry, the weights drift apart. This becomes even more prominent in the groups by correlation between *Group 1* and *Group 3*. As mentioned in chapter \@ref(markovitz), negative weights correspond to short sales.
+
 
 # Conclusion
 
