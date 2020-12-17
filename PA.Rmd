@@ -6,7 +6,7 @@ author:
   - Maurice Gerber
   - Basil Rohr
 date: "`r format(Sys.time(), '%d. %B %Y')`"
-abstract: "Markowitz optimization requires estimates of mean return, standard deviation, and correlation of individual stocks, all of which are subject to estimation error. This leads to the risk of overfitting historical data and, in the case of portfolio optimization, creating portfolios that perform well in backtesting but poorly in the future. To overcome these problems, several robust approaches are investigated, such as different asset grouping methods and shrinkage factors for mean return and correlation. The goal is to provide a recommended approach for optimizing a portfolio that includes all assets from the Swiss Market Index. In summary, three key observations are made. First, asset grouping leads to significant noise reduction and thus better portfolio performance compared to individual assets. Likewise, shrinkage leads to increased performance due to major noise reduction. Using both methods simultaneously achieves a further, albeit smaller, increase in performance, as noise can only be reduced to a certain extent. All code is published on \\url{https://github.com/pascalaigner/markovitz} and the Shiny app can be accessed at \\url{https://pascalaigner.shinyapps.io/markovitz}.\\par\\textbf{Keywords:} Portfolio optimization, Markovitz model, Robust methods, Shrinkage\\newpage"
+abstract: "Markowitz optimization requires estimates of mean return, standard deviation and correlation of individual assets, all of which are subject to estimation error. This leads to the risk of overfitting historical data and, in the case of portfolio optimization, creating portfolios that perform well in backtesting but poorly in the future. To overcome this problem, several robust approaches are investigated, such as different asset grouping methods and shrinkage factors for mean return and correlation. The goal is to provide a recommended approach for optimizing a portfolio that includes all assets from the Swiss Market Index. In summary, three key observations are made. First, asset grouping leads to significant noise reduction and thus better portfolio performance compared to individual assets. Likewise, shrinkage leads to increased performance due to major noise reduction. Using both methods simultaneously achieves a further increase in performance. The entire code is published on \\url{https://github.com/pascalaigner/markovitz} and the Shiny app can be accessed at \\url{https://pascalaigner.shinyapps.io/markovitz}.\\par\\textbf{Keywords:} Portfolio optimization, Markovitz model, Sharpe ratio, Robust methods, In-sample, Out-of-sample, Asset grouping, Shrinkage\\newpage"
 output:
   bookdown::pdf_book:
     toc: false
@@ -41,12 +41,13 @@ R.utils::sourceDirectory("./Code", modifiedOnly = F)
 ```
 
 # Introduction
-The economist Harry Markovitz pioneered modern portfolio theory. In 1952, he developed a mathematical model to calculate efficient portfolios given return and risk of assets.
-The disadvantage of this optimization is that the calculations are based on historical data. This data, namely the returns, are strongly affected by noise and therefore will not perform well in future estimations. 
+In 1952, the economist Harry Markovitz pioneered modern portfolio theory. He developed a mathematical model to calculate efficient portfolios for given return and risk. The key point when selecting assets is, that not only their individual performance should be considered, but also how their correlation affects the portfolio. The input for Markovitz' optimization is historical data, which is subject to estimation errors. These lead to the creation of portfolios which perform well backtesting but poorly in the future.
 
-The fundamental question is how to create an optimization from historical data that delivers robust results on independent data. In this paper, the Sharpe ratio is used as a performance measurement of the optimization. The data used in this paper are the assets included in the SMI, afterwards a short review of Markovitz theory is presented. To achieve more robust results, several approaches are investigated. The first method described is grouping where a qualitative and a quantitative approach are applied and compared. Followed by a description of the bootstrap which is used to determine the standard errors of the asset weights. To measure the performance on to an independent data set, cross validation is applied to obtain an out of sample time series. As a final approach, shrinkage of the mean returns and correlations is discussed. 
+The fundamental question is how to create a model from historical data that delivers robust results on independent data. In this paper, the data used are the return time series of all assets included in the Swiss Market Index from the past 20 years. To give insights on which parameters further investigation should be conducted, the standard error of mean returns and volatilities are calculated. Afterwards, a short review of Markovitz' portfolio theory, mainly the minimum variance and tangency portfolio, is presented.
 
-All these methods are applied to 20 years of historical data and their performance in terms of Sharpe ratio is compared. At the end of this paper, the aim is to provide a general approach to create a robust portfolio optimization.
+Several approaches are investigated to achieve a robust optimization. The first method described is asset grouping, where a qualitative and a quantitative approach are applied and compared. Followed by a description of bootstrapping, which is used to determine the standard deviation of the asset weights. To measure the performance on independent data, cross validation is applied to obtain an out-of-sample time series. As a final approach, shrinkage of mean returns and correlations is discussed.
+
+These methods are applied to the historical data and their performance in terms of Sharpe ratio is compared. The in- and out-of-sample performances are evaluated and optimal shrinkage factors are identified. At the end of this paper, the aim is to provide an approach to create a robust portfolio optimization for all assets included in the Swiss Market Index.
 
 \newpage
 
@@ -143,7 +144,7 @@ t = \frac{\rho_{i,j}*\sqrt{n-2}}{\sqrt{1-\rho_{i,j}^2}}
 <p> *$\rho_{i,j}$ = correlation between returns of assets i and j* <p>
 <p> *$n$ = sample size* <p>
 
-The null hypothesis says that the correlation is not significantly different from zero and the alternative hypothesis that it is significantly different from zero.
+The null hypothesis $H_{0}$ says that the correlation is not significantly different from zero and the alternative hypothesis $H_{1}$ that it is significantly different from zero.
 
 <p> *$H_{0}:$ $\rho = 0$* <p>
 <p> *$H_{1}:$ $\rho \neq 0$* <p>
@@ -161,7 +162,7 @@ t = \frac{`r min_cor`*\sqrt{`r nrow(r)`-2}}{\sqrt{1-`r min_cor`^2}} = `r tstatis
 \label{eq:tteststatistic}
 \end{equation}
 
-With the help of the t-distribution in figure \@ref(fig:tdist) it is seen clearly that a value of approximately 2 is already below the threshold of $\alpha = 0.05$. Therefore, with the obtained test statistic value of `r tstatistic` which is far to the right in figure \@ref(fig:tdist), the p-value is almost zero. Consequentially, the null hypothesis can be rejected, meaning that the true correlation is significantly different from zero.
+With the help of the t-distribution in figure \@ref(fig:tdist) it is seen clearly that a value of approximately 2 is already below the level of $\alpha = 0.05$. Therefore, with the obtained test statistic value of `r tstatistic` which is far to the right in figure \@ref(fig:tdist), the p-value is almost zero. Consequentially, the null hypothesis can be rejected, meaning that the true correlation is significantly different from zero.
 
 ```{r tdist, fig.cap = paste0("t-distribution with ", nrow(r), " $-$ 2 degrees of freedom"), fig.height = 3}
 seq = seq(-5, 5, 0.01)
@@ -186,7 +187,7 @@ The standard deviation of the sampling distribution is known as the standard err
 
 \newpage
 
-Figure \@ref(fig:serplot) depicts the standard error of mean return for each stock. It is seen clearly that stocks as *Nestle* and *Swisscom* with a low volatility in table \@ref(tab:rmrvoltab) also have a lower standard error. Likewise, *ABB* and *Credit Suisse* with a high volatility show a higher standard error.
+Figure \@ref(fig:serplot) depicts the standard error of mean return for each stock. It is seen clearly that stocks such as *Nestle* and *Swisscom* with a low volatility in table \@ref(tab:rmrvoltab) also have a lower standard error. Likewise, *ABB* and *Credit Suisse* with a high volatility show a higher standard error.
 
 ```{r serplot, fig.cap = "Standard error of mean return", fig.height = 4}
 mr = mean_returns(r)
@@ -265,7 +266,7 @@ The gradient is set equal to zero as in eq. \@ref(eq:gradient). Together with th
 
 \newpage
 
-## Problems
+## Problem
 In order to perform the optimization, some assumptions have to be made. As already mentioned before, return, volatility and correlation must be known. The volatility is described with the standard deviation and therefore no assumption about a normal distribution has to be made. Another condition applies to the linear relationship of the assets. Their correlation is not allowed to be either one or minus one. The determinant of such a correlation or covariance matrix would be zero and therefore it would not be invertible. To calculate the minimum variance and tangency portfolio, the covariance matrix $\Sigma$ must be invertible.
 
 ## Minimum variance portfolio
@@ -550,7 +551,7 @@ R_{i,w} = \vec{w}^\intercal * \vec{R_i}
 <p> *$\vec{w}$ = asset weights* <p>
 <p> *$\vec{R_i}$ = asset returns day i* <p>
 
-At the end of the cross validation, all five test sets are combined into one time series consisting daily weighted returns and equaling the length of the historical data. This time series is entirely out of sample and is used to calculate the Sharpe ratio and hence measure the performance of the model. The implicit assumption behind this procedure is that the returns at different points in time are independent random variables (and, in particular, do not “remember” the past).
+At the end of the cross validation, all five test sets are combined into one time series consisting daily weighted returns and equaling the length of the historical data. This time series is entirely out-of-sample and is used to calculate the Sharpe ratio and hence measure the performance of the model. The implicit assumption behind this procedure is that the returns at different points in time are independent random variables (and, in particular, do not “remember” the past).
 
 It is to note that the training and test sets of the five sections vary significantly in some cases. To give one cause for this, the financial crisis from 2007–2008 can be looked at. During this period, most assets yielded negative returns. For example, model two in figure \@ref(fig:crossvalidation) includes this time period as part of the test set and model four of the training set. This results in fluctuating asset weights across the five models which are illustrated in figure \@ref(fig:tpwbymodel).
 
@@ -586,7 +587,7 @@ ggplot(sets_tpw) +
 ```
 
 ## Shrinkage {#shrinkage}
-Shrinkage is an approach with the objective to increase the out of sample Sharpe ratio by altering the inputs of the Markovitz optimization, namely the mean returns and covariance matrix.
+Shrinkage is an approach with the objective to increase the out-of-sample Sharpe ratio by altering the inputs of the Markovitz optimization, namely the mean returns and covariance matrix.
 
 ### Shrinkage of mean returns
 The shrunk mean returns are calculated as in eq. \@ref(eq:shrinkr).
@@ -708,7 +709,7 @@ When the shrinkage factor $\epsilon$ is set to one, the correlation matrix remai
 There can also arise the case, where for some shrinkage factor $\epsilon$ the denominator of the tangency portfolio eq. \@ref(eq:tpw) becomes zero or close to zero. However, this is not further elaborated on.
 
 # Results
-The results of the different approaches described in chapter \@ref(methodology) are presented and compared by their Sharpe ratio.
+The results of the different approaches described in chapter \@ref(methodology) are presented and compared by their Sharpe ratio in this chapter.
 
 ## SMI constituents {#res1}
 Before the results of the optimization for all individual stocks are shown, the standard deviation of the bootstrapped MVP and TP weights are compared. Figure \@ref(fig:mvpse) illustrates the mean weights and their standard deviation of the MVP and figure \@ref(fig:tpse) of the TP.
@@ -733,47 +734,47 @@ gg_errorbar(stocks, tpw_r, tpw_sd_r, c(mintp, maxtp), "Weights", theme = custom_
 
 It is seen clearly in figure \@ref(fig:mvpse) and \@ref(fig:tpse) and also visualized before in figure \@ref(fig:bsef) in chapter \@ref(bootstrap), that TP weights have a higher standard deviation than MVP weights. When considering the MVP eq. \@ref(eq:mvpw) and TP eq. \@ref(eq:tpw), it is evident that latter directly depends on the returns which have high standard errors. This carries over to the standard deviation of the TP weights. Although the returns also impact the covariance, it only varies to a small degree which is seen in the small standard deviation of the MVP.
 
-Table \@ref(tab:srcomtab1) compares the in and out of sample Sharpe ratio for all 20 stocks.
+Table \@ref(tab:srcomtab1) compares the in- and out-of-sample Sharpe ratio for all 20 stocks.
 
 ```{r srcomtab1}
 srcomtab1 = data.frame(is_r, os_r, row.names = "SMI constituents")
-kable(srcomtab1, col.names = c("In sample", "Out of sample"),
+kable(srcomtab1, col.names = c("In-sample", "Out-of-sample"),
       caption = "Sharpe ratio of SMI constituents",
       digits = 3, booktabs = T, linesep = "")
 ```
 
-In sample, training and test set are equal and therefore its Sharpe ratio is higher than out of sample. This is because the model performs best on the data which built it. Out of sample, training set and test set differ. If a stock behaves differently in a test set compared to the training set used to build the model, this stock can easily be over- or undervalued. This leads to a worse performance of the model and therefore lower Sharpe ratio. The conclusion that can be drawn from this insight is, that the in sample Sharpe ratio should always be higher than the out of sample Sharpe ratio.
+In-sample, training and test set are equal and therefore its Sharpe ratio is higher than out-of-sample. This is because the model performs best on the data which built it. Out-of-sample, training set and test set differ. If a stock behaves differently in a test set compared to the training set used to build the model, this stock can easily be over- or undervalued. This leads to a worse performance of the model and therefore lower Sharpe ratio. The conclusion that can be drawn from this insight is, that the in-sample Sharpe ratio should always be higher than the out-of-sample Sharpe ratio.
 
 \newpage
 
 ## Groups by industry and correlation {#res2}
-Figure \@ref(fig:mvpsegr) illustrates the mean weights and their standard deviation of the MVP and figure \@ref(fig:tpsegr) of the TP.
+Figure \@ref(fig:mvpsegr) illustrates the mean weights and their standard deviation of the MVP and figure \@ref(fig:tpsegr) of the TP, both grouped by industry.
 
-```{r mvpsegr, fig.cap = "MVP weights with standard deviation by group", fig.height = 3}
+```{r mvpsegr, fig.cap = "MVP weights with standard deviation by group by industry", fig.height = 3}
 gg_errorbar(colnames(gr[-1]), mvpw_gr, mvpw_sd_gr, c(minmvp, maxmvp), "Weights",
             theme = custom_theme_markdown)
 ```
 
-```{r tpsegr, fig.cap = "TP weights with standard deviation by group", fig.height = 3}
+```{r tpsegr, fig.cap = "TP weights with standard deviation by group by industry", fig.height = 3}
 gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(mintp, maxtp), "Weights",
             theme = custom_theme_markdown)
 ```
 
 The same conclusion can be drawn for the grouped stocks as for the individual stocks in chapter \@ref(res1). The TP weights standard deviation is also much larger than the one of the MVP.
 
-In table \@ref(tab:srcomtab2), the in and out of sample Sharpe ratios for both groups is shown.
+In table \@ref(tab:srcomtab2), the in- and out-of-sample Sharpe ratios for both groups is shown.
 
 ```{r srcomtab2}
 srcomtab2 = data.frame(c(is_gr, is_g2r),
                  c(os_gr, os_g2r), row.names = c("Groups by industry", "Groups by correlation"))
-kable(srcomtab2, col.names = c("In sample", "Out of sample"),
+kable(srcomtab2, col.names = c("In-sample", "Out-of-sample"),
       caption = "Sharpe ratio of groups", 
       digits = 3, booktabs = T, linesep = "")
 ```
 
-The first observation is, that the in sample Sharp ratio decreased after the grouping is applied compared to the individual stocks in table \@ref(tab:srcomtab1). The reason being, that with 20 parameters a better fit to the data is achieved than with three or four parameters as it is the case for the groups. Nevertheless, the out of sample Sharpe ratio has increased. Due to grouping, the returns are less noisy than the ones of the individual stocks. This leads to a more reliable model which performs better out of sample.
+The first observation is, that the in-sample Sharp ratio decreased after the grouping is applied compared to the individual stocks in table \@ref(tab:srcomtab1). The reason being, that with 20 parameters a better fit to the data is achieved than with three or four parameters as it is the case for the groups. Nevertheless, the out-of-sample Sharpe ratio has increased. Due to grouping, the returns are less noisy than the ones of the individual stocks. This leads to a more reliable model which performs better out-of-sample.
 
-In chapter \@ref(groupclust), cluster analysis is used to optimize the group composition. Hence, higher correlating stocks are grouped together to obtain a better diversified portfolio than is achieved with grouping by industry. This leads to a higher in and out of sample Sharpe ratio.
+In chapter \@ref(groupclust), cluster analysis is used to optimize the group composition. Higher correlating stocks are grouped together which results in a lower correlation between the individual groups. Therefore, a better diversified portfolio is achieved with the groups by correlation compared to the groups by industry. This also leads to a higher in- and out-of-sample Sharpe ratio.
 
 \newpage
 
@@ -782,7 +783,7 @@ In chapter \@ref(groupclust), cluster analysis is used to optimize the group com
 ### Shrinkage factors analyzed separately
 The Sharpe ratio can be visualized as a function of the shrinkage factor. Figure \@ref(fig:srplot) shows such a plot for the mean returns shrinkage factor.
 
-When looking at the SMI constituents curve, it is seen that the highest Sharpe ratio is achieved with a shrinkage factor of 0.05. If past returns are taken too seriously (higher shrinkage factor) or not considered at all (shrinkage factor zero), the out of sample Sharpe ratio drops. So, the returns can be trusted only five percent. This result is plausible, as the returns are very noisy. Further can be seen that the Sharpe ratio has a sharp bend and drop below zero. This is caused by the close to zero denominator of the tangency portfolio eq. \@ref(eq:tpw) as described in chapter \@ref(shrinkage).
+When looking at the SMI constituents curve, it is seen that the highest Sharpe ratio is achieved with a shrinkage factor of 0.05. If past returns are taken too seriously (higher shrinkage factor) or not considered at all (shrinkage factor zero), the out-of-sample Sharpe ratio drops. So, the returns can be trusted only 5%. This result is plausible, as the returns are very noisy. Further can be seen that the Sharpe ratio has a sharp bend and drop below zero. This is caused by the close to zero denominator of the tangency portfolio eq. \@ref(eq:tpw) as described in chapter \@ref(shrinkage).
 
 For the two group curves the result is inverted. As the grouping of the stocks already reduces the noise significantly, shrinkage does show almost no improvement over unshrunk mean returns. The groups by correlation do show a significantly higher Sharpe ratio than the groups by industry and it is also higher than the one of the SMI constituents.
 
@@ -795,7 +796,7 @@ gg_shrink2D(list(os_r_sr, os_gr_sr, os_g2r_sr),
             theme = custom_theme_markdown)
 ```
 
-Figure \@ref(fig:scorplot) shows the plot for the correlation shrinkage factor. For the SMI constituents, the same observation can be made as in figure \@ref(fig:srplot). The out of sample Sharpe ratio drops, if past correlations are taken too seriously (higher shrinkage factor) or less seriously (shrinkage factor zero). The optimum is found at 0.4. Also, the result for groups is similar to the previous one in the sense that shrinkage does not have a great impact. The highest Sharpe ratio is again achieved by the groups by correlation.
+Figure \@ref(fig:scorplot) shows the plot for the correlation shrinkage factor. For the SMI constituents, the same observation can be made as in figure \@ref(fig:srplot). The out-of-sample Sharpe ratio drops, if past correlations are taken too seriously (higher shrinkage factor) or less seriously (shrinkage factor zero). The optimum is found at 0.4. Also, the result for groups is similar to the previous one in the sense that shrinkage does not have a great impact. The highest Sharpe ratio is again achieved by the groups by correlation.
 
 ```{r scorplot, fig.cap = "Sharpe ratio as a function of correlation shrinking factor", fig.height = 4}
 os_r_scor = unlist(out_of_sample_vec(sets_r, 1, seq(0, 1, 0.01)))
@@ -833,7 +834,7 @@ os_g2r_sr_scor = unlist(out_of_sample_vec(sets_g2r, grid[,1], grid[,2]))
 gg_shrink3D(grid, os_g2r_sr_scor, theme = custom_theme_markdown)
 ```
 
-Table \@ref(tab:srcomtab3) sums up all investigated Sharpe ratios, namely in sample (IS), out of sample (OS) and out of sample with applied shrinkage (OS shrinkage).
+Table \@ref(tab:srcomtab3) sums up all investigated Sharpe ratios, namely in-sample (IS), out-of-sample (OS) and out-of-sample with applied shrinkage (OS shrinkage).
 
 ```{r srcomtab3}
 srcomtab3 = data.frame(c(is_r, is_gr, is_g2r),
@@ -847,20 +848,20 @@ kable(srcomtab3, col.names = c("IS", "OS", "OS shrinkage"),
 
 To give further insights, the TP weights for unshrunk and shrunk mean returns and correlations are compared in tables \@ref(tab:tpwrstab), \@ref(tab:tpwgrtab) and \@ref(tab:tpwg2rtab).
 
-The weights of unshrunk mean returns and correlations are the ones previously shown in table \@ref(tab:tpwrtab) in chapter \@ref(markovitz). They are also the ones which obtain the in sample Sharpe ratio, where all historical data is used to train the model. The shrinkage factors utilized for the shrunk mean returns and correlations are the ones which obtained the highest out of sample Sharpe ratio in figure \@ref(fig:srcorplot1), \@ref(fig:srcorplot2) and \@ref(fig:srcorplot3).
+The weights of unshrunk mean returns and correlations are the ones previously shown in table \@ref(tab:tpwrtab) in chapter \@ref(markovitz). They are also the ones which obtain the in-sample Sharpe ratio, where all historical data is used to train the model. The shrinkage factors utilized for the shrunk mean returns and correlations are the ones which obtained the highest out-of-sample Sharpe ratio in figure \@ref(fig:srcorplot1), \@ref(fig:srcorplot2) and \@ref(fig:srcorplot3).
 
 ```{r tpwrstab}
 mr = mean_returns(r)
 smr = shrinkage_mr(mr, 0.05)
 tpw_r = data.frame(colnames(r[-1]), tp_weights(cov_mat(r), mr), tp_weights(cov_mat(r), smr))
 kable(tpw_r, col.names = c("Stock", "Before shrinkage", "After shrinkage"),
-      caption = "Tangency portfolio weights",
+      caption = "SMI constituents tangency portfolio weights",
       digits = 3, booktabs = T, linesep = "")
 ```
 
 \newpage
 
-When comparing the two sets of weights, a significant difference can be seen. Overall, the weights after shrinkage are closer around zero as they are before. This is caused by the fact that the returns are taken into account only five percent. Therefore, the weights are much closer to the MVP weights as seen in table \@ref(tab:mvpwrtab) in chapter \@ref(markovitz).
+When comparing the two sets of weights, a significant difference can be seen. Overall, the weights after shrinkage are closer around zero as they are before. This is caused by the fact that the returns are taken into account only 5%. Therefore, the weights are much closer to the MVP weights as seen in table \@ref(tab:mvpwrtab) in chapter \@ref(markovitz).
 
 Compared to the weights of the individual stocks already shown in table \@ref(tab:tpwrtab), the weights of the groups in table \@ref(tab:srcomtab2) and \@ref(tab:srcomtab3) are significantly higher or lower. To recall, the weights must sum up to one according to constraint \@ref(eq:constraint1). If the groups perform differently, like it is the case for *Finance* (negative mean return) and *Pharma* (positive mean return) in the groups by industry, the weights drift apart. This becomes even more prominent in the groups by correlation between *Group 1* and *Group 3*. As mentioned in chapter \@ref(markovitz), negative weights correspond to short sales. The difference between the weights before and after shrinkage is insignificant. This is attributed to the shrinkage factor of the mean returns being one and the one for the correlation being 0.95. So there is almost no shrinkage applied.
 
@@ -869,7 +870,7 @@ gmr = mean_returns(gr)
 gscov = shrinkage_cor(cov_mat(gr), 0.95)
 tpw_gr_df = data.frame(colnames(gr[-1]), tp_weights(cov_mat(gr), gmr), tp_weights(gscov, gmr))
 kable(tpw_gr_df, col.names = c("Group", "Before shrinkage", "After shrinkage"),
-      caption = "Groups by industry in sample tangency portfolio weights",
+      caption = "Groups by industry tangency portfolio weights",
       digits = 3, booktabs = T, linesep = "")
 ```
 
@@ -878,17 +879,18 @@ g2mr = mean_returns(g2r)
 g2scov = shrinkage_cor(cov_mat(g2r), 0.95)
 tpw_g2r_df = data.frame(colnames(g2r[-1]), tp_weights(cov_mat(g2r), g2mr), tp_weights(g2scov, g2mr))
 kable(tpw_g2r_df, col.names = c("Group", "Before shrinkage", "After shrinkage"),
-      caption = "Groups by correlation in sample tangency portfolio weights",
+      caption = "Groups by correlation tangency portfolio weights",
       digits = 3, booktabs = T, linesep = "")
 ```
 
 \newpage
 
 # Conclusion
+Considered in isolation, the highest increase of Sharpe ratio is achieved with the grouping method by correlation. Nevertheless, the highest Sharpe ratio is obtained with a combination of grouping and shrinkage. It should be noted that when one method is applied after the other, its influence on the Sharpe ratio is significantly lower. This has to do with the fact that the noise can only be reduced to a certain degree. In this case, the first method which is grouping, has a larger increase in Sharpe ratio, while shrinkage, as the second method, has only a small additional increase. However, it is well apparent that for the SMI constituents where only shrinkage is applied, the rise in Sharpe ratio is similarly high compared with grouping as the first method.
 
-Considered in isolation, the highest increase of Sharpe ratio is achieved by grouping by correlation using cluster analysis. Nevertheless the highest Sharpe ratio is obtained with a combination of grouping and shrinkage. It should be noted that when one method is applied after the other, its influence on the Sharpe ratio is significantly lower. This has to do with the fact that the noise can only be reduced to a certain degree. In this case, the first method grouping, has a larger increase in Sharpe ratio, while shrinkage, as the second method, has only a small additional increase. However, it is well apparent that for the SMI constituents where only shrinkage is applied, the rise in Sharpe ratio is similarly high compared with grouping as the first method. 
+With these insights, the best procedure for optimizing multiple assets can be derived. In a first step, one would group by correlation to reduce noise by a significant amount. The second step would be applying shrinkage to mean returns and correlation. Examining the groups implies that returns remain unshrunk, while correlation is shrunk by a factor of 0.95. Although this is not generally valid, overall it can be said that shrinkage offers only a small gain in addition to the previous grouping. But if grouping is omitted, it is possible that a higher Sharpe ratio can be achieved with the shrinkage approach, especially with a high number of assets.
 
-With these insights, the best procedure for optimizing multiple assets can be derived. In a first step, one would group by correlation to reduce noise by a significant amount. The second step would be applying shrinkage to mean returns and correlation. Examining the groups implies that returns remain unshrunk, while correlation is shrunk by a factor of 0.95. While this is not generally valid, overall it can be said that shrinkage offers only a small gain in addition to the previous grouping. But if grouping is omitted, it is possible that a higher Sharpe ratio can be achieved with the shrinkage approach, especially with a high number of assets. 
+To give the final result, the weights in the after shrinkage column from table \@ref(tab:srcomtab3) obtain the best future performance for a portfolio including all assets in the SMI.
 
 \newpage
 
