@@ -354,7 +354,7 @@ R_{p} = \vec{w}^\intercal * \vec{R}
 <p> *$\vec{w}$ = asset weights* <p>
 <p> *$\Sigma$ = covariance matrix* <p>
 
-```{r refplot, fig.cap = "Return-volatility diagram with efficient frontier", fig.height = 5}
+```{r refplot, fig.cap = "Return-volatility diagram with efficient frontier of SMI constituents", fig.height = 5}
 cm = cov_mat(r); mr = mean_returns(r)
 efw_r = ef_weights(mvp_weights(cm), tp_weights(cm, mr), seq(-3, 3, 0.1))
 efp_r = ef_points(efw_r, cm, mr)
@@ -419,30 +419,30 @@ kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"),
 In a second approach grouping is based on the similarity measure which is calculated with Euclidean distances between two correlation coefficients as shown in eq. \@ref(eq:euclidean).
 
 \begin{equation}
-d_{i,j} = \sqrt{\vec{1}^\intercal(\vec{x_{i}} - \vec{x_{j}})^{2}}
+d_{i,j} = \sqrt{\vec{1}^\intercal(\vec{x}_{i} - \vec{x}_{j})^{2}}
 \label{eq:euclidean}
 \end{equation}
 
 <p> *$d_{i,j}$ = Euclidean distance between asset i and asset j* <p>
-<p> *$\vec{x_{i}}$ = correlation coefficients of asset i (column in cor. matrix)* <p>
-<p> *$\vec{x_{j}}$ = correlation coefficients of asset j (column in cor. matrix)* <p>
+<p> *$\vec{x}_{i}$ = correlation coefficients of asset i (column in cor. matrix)* <p>
+<p> *$\vec{x}_{j}$ = correlation coefficients of asset j (column in cor. matrix)* <p>
 <p> *$\vec{1}$ = all-ones vector* <p>
 
-When eq. \@ref(eq:euclidean) is applied to the correlation matrix shown in figure \@ref(fig:corplot), it results in a distance matrix with the same dimensions. The algorithm sorts the values of the distance matrix with the complete-linkage method. 
+When eq. \@ref(eq:euclidean) is applied to the correlation matrix shown in figure \@ref(fig:corplot), it results in a distance matrix with the same dimensions. The algorithm sorts the values of the distance matrix with the complete-linkage method.
 
 **Step 1**
-Group the two stocks with the smallest distance value. 
+Group the two assets with the smallest distance value.
 
 **Step 2**
-Compare the created group with individual stocks or other created groups. The distance between a group $(i,j)$ and a individual stock $k$ is the largest possible distance between a stock within the group and the individual stock.\newline
-$d\langle \{i,j\} , k \rangle = max(d\langle i, k \rangle, d\langle j, k \rangle)$. \newline
-For distances between groups, the largest possible distance is taken from the distances between each stock of a group with a stock of another group. For distance between group $(i,j)$ and $(k,l)$ with two stocks applies: \newline
-$d\langle \{i,j\} , \{k,l\} \rangle = max(d\langle i, k \rangle, d\langle i, l \rangle, d\langle j, k \rangle, d\langle j, l \rangle)$.
+Compare the created group with individual assets or other created groups. The distance between a group ${i,j}$ and an individual asset $k$ is the largest possible distance between an asset within the group and the individual asset.\newline
+$d\langle \{i,j\}, k \rangle = max(d\langle i, k \rangle, d\langle j, k \rangle)$.\newline
+For distances between groups, the largest possible distance is taken from the distances between each asset of a group with an asset of another group. For distance between group ${i,j}$ and ${k,l}$ with two assets applies:\newline
+$d\langle \{i,j\}, \{k,l\} \rangle = max(d\langle i, k \rangle, d\langle i, l \rangle, d\langle j, k \rangle, d\langle j, l \rangle)$.
 
 **Step 3**
-Repeat the procedure with the new created distance matrix until only two groups remain. The outcome is a dendogram which is also part of the illustration in figure \@ref(fig:distheatmap). It can be seen that the first step of grouping is the connection which is drawn lowest. The color scaling describes the different distances. [@stdm]
+Repeat the previous steps with the newly created distance matrix until only two groups remain. The outcome is a dendrogram which is also part of the illustration in figure \@ref(fig:distheatmap). The first step of grouping is the connection which is drawn lowest. The color scaling indicates the different distances. [@stdm]
 
-```{r distheatmap, fig.cap = "Grouped by Euclidean distance of correlation coefficients", fig.height = 7}
+```{r distheatmap, fig.cap = "Stocks grouped by Euclidean distance of correlation", fig.height = 7}
 cor = cor_mat(returns)
 heatmap3(as.matrix(dist(cor)), method = "complete", symm = T, margins = c(7, 7),
          col = colorRampPalette(c("orangered4", "orangered2", "honeydew"))(1000))
@@ -454,11 +454,11 @@ heatmap3(as.matrix(dist(cor)), method = "complete", symm = T, margins = c(7, 7),
 <p> **Group 2:** *Givaudan, Lonza, Nestle, Novartis, Roche, Swisscom* <p>
 <p> **Group 3:** *Geberit, SGS, Sika* <p>
 
-Using  cluster analysis, 20 stocks can now be divided into three groups. The dendrogram in figure \@ref(fig:distheatmap) clearly shows the allocation. This division makes mathematical sense, but is hardly ever used in practice. First, the groups are different in terms of number of shares. *Group 1* has eleven stocks, but *Group 3* has only three. This would mean that if all shares within a group are weighted equally, the shares of *Group 3* would be weighted much higher than those of *Group 1*. Second, you would have to explain to an investor why a stock from the industrial sector is grouped with a stock from the financial sector. For example ABB is grouped with UBS but not with Geberit, which is intuitively very contradictory.
+Using the algorithm described, the 20 stocks can now be divided into three groups. The dendrogram in figure \@ref(fig:distheatmap) shows the allocation. This division makes mathematical sense but is hardly ever used in practice. First, the groups are different in terms of size. *Group 1* consists of eleven stocks but *Group 3* of only three. This means that with equal weights within the group, the stocks in *Group 3* are weighted higher overall than those in *Group 1*. Second, one would have to explain to an investor why stocks from different industries are grouped together. For example, *ABB* is grouped with *UBS* but not with *Geberit* which is intuitively contradictory.
 
-Nevertheless, figure \@ref(fig:gefplot) can be used to provide some clarity. This plot underlines the division and makes clear how the groups are formed. The groups contain stocks with similar volatility and return, so it makes sense that ABB is grouped with UBS because of its high risk and not with Geberit.
+Figure \@ref(fig:gefplot) gives some visual intuition. The groups contain stocks with similar volatility and return, so it makes sense that *ABB* is grouped with *UBS* because and not with *Geberit*.
 
-```{r gefplot, fig.cap = "Efficient frontier with stocks", fig.height = 5}
+```{r gefplot, fig.cap = " Return-volatility diagram with efficient frontier of groups by correlation", fig.height = 5}
 g2r = groups_returns(r, groups2)
 g2cm = cov_mat(g2r); g2mr = mean_returns(g2r)
 efw_g2r = ef_weights(mvp_weights(g2cm), tp_weights(g2cm, g2mr), seq(-3, 3, 0.1))
@@ -493,7 +493,7 @@ suppressMessages(
       custom_theme_markdown)))
 ```
 
-Table \@ref(tab:g2rmrvoltab) shows the returns and volatility of the three groups. It is clearly visible that the values have improved on average compared to table \@ref(tab:grmrvoltab). Further methods like k-means or PAM etc. could be considered but are not discussed in this paper.
+Table \@ref(tab:g2rmrvoltab) shows return and volatility of the three groups. It is visible that the values have improved overall compared to table \@ref(tab:grmrvoltab). Further cluster analysis methods such as k-means or k-medoids could be considered but are not discussed in this paper.
 
 ```{r g2rmrvoltab}
 gr_mr_vol = data.frame(colnames(g2r[-1]), mean_returns(g2r), volatilities(cov_mat(g2r)),
