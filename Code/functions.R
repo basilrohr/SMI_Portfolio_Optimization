@@ -111,11 +111,9 @@ cross_validation_sets = function(returns, n = 5) {
   list(training_sets = training_sets, test_sets = test_sets)
 }
 
-shrinkage_mr = function(mr, sfr){
-  sfr * mr + (1-sfr) * mean(mr)
-}
+shrinkage_mr = function(mr, sfr) {sfr * mr + (1-sfr) * mean(mr)}
 
-shrinkage_cor = function(covm, sfcor){
+shrinkage_cor = function(covm, sfcor) {
   corm = cov2cor(covm); diag(corm) = 0
   scorm = diag(nrow(corm)) + sfcor * corm
   diag(volatilities(covm)) %*% scorm %*% diag(volatilities(covm))
@@ -126,8 +124,7 @@ out_of_sample = function(sets, sfr = 1, sfcor = 1, interval = "1d", set = NULL) 
   weighted_returns = c()
   for (i in seq) {
     covm = sets[[1]][[i]]$cov_mat; mr = sets[[1]][[i]]$mean_returns
-    scovm = shrinkage_cor(covm, sfcor)
-    smr = shrinkage_mr(mr, sfr)
+    scovm = shrinkage_cor(covm, sfcor); smr = shrinkage_mr(mr, sfr)
     tpw = tp_weights(scovm, smr)
     weighted_returns_set = c(as.matrix(sets[[2]][[i]]$returns[-1]) %*% tpw)
     weighted_returns = c(weighted_returns, weighted_returns_set)
@@ -140,5 +137,3 @@ out_of_sample = function(sets, sfr = 1, sfcor = 1, interval = "1d", set = NULL) 
 }
 
 out_of_sample_vec = Vectorize(out_of_sample, vectorize.args = c("sfr", "sfcor"), SIMPLIFY = F)
-
-

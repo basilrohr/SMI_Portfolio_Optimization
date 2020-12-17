@@ -94,7 +94,7 @@ gg_shrink3D = function(grid, z, title = NULL, theme = NULL) {
                      yend = grid[,1][which.max(z)]), color = "honeydew", linetype = 2) +
     geom_point(aes(x = grid[,2][which.max(z)], y = grid[,1][which.max(z)]), color = "honeydew") +
     coord_fixed() +
-    labs(x = "Correlation shrinkage coefficient", y = "Return shrinkage coefficient", title = title) +
+    labs(x = "Correlation shrinkage factor", y = "Return shrinkage factor", title = title) +
     theme(legend.title = element_text(size = 12)) +
     theme
   gg
