@@ -41,7 +41,8 @@ R.utils::sourceDirectory("./Code", modifiedOnly = F)
 ```
 
 # Introduction
-In order to make the best possible use of returns and volatilities when selecting assets in a portfolio, the US economist Harry M. Markowitz developed a mathematical method in 1952 to determine efficient portfolios. This method has since been known as modern portfolio theory. Since then, it is formalized how to create the most efficient portfolio from different stocks with given variables such as returns and volatilities. The disadvantage of this optimization is that the calculations are based on historical data. This data, namely the returns, are strongly affected by noise and therefore will not perform well in future estimations. 
+The economist Harry Markovitz pioneered modern portfolio theory. In 1952, he developed a mathematical model to calculate efficient portfolios given return and risk of assets.
+The disadvantage of this optimization is that the calculations are based on historical data. This data, namely the returns, are strongly affected by noise and therefore will not perform well in future estimations. 
 
 The fundamental question is how to create an optimization from historical data that delivers robust results on independent data. In this paper, the Sharpe ratio is used as a performance measurement of the optimization. The data used in this paper are the assets included in the SMI, afterwards a short review of Markovitz theory is presented. To achieve more robust results, several approaches are investigated. The first method described is grouping where a qualitative and a quantitative approach are applied and compared. Followed by a description of the bootstrap which is used to determine the standard errors of the asset weights. To measure the performance on to an independent data set, cross validation is applied to obtain an out of sample time series. As a final approach, shrinkage of the mean returns and correlations is discussed. 
 
