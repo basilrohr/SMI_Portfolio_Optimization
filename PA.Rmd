@@ -264,11 +264,11 @@ The gradient is set equal to zero as in eq. \@ref(eq:gradient). Together with th
 
 \newpage
 
-## Problem
-In order to apply the optimization, some assumptions have to be made at the beginning. As already mentioned before, the returns, risk and correlation coefficients must be known. It is also important that the risk is described by the standard deviation. This leads to the conclusion that a normal distribution is irrelevant, because the standard deviation is used as risk. Another condition applies to the linear relationship of the stocks. The log-returns must not have a perfect correlation among themselves, neither negative nor positive. This is described by a correlation coefficient of -1 or 1. If the determinant of the correlation matrix is zero, the system cannot be solved. This situation occurs when stocks have a correlation coefficient of 1 or -1. The system must be uniquely solvable to form the inverse of the covariance matrix $\Sigma^{-1}$.
+## Problems
+In order to perform the optimization, some assumptions have to be made. As already mentioned before, return, volatility and correlation must be known. The volatility is described with the standard deviation and therefore no assumption about a normal distribution has to be made. Another condition applies to the linear relationship of the assets. Their correlation is not allowed to be either one or minus one. The determinant of such a correlation or covariance matrix would be zero and therefore it would not be invertible. To calculate the minimum variance and tangency portfolio, the covariance matrix $\Sigma$ must be invertible.
 
-## Minimum variance portfolio 
-The minimum variance portfolio, short MVP, describes the portfolio of all possible weightings with the minimum volatility. Since only the volatility is minimized, constraint *II* \@ref(eq:constraint2) is not included in the eq.. Negative returns do not necessarily have to result in a negative weighting, since in the calculation of the MVP the return is not directly included in the calculation but only the covariance matrix. Therefore, the correlation coefficients are the important factor. The MVP weights are shown in table \@ref(tab:mvpwrtab).
+## Minimum variance portfolio
+The minimum variance portfolio, short MVP, describes the portfolio with the lowest volatility. Since only the volatility is minimized, the condition *II* \@ref(eq:constraint2) is not required. Negative returns do not necessarily lead to negative weights. The calculation of the MVP does not depend directly on the returns, but they are reflected in the covariance matrix. The MVP is calculated as illustrated in eq. \@ref(eq:mvpw) and the corresponding weights are shown in table \@ref(tab:mvpwrtab).
 
 \begin{equation}
 \vec{w}_{mvp} = \frac{1}{\vec{1}^\intercal\Sigma^{-1}\vec{1}}*\Sigma^{-1}\vec{1}
@@ -288,11 +288,11 @@ kable(mvpw_r, col.names = c("Stock", "Weight"), caption = "Minimum variance port
 \newpage
 
 ## Tangency portfolio 
-The tangency portfolio, short TP, results from the tangent of the capital market line and the efficient frontier, which will be shown more detailed in chapter \@ref(EF). The capital market line is an important component of the capital asset pricing model (CAPM). The slope of the capital market line indicates how much more return is expected per additional volatility. This is exactly the situation when the capital market line is tangential to the efficient frontier. Therefore, the best possible diversified portfolio results from the weightings of the tangency portfolio. [@sharpe]
+The tangency portfolio, short TP, results from the capital market line and efficient frontier, which will be discussed in more detail in chapter \@ref(ef). The capital market line is an important component of the capital asset pricing model (CAPM). The slope of the capital market line indicates how much more return is expected per additional risk. The optimal ratio is found where the capital market line is tangential to the efficient frontier, hence the tangency portfolio. It is often referred to in the literature as market portfolio. [@sharpe]
 
-The tangency portfolio is often referred to in the literature as the market portfolio. In the equation for the capital market line, shown as eq. \@ref(eq:cml), the expected return of the market portfolio respectively the tangency portfolio is written as $R_{tp}$. Note that in this paper the risk-free rate $R_f$ is already deducted from the returns directly, as shown in eq. \@ref(eq:logr). Therefore it can be set to zero in all further calculations.
+The capital market line is shown in eq. \@ref(eq:cml) and the tangency portfolio in eq. \@ref(eq:tpw) with its corresponding weights in table \@ref(tab:tpwrtab). Note that in this paper the risk-free rate $R_f$ is already deducted from the returns directly as shown in eq. \@ref(eq:logr). Therefore, it can be set to zero in all further calculations.
 
-*Capital Market Line:*
+*Capital market line:*
 \begin{equation}
 R_{p}(\sigma_{p}) = R_{f} + \frac{R_{tp} - R_{f}}{\sigma_{tp}} * \sigma_{p} = \frac{R_{tp}}{\sigma_{tp}} * \sigma_{p}
 \label{eq:cml}
@@ -304,7 +304,7 @@ R_{p}(\sigma_{p}) = R_{f} + \frac{R_{tp} - R_{f}}{\sigma_{tp}} * \sigma_{p} = \f
 <p> *$\sigma_{tp}$ = TP volatility* <p>
 <p> *$R_{f}$ =  risk-free rate of return* <p>
 
-*Tangency Portfolio:*
+*Tangency portfolio:*
 \begin{equation}
 \vec{w}_{tp} = \frac{1}{\vec{1}^\intercal\Sigma^{-1}\vec{R}}*\Sigma^{-1}\vec{R}
 \label{eq:tpw}
@@ -315,7 +315,6 @@ R_{p}(\sigma_{p}) = R_{f} + \frac{R_{tp} - R_{f}}{\sigma_{tp}} * \sigma_{p} = \f
 <p> *$\Sigma$ = covariance matrix* <p>
 <p> *$\vec{R}$ = mean returns* <p>
 
-
 ```{r tpwrtab}
 tpw_r = data.frame(colnames(r[-1]), tp_weights(cov_mat(r), mean_returns(r)))
 kable(tpw_r, col.names = c("Stock", "Weight"), caption = "Tangency portfolio weights",
@@ -324,8 +323,8 @@ kable(tpw_r, col.names = c("Stock", "Weight"), caption = "Tangency portfolio wei
 
 \newpage
 
-## Efficient Frontier {#EF}
-The efficient frontier is a set of points that extends in the return-volatility diagram (figure \@ref(fig:refplot)) between the minimum variance portfolio at the left edge of the reachable area and the tangency portfolio. All possible portfolio weights above the MVP on this line are efficient because they have the maximum return at a defined level of volatility.
+## Efficient Frontier {#ef}
+The efficient frontier is a set of points that extends in the return-volatility diagram illustrated in figure \@ref(fig:refplot) between the MVP at the left edge of the reachable area and the TP. All portfolio above the MVP on this line are efficient because they have the highest possible return at a defined level of volatility.
 
 \begin{equation}
 \vec{w}_{ef} = \alpha * \vec{w}_{mvp} + (1 - \alpha) * \vec{w}_{tp}
@@ -355,8 +354,7 @@ R_{p} = \vec{w}^\intercal * \vec{R}
 <p> *$\vec{w}$ = asset weights* <p>
 <p> *$\Sigma$ = covariance matrix* <p>
 
-
-```{r refplot, fig.cap = 'Return-volatility diagram with efficient frontier', fig.height = 5}
+```{r refplot, fig.cap = "Return-volatility diagram with efficient frontier", fig.height = 5}
 cm = cov_mat(r); mr = mean_returns(r)
 efw_r = ef_weights(mvp_weights(cm), tp_weights(cm, mr), seq(-3, 3, 0.1))
 efp_r = ef_points(efw_r, cm, mr)
@@ -376,17 +374,16 @@ suppressMessages(
       custom_theme_markdown)))
 ```
 
-
-In figure \@ref(fig:refplot) it is clearly visible that the efficient frontier covers the range in which all possible portfolio compositions can be located. Through the optimization, the TP is created, which achieves a significantly higher return than the individual stocks included in the SMI. Also, the MVP is at the extreme left of the achievable area on the efficient frontier, which means that there is no portfolio that have a lower volatility.
+In figure \@ref(fig:refplot) is visible that the efficient frontier covers the range in which all possible portfolios are located. The TP achieves a significantly higher return than the stocks individually. The MVP is at the very left of the achievable area of the efficient frontier which means that there is no portfolio with a lower volatility.
 
 \newpage
 
 ## Sharpe ratio {#sharpe}
-The Sharpe ratio measures the performance of an investment which means the return of an investment compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the portfolio. In practice, the value of the Sharpe ratio is not only positively received. In this paper, however, we will rely on the Sharpe ratio because it is a key figure by which performance can be measured. It is calculated by the average return earned in excess of the risk-free rate per unit of volatility. In this case it is the natural logarithmic return per day $R$ divided by $\sigma$. $R$ is already calculated in eq. \@ref(eq:logr). Note that the Sharpe ratio is annualized, which means that it is multiplied by $\sqrt{252}$. [@sharpe]
+The Sharpe ratio measures the performance of an asset, meaning its return compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the asset. In practice, the Sharpe ratio is not only positively received. In this paper however, the Sharpe ratio is relied on because it is a simple performance indicator. It is calculated by the return in excess of the risk-free rate per unit of volatility. As daily historical data is used in this paper, the Sharpe ratio is annualized by multiplication with $\sqrt{252}$. [@sharpe]
 
 \begin{equation}
-  Sharpe ratio = \frac{R - R_{f}}{\sigma} = \frac{R}{\sigma}
-  \label{eq:sharperatio}
+Sharpe ratio = \frac{R - R_{f}}{\sigma} = \frac{R}{\sigma}
+\label{eq:sharperatio}
 \end{equation}
 
 <p> *$R$ = return* <p>
@@ -396,7 +393,7 @@ The Sharpe ratio measures the performance of an investment which means the retur
 # Methodology {#methodology}
 
 ## Grouping {#grouping}
-Grouping of stocks is an approach to reduce the noise given by individual assets and therefore increase the Sharpe ratio. A qualitative and a mathematical procedure are applied.
+Grouping of assets is an approach to reduce the noise given by individual assets and therefore increase their performance. A qualitative and a mathematical procedure are applied.
 
 ### Grouping by industry
 An intuitive approach is grouping stocks by industry. In the case of the SMI, stocks can be grouped as follows:
@@ -406,32 +403,32 @@ An intuitive approach is grouping stocks by industry. In the case of the SMI, st
 <p> **Industrial:** *ABB, Geberit, Givaudan, LafargeHolcim, SGS* <p>
 <p> **Pharma:** *Lonza, Novartis, Roche, Sika* <p>
 
-To obtain the group returns, the mean value of the daily returns of all stocks within the group is calculated. Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. From this time series the mean returns, volatility and correlation matrix can be calculated as shown in table \@ref(tab:grmrvoltab).
+To obtain the group returns, the mean value of the daily returns of all stocks within the group is calculated. Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. From this time series, the mean returns, volatility and correlation can be calculated as shown in table \@ref(tab:grmrvoltab).
 
 ```{r grmrvoltab}
 gr = groups_returns(returns, groups)
 gr_mr_vol = data.frame(colnames(gr[-1]), mean_returns(gr), volatilities(cov_mat(gr)), row.names = NULL)
 kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"),
-      caption = "Mean returns and Volatility of groups",
+      caption = "Mean returns and volatility of groups by industry",
       digits = 3, booktabs = T, linesep = "")
 ```
 
 \newpage
 
 ### Grouping with cluster analysis {#groupclust}
-In a second approach grouping is based on the similarity measure, which is calculated with Euclidean distances between two correlation coefficients. The formula is illustrated below.
+In a second approach grouping is based on the similarity measure which is calculated with Euclidean distances between two correlation coefficients as shown in eq. \@ref(eq:euclidean).
 
 \begin{equation}
-  d_{i,j} = \sqrt{\vec{1}^\intercal(\vec{x_{i}} - \vec{x_{j}})^{2}}
-  \label{eq:eucledean}
+d_{i,j} = \sqrt{\vec{1}^\intercal(\vec{x_{i}} - \vec{x_{j}})^{2}}
+\label{eq:euclidean}
 \end{equation}
 
-<p> *$d_{i,j}$ = Euclidean distance between stock i and stock j* <p>
-<p> *$\vec{x_{i}}$ = correlation coefficients of stock i (column in corr. matrix)* <p>
-<p> *$\vec{x_{j}}$ = correlation coefficients of stock j (column in corr. matrix)* <p>
+<p> *$d_{i,j}$ = Euclidean distance between asset i and asset j* <p>
+<p> *$\vec{x_{i}}$ = correlation coefficients of asset i (column in cor. matrix)* <p>
+<p> *$\vec{x_{j}}$ = correlation coefficients of asset j (column in cor. matrix)* <p>
 <p> *$\vec{1}$ = all-ones vector* <p>
 
-When eq. \@ref(eq:eucledean) is applied to the correlation matrix shown in figure \@ref(fig:corplot), it results in a distance matrix with the same dimensions. The algorithm sorts the values of the distance matrix with the complete-linkage method. 
+When eq. \@ref(eq:euclidean) is applied to the correlation matrix shown in figure \@ref(fig:corplot), it results in a distance matrix with the same dimensions. The algorithm sorts the values of the distance matrix with the complete-linkage method. 
 
 **Step 1**
 Group the two stocks with the smallest distance value. 
@@ -461,7 +458,7 @@ Using  cluster analysis, 20 stocks can now be divided into three groups. The den
 
 Nevertheless, figure \@ref(fig:gefplot) can be used to provide some clarity. This plot underlines the division and makes clear how the groups are formed. The groups contain stocks with similar volatility and return, so it makes sense that ABB is grouped with UBS because of its high risk and not with Geberit.
 
-```{r gefplot, fig.cap = 'Efficient frontier with stocks', fig.height = 5}
+```{r gefplot, fig.cap = "Efficient frontier with stocks", fig.height = 5}
 g2r = groups_returns(r, groups2)
 g2cm = cov_mat(g2r); g2mr = mean_returns(g2r)
 efw_g2r = ef_weights(mvp_weights(g2cm), tp_weights(g2cm, g2mr), seq(-3, 3, 0.1))
@@ -502,7 +499,7 @@ Table \@ref(tab:g2rmrvoltab) shows the returns and volatility of the three group
 gr_mr_vol = data.frame(colnames(g2r[-1]), mean_returns(g2r), volatilities(cov_mat(g2r)),
                        row.names = NULL)
 kable(gr_mr_vol, col.names = c("Group","Return [%]", "Volatility [%]"),
-      caption = "groups with expected return and volatility",
+      caption = "Mean returns and volatility of groups by correlation",
       digits = 3, booktabs = T, linesep = "")
 ```
 
@@ -622,6 +619,8 @@ It is clear that for some value of $\lambda$ the denominator becomes zero. Compu
 \lambda_0 = \frac{-\vec{1}^\intercal\Sigma^{-1}\vec{\overline{R}}}{\vec{1}^\intercal\Sigma^{-1}\vec{R} - \vec{1}^\intercal\Sigma^{-1}\vec{\overline{R}}}
 \label{eq:lambdazero}
 \end{equation}
+
+\newpage
 
 If the zero crossing is in the shrinkage interval of $[0, 1]$, this results in extreme asset weights. As the denominator approaches zero, the scaling factor in eq. \@ref(eq:tpwsf) becomes very large which affects the weights. To illustrate this effect, the weights of the five cross validation models from figure \@ref(fig:crossvalidation) are plotted as a function of $\lambda$ in figure \@ref(fig:tpwshrinkbymodel).
 
