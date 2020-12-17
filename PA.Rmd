@@ -6,7 +6,7 @@ author:
   - Maurice Gerber
   - Basil Rohr
 date: "`r format(Sys.time(), '%d. %B %Y')`"
-abstract: "Markowitz optimization requires estimates of mean return, standard deviation, and correlation of individual stocks, all of which are subject to estimation error. This leads to the risk of overfitting historical data and, in the case of portfolio optimization, creating portfolios that perform well in backtesting but poorly in the future. To overcome these problems, several robust approaches are investigated, such as different asset grouping methods and shrinkage factors for mean return and correlation. The goal is to provide a recommended approach for optimizing a portfolio that includes all assets from the Swiss Market Index. In summary, three key observations are made. First, asset grouping leads to significant noise reduction and thus better portfolio performance compared to individual assets. Likewise, shrinkage leads to increased performance due to major noise reduction. Using both methods simultaneously achieves a further, albeit smaller, increase in performance, as noise can only be reduced to a certain extent.\\par\\textbf{Keywords:} Portfolio optimization, Markovitz model, Robust methods, Shrinkage\\newpage"
+abstract: "Markowitz optimization requires estimates of mean return, standard deviation, and correlation of individual stocks, all of which are subject to estimation error. This leads to the risk of overfitting historical data and, in the case of portfolio optimization, creating portfolios that perform well in backtesting but poorly in the future. To overcome these problems, several robust approaches are investigated, such as different asset grouping methods and shrinkage factors for mean return and correlation. The goal is to provide a recommended approach for optimizing a portfolio that includes all assets from the Swiss Market Index. In summary, three key observations are made. First, asset grouping leads to significant noise reduction and thus better portfolio performance compared to individual assets. Likewise, shrinkage leads to increased performance due to major noise reduction. Using both methods simultaneously achieves a further, albeit smaller, increase in performance, as noise can only be reduced to a certain extent. All code is published on \\url{https://github.com/pascalaigner/markovitz} and the Shiny app can be accessed at \\url{https://pascalaigner.shinyapps.io/markovitz}.\\par\\textbf{Keywords:} Portfolio optimization, Markovitz model, Robust methods, Shrinkage\\newpage"
 output:
   bookdown::pdf_book:
     toc: false
@@ -50,7 +50,7 @@ All these methods are applied to 20 years of historical data and their performan
 \newpage
 
 # Data
-In this paper, daily historical data from the Swiss Market Index, short SMI, and its constituents is used. The data stems from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. The SMI is also a price index which means that dividends are not included. It is reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is that enough historical data for all companies is available. The key numbers shown in table \@ref(tab:rmrvoltab) are calculated with eqs. \@ref(eq:logr) and \@ref(eq:vol). [@yahoo], [@six]
+In this paper, daily historical data from the Swiss Market Index, short SMI, and its constituents is used. The data stems from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. The SMI is also a price index which means that dividends are not included. It is reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is that enough historical data for all companies is available. The key numbers are shown in table \@ref(tab:rmrvoltab). [@yahoo], [@six]
 
 ## Logarithmic return
 The reason for calculating logarithmic returns is that stock returns are generally assumed to be log-normally and not normally distributed. In later calculations, the risk-free rate of return has to be subtracted from the return and for the sake of simplicity, this is already done from the start as illustrated in eq. \@ref(eq:logr). For the risk-free rate $R_{f}$ shown in table \@ref(tab:annrftab), the LIBOR is commonly used. Due to several negative incidents in the past, the Swiss Average Rate Overnight (SARON) is used for the time period 2014 to 2020. The SARON is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [@saron], [@libor]
@@ -75,7 +75,7 @@ kable(ann_rf, col.names = c("Year", "Rate [%]"),
 \newpage
 
 ## Volatility (standard deviation)
-The volatility in eq. \@ref(eq:vol) describes the risk of an asset and is a statistical measure of the dispersion of returns. In general, the higher the volatility, the riskier the asset.
+The volatility in eq. \@ref(eq:vol) describes the risk of an asset and is a statistical measure of the dispersion of its returns. In general, the higher the volatility, the riskier the asset.
 
 \begin{equation}
 \sigma = \sqrt{\frac{\sum_{i = 1}^{n}(R_{i} - \overline{R})^2}{n-1}}
@@ -96,7 +96,7 @@ kable(r_mr_vol, col.names = c("Stock","Return [%]", "Volatility [%]"),
 ```
 
 ## Covariance and correlation
-The covariance in eq. \@ref(eq:cov) is a numerical measure that describes the linear relationship between two variables. In this case, it represents the strength of the relationship between two return time series. The correlation in eq. \@ref(eq:cor) is the standardized covariance and ranges in an interval of $[-1, 1]$ with the diagonal values of a correlation matrix always being one. A value of one or minus one means that the returns of two assets move in the same direction respectively in opposite directions. In Markowitz' portfolio theory the correlation of two assets is an important matter which will be discussed later in chapter&nbsp;\@ref(markovitz).
+The covariance in eq. \@ref(eq:cov) is a numerical measure that describes the linear relationship between two variables. In this case, it represents the strength of the relationship between two return time series. The correlation in eq. \@ref(eq:cor) is the standardized covariance and ranges in an interval of $[-1, 1]$ with the diagonal elements of a correlation matrix always being one. A value of one or minus one means that the returns of two assets move in the same direction respectively in opposite directions. In Markowitz' portfolio theory the correlation of two assets is an important matter which will be discussed later in chapter \@ref(markovitz).
 
 \newpage
 
@@ -185,7 +185,7 @@ The standard deviation of the sampling distribution is known as the standard err
 
 \newpage
 
-Figure \@ref(fig:serplot) depicts the standard error of mean return for each stock. It is seen clearly that stocks as *Nestle* and *Swisscom* with a low volatility (see table \@ref(tab:rmrvoltab)) also have a lower standard error. Likewise, *ABB* and *Credit Suisse* with a high volatility show a higher standard error.
+Figure \@ref(fig:serplot) depicts the standard error of mean return for each stock. It is seen clearly that stocks as *Nestle* and *Swisscom* with a low volatility in table \@ref(tab:rmrvoltab) also have a lower standard error. Likewise, *ABB* and *Credit Suisse* with a high volatility show a higher standard error.
 
 ```{r serplot, fig.cap = 'Standard error of mean return', fig.height = 4}
 mr = mean_returns(r)
@@ -218,50 +218,49 @@ kable(se_volr, col.names = c("Stock", "Standard error [%]"),
 \newpage
 
 # Review of classical markovitz optimization {#markovitz}
-Modern portfolio theory is a theory that deals with the construction of portfolios to maximize the expected return based on a given market risk. Markowitz' portfolio theory shows that efficient risk reduction is only possible if the extent of the correlation of the individual investments is taken into account when putting together the portfolio. Risk reduction through risk diversification is a key finding of the aforementioned portfolio theory. Harry Markowitz pioneered this theory in his article "Portfolio Selection”. The main point is that the risk and return characteristics of an investment should not be considered in isolation, but should be evaluated according to how the investment affects the risk and return of the overall portfolio. It is shown that an investor can construct a portfolio of multiple assets that maximizes returns for a given level of risk. Similarly, an investor can construct a portfolio with the lowest possible risk at a desired level of expected return. Based on statistical measures such as volatility and correlation, the performance of an individual investment is less important than how it affects the portfolio as a whole. [@markovitz]
+Modern portfolio theory deals with the construction of portfolios that maximize return for a given level of risk. Harry Markowitz pioneered this theory in his article *Portfolio Selection*. His portfolio theory shows that efficient risk reduction is only possible if the degree of correlation between the individual assets is considered in the construction of the portfolio. Risk reduction through risk diversification is a central insight of the aforementioned theory. The main point is that risk and return characteristics of an asset should not be considered in isolation but be judged by how the asset affects risk and return of the whole portfolio. It is shown that an investor can construct a portfolio of multiple assets that maximizes return for a given level of risk. Likewise, an investor can construct a portfolio with the lowest possible risk for a desired level of return. [@markovitz]
 
-It is also assumed that the return, volatility and covariance matrix is known. The portfolio volatility is accordingly given as a function of the covariance matrix and the weight vector and it can be minimized as much as desired by sufficient diversification. Also the sum of all weights equals 1. The portfolio weights being searched for are described by the vector $\vec{w} = (w_{1}, \dots, w_{n})$. The weights that are calculated are those which match the portfolio with minimal volatility (variance) to a given expected portfolio return $R_{p}$. This is a linear optimization problem, as well a formulation of the fundamental problem of balancing return and risk. Furthermore, in practice negative weightings are defined as short sales.
-
+It is assumed that return and covariance are known. The portfolio volatility is given as a function of covariance matrix and weights vector and can be minimized by sufficient diversification as shown in eq. \@ref(eq:minvol). The sum of all weights equals one as given in eq. \@ref(eq:constraint1). The weights calculated are those which match the portfolio with a given $R_{p}$ as in eq. \@ref(eq:constraint2). This is a linear optimization problem as well as a formulation of the fundamental problem of balancing return and risk. Negative weightings are defined as short sales.
 
 \begin{equation}
 min \frac{1}{2}\vec{w}^\intercal\Sigma\vec{w}
-  \label{eq:minimum}
+\label{eq:minvol}
 \end{equation}
 
-*With the following two constraints:*
+*With constraints:*
 
 *I.*
 \begin{equation}
 \vec{w}^\intercal\vec{1} = 1
-  \label{eq:constraint1}
+\label{eq:constraint1}
 \end{equation}
 
 *II.*
 \begin{equation}
 \vec{w}^\intercal\vec{R} = R_{p}
-  \label{eq:constraint2}
+\label{eq:constraint2}
 \end{equation}
 
-According to the method of the Lagrange multiplier, the Lagrange function is formed with the factors $\lambda$ and $\epsilon$. 
+With the Lagrange multiplier, the function in eq. \@ref(eq:lagrange) is formed.
 
 \begin{equation}
 L(\vec{w}) = min \frac{1}{2}\vec{w}^\intercal\Sigma\vec{w} - \lambda(\vec{w}^\intercal\vec{R} - R_{p}) - \epsilon(\vec{w}^\intercal\vec{1} - 1)
-  \label{eq:lagrangemw}
+\label{eq:lagrange}
 \end{equation}
 
-The disappearance of the gradient is the necessary condition for a minimum. This is together with the two constraints (\@ref(eq:constraint1), \@ref(eq:constraint2)) an inhomogeneous linear system of equations of the dimension $n + 2$ with $n + 2$ variables. The solution is a known standard problem from linear algebra.
+The gradient is set equal to zero as in eq. \@ref(eq:gradient). Together with the two constraints
+\@ref(eq:constraint1) and \@ref(eq:constraint2), a linear system of equations with $n + 2$ equations and variables is formed.
 
 \begin{equation}
 \nabla_{w}L = \Sigma\vec{w} - \lambda*\vec{R} - \epsilon*\vec{1} = 0
-  \label{eq:gradient}
+\label{eq:gradient}
 \end{equation}
 
-
-<p> *$\vec{w}$ = weight vector* <p>
+<p> *$\vec{w}$ = asset weights* <p>
 <p> *$\Sigma$ = covariance matrix* <p>
 <p> *$\vec{1}$ = all-ones vector* <p>
-<p> *$\vec{R}$ = return* <p>
-<p> *$R_{P}$ = total portfolio return* <p>
+<p> *$\vec{R}$ = mean returns* <p>
+<p> *$R_{p}$ = portfolio return* <p>
 
 \newpage
 
@@ -273,10 +272,10 @@ The minimum variance portfolio, short MVP, describes the portfolio of all possib
 
 \begin{equation}
 \vec{w}_{mvp} = \frac{1}{\vec{1}^\intercal\Sigma^{-1}\vec{1}}*\Sigma^{-1}\vec{1}
-  \label{eq:mvpw}
+\label{eq:mvpw}
 \end{equation}
 
-<p> *$\vec{w}_{mvp}$ = weights* <p>
+<p> *$\vec{w}_{mvp}$ = MVP weights* <p>
 <p> *$\vec{1}$ = all-ones vector* <p>
 <p> *$\Sigma$ = covariance matrix* <p>
 
@@ -295,26 +294,26 @@ The tangency portfolio is often referred to in the literature as the market port
 
 *Capital Market Line:*
 \begin{equation}
-R_{P}(\sigma_{P}) = R_{f} + \frac{R_{tp} - R_{f}}{\sigma_{tp}} * \sigma_{P} = \frac{R_{tp}}{\sigma_{tp}} * \sigma_{P}
-  \label{eq:cml}
+R_{p}(\sigma_{p}) = R_{f} + \frac{R_{tp} - R_{f}}{\sigma_{tp}} * \sigma_{p} = \frac{R_{tp}}{\sigma_{tp}} * \sigma_{p}
+\label{eq:cml}
 \end{equation}
 
-<p> *$R_{P}$ = total portfolio return as a function of $\sigma_{p}$* <p>
-<p> *$R_{f}$ = return of risk-free asset* <p>
-<p> *$R_{tp}$ = return of tangency portfolio* <p>
-<p> *$\sigma_{P}$ = total portfolio volatility* <p>
-<p> *$\sigma_{tp}$ = tangency portfolio volatility* <p>
+<p> *$R_{p}$ = portfolio return as a function of $\sigma_{p}$* <p>
+<p> *$\sigma_{p}$ = portfolio volatility* <p>
+<p> *$R_{tp}$ = TP return* <p>
+<p> *$\sigma_{tp}$ = TP volatility* <p>
+<p> *$R_{f}$ =  risk-free rate of return* <p>
 
 *Tangency Portfolio:*
 \begin{equation}
 \vec{w}_{tp} = \frac{1}{\vec{1}^\intercal\Sigma^{-1}\vec{R}}*\Sigma^{-1}\vec{R}
-  \label{eq:tpw}
+\label{eq:tpw}
 \end{equation}
 
-<p> *$\vec{w}_{tp}$ = weights* <p>
+<p> *$\vec{w}_{tp}$ = TP weights* <p>
 <p> *$\vec{1}$ = all-ones vector* <p>
 <p> *$\Sigma$ = covariance matrix* <p>
-<p> *$\vec{R}$ = return* <p>
+<p> *$\vec{R}$ = mean returns* <p>
 
 
 ```{r tpwrtab}
@@ -330,30 +329,30 @@ The efficient frontier is a set of points that extends in the return-volatility 
 
 \begin{equation}
 \vec{w}_{ef} = \alpha * \vec{w}_{mvp} + (1 - \alpha) * \vec{w}_{tp}
-  \label{eq:efficientf}
+\label{eq:efficientf}
 \end{equation}
 
-<p> *$\vec{w}_{ef}$ = weights* <p>
-<p> *$\alpha$ = scale factor* <p>
-<p> *$\vec{w}_{mvp}$ = weights of minimum variance portfolio* <p>
-<p> *$\vec{w}_{tp}$ = weights of tangency portfolio* <p>
+<p> *$\vec{w}_{ef}$ = efficient frontier weights* <p>
+<p> *$\alpha$ = factor* <p>
+<p> *$\vec{w}_{mvp}$ = MVP weights* <p>
+<p> *$\vec{w}_{tp}$ = TP weights* <p>
 
 \begin{equation}
-R_{P} = \vec{w}^\intercal * \vec{R}
-  \label{eq:cord}
+R_{p} = \vec{w}^\intercal * \vec{R}
+\label{eq:cord}
 \end{equation}
 
-<p> *$R_{P}$ = total portfolio return* <p>
-<p> *$\vec{w}$ = weights* <p>
-<p> *$\vec{R}$ = mean return* <p>
+<p> *$R_{p}$ = portfolio return* <p>
+<p> *$\vec{w}$ = asset weights* <p>
+<p> *$\vec{R}$ = mean returns* <p>
 
 \begin{equation}
-\sigma_{P} = \sqrt{\vec{w}^\intercal\Sigma\vec{w}}    
-  \label{eq:cord2}
+\sigma_{p} = \sqrt{\vec{w}^\intercal\Sigma\vec{w}}    
+\label{eq:cord2}
 \end{equation}
 
-<p> *$\sigma_{P}$ = total portfolio volatility* <p>
-<p> *$\vec{w}$ = weights* <p>
+<p> *$\sigma_{p}$ = portfolio volatility* <p>
+<p> *$\vec{w}$ = asset weights* <p>
 <p> *$\Sigma$ = covariance matrix* <p>
 
 
@@ -390,7 +389,7 @@ The Sharpe ratio measures the performance of an investment which means the retur
   \label{eq:sharperatio}
 \end{equation}
 
-<p> *$R$ = mean return* <p>
+<p> *$R$ = return* <p>
 <p> *$R_{f}$ = risk-free rate of return* <p>
 <p> *$\sigma_{i}$ = volatility of return* <p>
 
@@ -550,7 +549,7 @@ In the case of the Markovitz model, the mean returns and covariance matrix of th
 
 \begin{equation}
 R_{i,w} = \vec{w}^\intercal * \vec{R_i}
-  \label{eq:weightedreturn}
+\label{eq:weightedreturn}
 \end{equation}
 
 <p> *$R_{i,w}$ = weighted return day i* <p>
@@ -600,7 +599,7 @@ The shrunk mean returns are calculated as in eq. \@ref(eq:shrinkr).
 
 \begin{equation}
 \vec{R}(\lambda) = \lambda*\vec{R} + (1 - \lambda) * \vec{\overline{R}}
-  \label{eq:shrinkr}
+\label{eq:shrinkr}
 \end{equation}
 
 <p> *$\vec{R}(\lambda)$ = mean returns as a function of $\lambda$* <p>
@@ -614,14 +613,14 @@ There is an important constraint in mean returns shrinkage. Take the scaling fac
 
 \begin{equation}
 \vec{w}_{tp,sf} = \frac{1}{\vec{1}^\intercal\Sigma^{-1}(\lambda*\vec{R} + (1 - \lambda) * \vec{\overline{R}})}
-  \label{eq:tpwsf}
+\label{eq:tpwsf}
 \end{equation}
 
 It is clear that for some value of $\lambda$ the denominator becomes zero. Computationally, it is already problematic if the denominator is close to zero. When setting the denominator equal to zero, the value of $\lambda$ at the zero crossing can be calculated as in eq. \@ref(eq:lambdazero).
 
 \begin{equation}
 \lambda_0 = \frac{-\vec{1}^\intercal\Sigma^{-1}\vec{\overline{R}}}{\vec{1}^\intercal\Sigma^{-1}\vec{R} - \vec{1}^\intercal\Sigma^{-1}\vec{\overline{R}}}
-  \label{eq:lambdazero}
+\label{eq:lambdazero}
 \end{equation}
 
 If the zero crossing is in the shrinkage interval of $[0, 1]$, this results in extreme asset weights. As the denominator approaches zero, the scaling factor in eq. \@ref(eq:tpwsf) becomes very large which affects the weights. To illustrate this effect, the weights of the five cross validation models from figure \@ref(fig:crossvalidation) are plotted as a function of $\lambda$ in figure \@ref(fig:tpwshrinkbymodel).
@@ -700,7 +699,7 @@ The shrunk correlation matrix is calculated as in eq. \@ref(eq:shrinkcor).
 
 \begin{equation}
 \rho_{i,j}(\epsilon) = I_{i,j} + \epsilon * \tilde{\rho}_{i,j}
-  \label{eq:shrinkcor}
+\label{eq:shrinkcor}
 \end{equation}
 
 <p> *$\rho_{i,j}(\epsilon)$ = correlation matrix at i,j as a function of $\epsilon$* <p>
