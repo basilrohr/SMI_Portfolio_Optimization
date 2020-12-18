@@ -890,7 +890,7 @@ Considered in isolation, the highest increase of Sharpe ratio is achieved with t
 
 With these insights, the best procedure for optimizing multiple assets can be derived. In a first step, one would group by correlation to reduce noise by a significant amount. The second step would be applying shrinkage to mean returns and correlation. Examining the groups implies that returns remain unshrunk, while correlation is shrunk by a factor of 0.95. Although this is not generally valid, overall it can be said that shrinkage offers only a small gain in addition to the previous grouping. But if grouping is omitted, it is possible that a higher Sharpe ratio can be achieved with the shrinkage approach, especially with a high number of assets.
 
-To give the final result, the weights in the after shrinkage column from table \@ref(tab:srcomtab3) obtain the best future performance for a portfolio including all assets in the Swiss Market Index.
+To give the final result, the weights in the after shrinkage column from table \@ref(tab:tpwg2rtab) obtain the best future performance for a portfolio including all assets in the Swiss Market Index.
 
 \newpage
 
