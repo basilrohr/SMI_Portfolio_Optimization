@@ -430,7 +430,7 @@ d_{i,j} = \sqrt{\vec{1}^\intercal(\vec{x}_{i} - \vec{x}_{j})^{2}}
 <p> *$\vec{x}_{j}$ = correlation coefficients of asset j (column in cor. matrix)* <p>
 <p> *$\vec{1}$ = all-ones vector* <p>
 
-When eq. \@ref(eq:euclidean) is applied to the correlation matrix shown in figure \@ref(fig:corplot), it results in a distance matrix with the same dimensions. The algorithm sorts the values of the distance matrix with the complete-linkage method.
+When eq. \@ref(eq:euclidean) is applied to the correlation matrix shown in  figure&nbsp;\@ref(fig:corplot), it results in a distance matrix with the same dimensions. The algorithm sorts the values of the distance matrix with the complete-linkage method.
 
 **Step 1**
 Group the two assets with the smallest distance value.
