@@ -1,14 +1,14 @@
 library(shiny)
+library(R.utils)
 library(ggplot2)
 library(ggcorrplot)
-library(dplyr)
-library(R.utils)
-library(sortable)
-library(DT)
-library(shinycssloaders)
-library(cowplot)
 library(ggrepel)
+library(cowplot)
 library(heatmap3)
+library(dplyr)
+library(DT)
+library(sortable)
+library(shinycssloaders)
 
 sourceDirectory("./Code", modifiedOnly = F)
 
@@ -54,7 +54,15 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                              plotOutput("seReturnPlot", width = "90%"),
                                              dataTableOutput("seVolatility", width = "90%")),
                                     tabPanel("Risk-free rate",
-                                             dataTableOutput("rf", width = "90%")))))),
+                                             dataTableOutput("rf", width = "90%"))))),
+                         fluidRow(
+                           column(12,
+                                  br(),
+                                  tags$div(
+                                    "Note that this Shiny application is an addition to a research paper
+                                    and does not provide all context on its own.", tags$br(),
+                                    "The paper and corresponding code can be found at ",
+                                    tags$a(href="https://github.com/pascalaigner/markovitz", "GitHub.", target="_blank"))))),
                 tabPanel("Groups",
                          fluidRow(
                            column(7,
@@ -116,33 +124,50 @@ ui = navbarPage("Robust Methods of Portfolio Optimization",
                                              plotOutput("distHeatmap", height = "600px")))))),
                 tabPanel("Markovitz Optimization",
                          fluidRow(
+                           column(2,
+                                  strong("Minimum variance portfolio weights"),
+                                  uiOutput("MVPFormula"),
+                                  strong("Tangency portfolio weights"),
+                                  uiOutput("TPFormula"),
+                                  strong("Efficient frontier weights"),
+                                  uiOutput("EFFormula"),
+                                  strong("Portfolio return"),
+                                  uiOutput("pfRFormula"),
+                                  strong("Portfolio volatility"),
+                                  uiOutput("pfVolFormula")),
                            column(6,
                                   plotOutput("effFrontierPlot", height = "600px",
                                              hover = hoverOpts("effFrontierPlotHover",
-                                                               delay = 10, delayType = "debounce")),
-                                  uiOutput("effFrontierPlotHoverInfo"),
+                                                               delay = 10, delayType = "debounce")) %>% withSpinner,
+                                  uiOutput("effFrontierPlotHoverInfo")),
+                           column(4,
                                   tabsetPanel(
-                                    tabPanel("Stocks", br(),
-                                             fluidRow(
-                                               column(6, plotOutput("sdMVPWeightsPlot") %>% withSpinner),
-                                               column(6, plotOutput("sdTPWeightsPlot") %>% withSpinner))),
-                                    tabPanel("Groups", br(),
-                                             fluidRow(
-                                               column(6, plotOutput("sdMVPGroupsWeightsPlot") %>% withSpinner),
-                                               column(6, plotOutput("sdTPGroupsWeightsPlot") %>% withSpinner))))),
-                           column(4,
-                                  plotOutput("effFrontierBootstrapPlot") %>% withSpinner,
-                                  actionButton("bootstrapButton", "Redo bootstrap")))),
-                tabPanel("Sharpe ratios",
+                                    tabPanel("MVP weights",
+                                             dataTableOutput("MVPWeights", width = "90%") %>% withSpinner,
+                                             br(),
+                                             dataTableOutput("MVPWeightsGroups", width = "90%")),
+                                    tabPanel("TP weights",
+                                             dataTableOutput("TPWeights", width = "90%") %>% withSpinner,
+                                             br(),
+                                             dataTableOutput("TPWeightsGroups", width = "90%")),
+                                    tabPanel("Bootstrap", br(),
+                                             plotOutput("effFrontierBootstrapPlot", width = "90%") %>% withSpinner,
+                                             actionButton("bootstrapButton", "Redo bootstrap"))
+                                    # tabPanel("Stocks", br(),
+                                    #          plotOutput("sdMVPWeightsPlot", width = "90%") %>% withSpinner,
+                                    #          plotOutput("sdTPWeightsPlot", width = "90%") %>% withSpinner),
+                                    # tabPanel("Groups", br(),
+                                    #          plotOutput("sdMVPGroupsWeightsPlot", width = "90%") %>% withSpinner,
+                                    #          plotOutput("sdTPGroupsWeightsPlot", width = "90%") %>% withSpinner)
+                                    )))),
+                tabPanel("Sharpe ratio",
                          fluidRow(
                            column(4,
-                                  plotOutput("returnShrinking")),
+                                  dataTableOutput("SRComp") %>% withSpinner),
                            column(4,
-                                  plotOutput("correlationShrinking")))),
-                tabPanel("About the authors",
-                         fluidRow(
-                           column(12,
-                                  img(src=paste0("Logo_ZHAW.jpg"), height = "200px")))))
+                                  plotOutput("returnShrinking") %>% withSpinner),
+                           column(4,
+                                  plotOutput("correlationShrinking") %>% withSpinner))))
 
 server = function(input, output, session) {
   
@@ -307,6 +332,26 @@ server = function(input, output, session) {
              col = colorRampPalette(c("orangered4", "orangered2", "honeydew"))(1000))
   })
   
+  output$MVPFormula = renderUI({
+    withMathJax(helpText("$$\\vec{w}_{mvp} = \\frac{1}{\\vec{1}^\\intercal\\Sigma^{-1}\\vec{1}}*\\Sigma^{-1}\\vec{1}$$"))
+  })
+  
+  output$TPFormula = renderUI({
+    withMathJax(helpText("$$\\vec{w}_{tp} = \\frac{1}{\\vec{1}^\\intercal\\Sigma^{-1}\\vec{R}}*\\Sigma^{-1}\\vec{R}$$"))
+  })
+  
+  output$EFFormula = renderUI({
+    withMathJax(helpText("$$\\vec{w}_{ef} = \\alpha * \\vec{w}_{mvp} + (1 - \\alpha) * \\vec{w}_{tp}$$"))
+  })
+  
+  output$pfRFormula = renderUI({
+    withMathJax(helpText("$$R_{p} = \\vec{w}^\\intercal * \\vec{R}$$"))
+  })
+  
+  output$pfVolFormula = renderUI({
+    withMathJax(helpText("$$\\sigma_{p} = \\sqrt{\\vec{w}^\\intercal\\Sigma\\vec{w}}$$"))
+  })
+  
   ef_react = reactive({
     r = r_react(); gr = gr_react()
     cm = cov_mat(r); mr = mean_returns(r)
@@ -343,13 +388,13 @@ server = function(input, output, session) {
     if (input$intervalButton == "1mo") {fxlim = 5; fylim = 15}
     ggplot() +
       geom_path(aes(x = efp_r[,1], y = efp_r[,2]), alpha = 0.5) +
-      geom_point(aes(x = mvp_point(efp_r)[1], y = mvp_point(efp_r)[2], color = "MVP"), size = 2) +
-      geom_point(aes(x = tp_point(efp_r)[1], y = tp_point(efp_r)[2], color = "TP"), size = 2) +
-      geom_text(aes(x = tp_point(efp_r)[1], y = tp_point(efp_r)[2], label = "SMI"),
+      geom_point(aes(x = mvp_point(efp_r)[1], y = mvp_point(efp_r)[2]), color = "cornflowerblue", size = 2) +
+      geom_point(aes(x = tp_point(efp_r)[1], y = tp_point(efp_r)[2]), color = "orangered3", size = 2) +
+      geom_text(aes(x = tp_point(efp_r)[1], y = tp_point(efp_r)[2], label = "SMI constituents"),
                 vjust = -2) +
       geom_path(data = efp_gr, aes(x = efp_gr[,1], y = efp_gr[,2]), alpha = 0.5) +
-      geom_point(aes(x = mvp_point(efp_gr)[1], y = mvp_point(efp_gr)[2], color = "MVP"), size = 2) +
-      geom_point(aes(x = tp_point(efp_gr)[1], y = tp_point(efp_gr)[2], color = "TP"), size = 2) +
+      geom_point(aes(x = mvp_point(efp_gr)[1], y = mvp_point(efp_gr)[2]), color = "cornflowerblue", size = 2) +
+      geom_point(aes(x = tp_point(efp_gr)[1], y = tp_point(efp_gr)[2]), color = "orangered3", size = 2) +
       geom_text(aes(x = tp_point(efp_gr)[1], y = tp_point(efp_gr)[2], label = "Groups"),
                 vjust = -2) +
       geom_point(data = ef_react(), aes(x = vol, y = mr, color = g), key_glyph = draw_key_point) +
@@ -377,6 +422,38 @@ server = function(input, output, session) {
       p(HTML(paste0(point$n, "<br/>Vol = ", round(point$vol, 3), "%", "<br/>R = ", round(point$mr, 3), "%"))))
   })
   
+  output$MVPWeights = renderDataTable({
+    r = r_react()
+    mvpw_r = data.frame(colnames(r[-1]), mvp_weights(cov_mat(r)))
+    mvpw_r %>% datatable(colnames = c("Stock", "Weight"), rownames = NULL,
+                         options = list(dom = "tip", pageLength = 10)) %>%
+      formatRound(columns = 2, digits = 3)
+  })
+  
+  output$MVPWeightsGroups = renderDataTable({
+    gr = gr_react()
+    mvpw_gr = data.frame(colnames(gr[-1]), mvp_weights(cov_mat(gr)))
+    mvpw_gr %>% datatable(colnames = c("Group", "Weight"), rownames = NULL,
+                          options = list(dom = "tip", pageLength = 4)) %>%
+      formatRound(columns = 2, digits = 3)
+  })
+  
+  output$TPWeights = renderDataTable({
+    r = r_react()
+    tpw_r = data.frame(colnames(r[-1]), tp_weights(cov_mat(r), mean_returns(r)))
+    tpw_r %>% datatable(colnames = c("Stock","Weight"), rownames = NULL,
+                        options = list(dom = "tip", pageLength = 10)) %>%
+      formatRound(columns = 2, digits = 3)
+  })
+  
+  output$TPWeightsGroups = renderDataTable({
+    gr = gr_react()
+    tpw_gr = data.frame(colnames(gr[-1]), tp_weights(cov_mat(gr), mean_returns(gr)))
+    tpw_gr %>% datatable(colnames = c("Group","Weight"), rownames = NULL,
+                         options = list(dom = "tip", pageLength = 4)) %>%
+      formatRound(columns = 2, digits = 3)
+  })
+  
   bootstrap_r_react = reactive({
     input$bootstrapButton
     bootstrap(r_react())
@@ -385,6 +462,16 @@ server = function(input, output, session) {
   bootstrap_gr_react = reactive({
     input$bootstrapButton
     bootstrap(gr_react())
+  })
+  
+  output$effFrontierBootstrapPlot = renderPlot({
+    if (input$intervalButton == "1d") {fxlim = 1; fylim = 1}
+    if (input$intervalButton == "1wk") {fxlim = 2; fylim = 4}
+    if (input$intervalButton == "1mo") {fxlim = 3; fylim = 15}
+    suppressMessages(
+      suppressWarnings(print(
+        gg_bootstrap_ef(bootstrap_r_react()$samples_ef_points, fxlim, fylim, 1.5,
+                        "SMI constituents bootstrap samples efficient frontier", custom_theme_shiny))))
   })
   
   sdMVPWeightsPlot_react = reactive({
@@ -429,16 +516,6 @@ server = function(input, output, session) {
     ggdraw(sdTPWeightsPlot_react()[[2]])
   })
   
-  output$effFrontierBootstrapPlot = renderPlot({
-    if (input$intervalButton == "1d") {fxlim = 1; fylim = 1}
-    if (input$intervalButton == "1wk") {fxlim = 2; fylim = 4}
-    if (input$intervalButton == "1mo") {fxlim = 3; fylim = 15}
-    suppressMessages(
-      suppressWarnings(print(
-        gg_bootstrap_ef(bootstrap_r_react()$samples_ef_points, fxlim, fylim, 1.5,
-                        "Bootstrap efficient frontiers", custom_theme_shiny))))
-  })
-  
   cross_validation_sets_r_react = reactive({
     cross_validation_sets(r_react())
   })
@@ -447,12 +524,33 @@ server = function(input, output, session) {
     cross_validation_sets(gr_react())
   })
   
+  output$SRComp = renderDataTable({
+    r = r_react()
+    gr = gr_react()
+    is_r = in_sample(r, interval = input$intervalButton)
+    is_gr = in_sample(gr, interval = input$intervalButton)
+    sets_r = cross_validation_sets_r_react()
+    sets_gr = cross_validation_sets_gr_react()
+    os_r = out_of_sample(sets_r, interval = input$intervalButton)
+    os_gr = out_of_sample(sets_gr, interval = input$intervalButton)
+    grid = expand.grid(seq(0, 1, by = 0.05), seq(0, 1, by = 0.05))
+    os_r_sr_scor = unlist(out_of_sample_vec(sets_r, grid[,1], grid[,2], interval = input$intervalButton))
+    os_gr_sr_scor = unlist(out_of_sample_vec(sets_gr, grid[,1], grid[,2], interval = input$intervalButton))
+    srcomtab = data.frame(c(is_r, is_gr),
+                          c(os_r, os_gr),
+                          c(max(os_r_sr_scor), max(os_gr_sr_scor)),
+                          row.names = c("SMI constituents", "Groups"))
+    srcomtab %>% datatable(colnames = c("IS", "OS", "OS shrinkage"), rownames = NULL,
+                           options = list(dom = "t")) %>%
+      formatRound(columns = 1:3, digits = 3)
+  })
+  
   output$returnShrinking = renderPlot({
     os_r_sr = unlist(out_of_sample_vec(cross_validation_sets_r_react(), seq(0, 1, 0.01),
                                        interval = input$intervalButton))
     os_gr_sr = unlist(out_of_sample_vec(cross_validation_sets_gr_react(), seq(0, 1, 0.01),
                                         interval = input$intervalButton))
-    gg_shrink2D(list(os_r_sr, os_gr_sr), c("SMI", "Groups"), "Return",
+    gg_shrink2D(list(os_r_sr, os_gr_sr), c("SMI constituents", "Groups"), "Return",
                 "Sharpe ratio as a function of return shrinkage factor", custom_theme_shiny)
   })
   
@@ -461,7 +559,7 @@ server = function(input, output, session) {
                                          interval = input$intervalButton))
     os_gr_scor = unlist(out_of_sample_vec(cross_validation_sets_gr_react(), 1, seq(0, 1, 0.01),
                                           interval = input$intervalButton))
-    gg_shrink2D(list(os_r_scor, os_gr_scor), c("SMI", "Groups"), "Correlation",
+    gg_shrink2D(list(os_r_scor, os_gr_scor), c("SMI constituents", "Groups"), "Correlation",
                 "Sharpe ratio as a function of correlation shrinkage factor", custom_theme_shiny)
   })
   
