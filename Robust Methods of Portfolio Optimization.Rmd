@@ -41,13 +41,13 @@ R.utils::sourceDirectory("./Code", modifiedOnly = F)
 ```
 
 # Introduction
-In 1952, the economist Harry Markovitz pioneered modern portfolio theory. He developed a mathematical model to calculate efficient portfolios for given return and risk. The key point when selecting assets is, that not only their individual performance should be considered, but also how their correlation affects the portfolio. The input for Markovitz' optimization is historical data, which is subject to estimation errors. These lead to the creation of portfolios which perform well backtesting but poorly in the future.
+In 1952, the economist Harry Markovitz pioneered modern portfolio theory. He developed a mathematical model to calculate efficient portfolios for given return and risk. The key point when selecting assets is, that not only their individual performance should be considered, but also how their correlation affects the portfolio. The input for Markovitz' optimization is historical data, which is subject to estimation errors. These lead to the creation of portfolios which perform well in backtesting but poorly in the future.
 
 The fundamental question is how to create a model from historical data that delivers robust results on independent data. In this paper, the data used are the return time series of all assets included in the Swiss Market Index from the past 20 years. To give insights on which parameters further investigation should be conducted, the standard error of mean returns and volatilities are calculated. Afterwards, a short review of Markovitz' portfolio theory, mainly the minimum variance and tangency portfolio, is presented.
 
 Several approaches are investigated to achieve a robust optimization. The first method described is asset grouping, where a qualitative and a quantitative approach are applied and compared. Followed by a description of bootstrapping, which is used to determine the standard deviation of the asset weights. To measure the performance on independent data, cross validation is applied to obtain an out-of-sample time series. As a final approach, shrinkage of mean returns and correlations is discussed.
 
-These methods are applied to the historical data and their performance in terms of Sharpe ratio is compared. The in- and out-of-sample performances are evaluated and optimal shrinkage factors are identified. At the end of this paper, the aim is to provide an approach to create a robust portfolio optimization for all assets included in the Swiss Market Index.
+These methods are applied to the historical data and their performance in terms of Sharpe ratio is compared. The in- and out-of-sample performances are evaluated and the optimal shrinkage factors are identified. At the end of this paper, the aim is to provide an approach to create a robust portfolio optimization for all assets included in the Swiss Market Index.
 
 \newpage
 
@@ -55,7 +55,7 @@ These methods are applied to the historical data and their performance in terms 
 In this paper, daily historical data from the Swiss Market Index, short SMI, and its constituents is used. The data stems from the period `r format(df[,1][1], "%d.%m.%Y")` to `r format(df[,1][nrow(df)], "%d.%m.%Y")`. The SMI is the most important stock index in Switzerland and contains the 20 largest companies traded on the Swiss stock exchange. It covers approximately 80% of the total market capitalization of the Swiss stock market. The SMI is also a price index which means that dividends are not included. It is reviewed twice a year and, if necessary, reassembled. In this case, the composition per end of 2018 is used. The reason for the 2018 composition is that enough historical data for all companies is available. The key numbers are shown in table \@ref(tab:rmrvoltab). [@yahoo], [@six]
 
 ## Logarithmic return
-The reason for calculating logarithmic returns is that stock returns are generally assumed to be log-normally and not normally distributed. In later calculations, the risk-free rate of return has to be subtracted from the return and for the sake of simplicity, this is already done from the start as illustrated in eq. \@ref(eq:logr). For the risk-free rate $R_{f}$ shown in table \@ref(tab:annrftab), the LIBOR is commonly used. Due to several negative incidents in the past, the Swiss Average Rate Overnight (SARON) is used for the time period 2014 to 2020. The SARON is based on daily transactions and is therefore considerably more transparent compared to the LIBOR. [@saron], [@libor]
+The reason for calculating logarithmic returns is that stock returns are generally assumed to be log-normally and not normally distributed. In later calculations, the risk-free rate of return has to be subtracted from the return. For the sake of simplicity, this is already done from the start as illustrated in eq. \@ref(eq:logr). The LIBOR is commonly used, for the risk-free rate $R_{f}$ shown in table \@ref(tab:annrftab). Due to several negative incidents in the past, the Swiss Average Rate Overnight (SARON) is used for the time period 2014 to 2020. The SARON is based on daily transactions and is therefore considerably more transparent than the LIBOR. [@saron], [@libor]
 
 \begin{equation}
 R = R_{ln} - R_{f} = ln\left(\frac{x_{t}}{x_{t-1}}\right) - R_{f}
@@ -77,7 +77,7 @@ kable(ann_rf, col.names = c("Year", "Rate [%]"),
 \newpage
 
 ## Volatility (standard deviation)
-The volatility in eq. \@ref(eq:vol) describes the risk of an asset and is a statistical measure of the dispersion of its returns. In general, the higher the volatility, the riskier the asset.
+The volatility in eq. \@ref(eq:vol) describes the risk of an asset and is a statistical measurement of the dispersion of its returns. In general, the higher the volatility, the riskier the asset.
 
 \begin{equation}
 \sigma = \sqrt{\frac{\sum_{i = 1}^{n}(R_{i} - \overline{R})^2}{n-1}}
@@ -133,7 +133,7 @@ suppressWarnings(suppressMessages(print(gg_cor(cor_mat(r), 2, 8, theme = custom_
 ## Statistical key numbers
 
 ### t-Test
-A t-test for the correlation as in eq. \@ref(eq:ttest) is conducted to investigate if the true correlation is significantly different from zero.
+A t-test for the correlation as in eq. \@ref(eq:ttest) is conducted to investigate if the true correlation is significantly different to zero.
 
 \begin{equation}
 t = \frac{\rho_{i,j}*\sqrt{n-2}}{\sqrt{1-\rho_{i,j}^2}}
@@ -144,7 +144,7 @@ t = \frac{\rho_{i,j}*\sqrt{n-2}}{\sqrt{1-\rho_{i,j}^2}}
 <p> *$\rho_{i,j}$ = correlation between returns of assets i and j* <p>
 <p> *$n$ = sample size* <p>
 
-The null hypothesis $H_{0}$ says that the correlation is not significantly different from zero and the alternative hypothesis $H_{1}$ that it is significantly different from zero.
+The null hypothesis $H_{0}$ says that the correlation is not significantly different to zero and the alternative hypothesis $H_{1}$ that it is significantly different to zero.
 
 <p> *$H_{0}:$ $\rho = 0$* <p>
 <p> *$H_{1}:$ $\rho \neq 0$* <p>
@@ -162,7 +162,7 @@ t = \frac{`r min_cor`*\sqrt{`r nrow(r)`-2}}{\sqrt{1-`r min_cor`^2}} = `r tstatis
 \label{eq:tteststatistic}
 \end{equation}
 
-With the help of the t-distribution in figure \@ref(fig:tdist) it is seen clearly that a value of approximately 2 is already below the level of $\alpha = 0.05$. Therefore, with the obtained test statistic value of `r tstatistic` which is far to the right in figure \@ref(fig:tdist), the p-value is almost zero. Consequentially, the null hypothesis can be rejected, meaning that the true correlation is significantly different from zero.
+With the help of the t-distribution in figure \@ref(fig:tdist) one can clearly see that a value of approximately 2 is already below the level of $\alpha = 0.05$. Therefore, with the obtained test statistic value of `r tstatistic` which is on the far right in figure \@ref(fig:tdist), the p-value is almost zero. Consequentially, the null hypothesis can be rejected, meaning that the true correlation is significantly different to zero.
 
 ```{r tdist, fig.cap = paste0("t-distribution with ", nrow(r), " $-$ 2 degrees of freedom"), fig.height = 3}
 seq = seq(-5, 5, 0.01)
@@ -174,7 +174,7 @@ ggplot() +
 ```
 
 ### Standard error of mean return
-The standard deviation of the sampling distribution is known as the standard error and it provides a statement about the quality of the estimated parameter. The more observations there are, the smaller the standard error is and the more accurately the unknown parameter can be estimated. The standard error of mean return is shown in eq. \@ref(eq:semr).
+The standard deviation of the sampling distribution is known as the standard error and it provides a statement about the quality of the estimated parameter. The more observations there are, the smaller the standard error is and the more accurately the unknown parameter can be estimated. The standard error of the mean return is shown in eq. \@ref(eq:semr).
 
 \begin{equation}
 \sigma_{\overline{R}} = \frac{\sigma}{\sqrt{n}}
@@ -187,7 +187,7 @@ The standard deviation of the sampling distribution is known as the standard err
 
 \newpage
 
-Figure \@ref(fig:serplot) depicts the standard error of mean return for each stock. It is seen clearly that stocks such as *Nestle* and *Swisscom* with a low volatility in table \@ref(tab:rmrvoltab) also have a lower standard error. Likewise, *ABB* and *Credit Suisse* with a high volatility show a higher standard error.
+Figure \@ref(fig:serplot) depicts the standard error of the mean return for each stock. It is seen clearly that stocks such as *Nestle* and *Swisscom* with a low volatility in table \@ref(tab:rmrvoltab) also have a lower standard error. Likewise, *ABB* and *Credit Suisse* with a high volatility show a higher standard error.
 
 ```{r serplot, fig.cap = "Standard error of mean return", fig.height = 4}
 mr = mean_returns(r)
@@ -292,7 +292,7 @@ kable(mvpw_r, col.names = c("Stock", "Weight"), caption = "Minimum variance port
 ## Tangency portfolio 
 The tangency portfolio, short TP, results from the capital market line and efficient frontier, which will be discussed in more detail in chapter \@ref(ef). The capital market line is an important component of the capital asset pricing model (CAPM). The slope of the capital market line indicates how much more return is expected per additional risk. The optimal ratio is found where the capital market line is tangential to the efficient frontier, hence the tangency portfolio. It is often referred to in the literature as market portfolio. [@sharpe]
 
-The capital market line is shown in eq. \@ref(eq:cml) and the tangency portfolio in eq. \@ref(eq:tpw) with its corresponding weights in table \@ref(tab:tpwrtab). Note that in this paper the risk-free rate $R_f$ is already deducted from the returns directly as shown in eq. \@ref(eq:logr). Therefore, it can be set to zero in all further calculations.
+The capital market line is shown in eq. \@ref(eq:cml) and the tangency portfolio in eq. \@ref(eq:tpw) with its corresponding weights in table \@ref(tab:tpwrtab). Note that in this paper the risk-free rate $R_f$ is already deducted from the returns directly as shown in eq. \@ref(eq:logr). Therefore, it can be set to zero for all further calculations.
 
 *Capital market line:*
 \begin{equation}
@@ -326,7 +326,7 @@ kable(tpw_r, col.names = c("Stock", "Weight"), caption = "Tangency portfolio wei
 \newpage
 
 ## Efficient Frontier {#ef}
-The efficient frontier is a set of points that extends in the return-volatility diagram illustrated in figure \@ref(fig:refplot) between the MVP at the left edge of the reachable area and the TP. All portfolio above the MVP on this line are efficient because they have the highest possible return at a defined level of volatility.
+The efficient frontier is a set of points that extends in the return-volatility diagram illustrated in figure \@ref(fig:refplot) between the MVP at the left edge of the reachable area and the TP. All portfolios above the MVP along this line are efficient because they have the highest possible return at a defined level of volatility.
 
 \begin{equation}
 \vec{w}_{ef} = \alpha * \vec{w}_{mvp} + (1 - \alpha) * \vec{w}_{tp}
@@ -376,12 +376,12 @@ suppressMessages(
       custom_theme_markdown)))
 ```
 
-In figure \@ref(fig:refplot) is visible that the efficient frontier covers the range in which all possible portfolios are located. The TP achieves a significantly higher return than the stocks individually. The MVP is at the very left of the achievable area of the efficient frontier which means that there is no portfolio with a lower volatility.
+In figure \@ref(fig:refplot) one can see that the efficient frontier covers the range in which all possible portfolios are located. The TP achieves a significantly higher return than the stocks individually. The MVP is at the very left of the achievable area of the efficient frontier which means that there is no portfolio with a lower volatility.
 
 \newpage
 
 ## Sharpe ratio {#sharpe}
-The Sharpe ratio measures the performance of an asset, meaning its return compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the asset. In practice, the Sharpe ratio is not only positively received. In this paper however, the Sharpe ratio is relied on because it is a simple performance indicator. It is calculated by the return in excess of the risk-free rate per unit of volatility. As daily historical data is used in this paper, the Sharpe ratio is annualized by multiplication with $\sqrt{252}$. [@sharpe]
+The Sharpe ratio measures the performance of an asset, meaning its return compared to its risk. Generally, the greater the value of the Sharpe ratio, the more attractive the asset. In practice, the Sharpe ratio is not only positively received. In this paper however, the Sharpe ratio is relied on because it is a simple performance indicator. It is calculated by the return in excess of the risk-free rate per unit of volatility. As daily historical data is used for this paper, the Sharpe ratio is annualized by a multiplication with $\sqrt{252}$. [@sharpe]
 
 \begin{equation}
 Sharpe ratio = \frac{R - R_{f}}{\sigma} = \frac{R}{\sigma}
@@ -395,7 +395,7 @@ Sharpe ratio = \frac{R - R_{f}}{\sigma} = \frac{R}{\sigma}
 # Methodology {#methodology}
 
 ## Grouping {#grouping}
-Grouping of assets is an approach to reduce the noise given by individual assets and therefore increase their performance. A qualitative and a mathematical procedure are applied.
+Grouping of assets is an approach used to reduce the noise given by individual assets and therefore increase their performance. A qualitative and a mathematical procedure are applied.
 
 ### Grouping by industry
 An intuitive approach is grouping stocks by industry. In the case of the SMI, stocks can be grouped as follows:
@@ -405,7 +405,7 @@ An intuitive approach is grouping stocks by industry. In the case of the SMI, st
 <p> **Industrial:** *ABB, Geberit, Givaudan, LafargeHolcim, SGS* <p>
 <p> **Pharma:** *Lonza, Novartis, Roche, Sika* <p>
 
-To obtain the group returns, the mean value of the daily returns of all stocks within the group is calculated. Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. From this time series, the mean returns, volatility and correlation can be calculated as shown in table \@ref(tab:grmrvoltab).
+To obtain the group returns, the mean value of the daily returns of all stocks within the group is calculated. Therefore, the group returns are a time series equaling the length of the historical data and all stocks within the group are weighted equally. Using this time series, the mean returns, volatility and correlation can be calculated as shown in table \@ref(tab:grmrvoltab).
 
 ```{r grmrvoltab}
 gr = groups_returns(returns, groups)
@@ -442,7 +442,7 @@ For distances between groups, the largest possible distance is taken from the di
 $d\langle \{i,j\}, \{k,l\} \rangle = max(d\langle i, k \rangle, d\langle i, l \rangle, d\langle j, k \rangle, d\langle j, l \rangle)$.
 
 **Step 3**
-Repeat the previous steps with the newly created distance matrix until only two groups remain. The outcome is a dendrogram which is also part of the illustration in figure \@ref(fig:distheatmap). The first step of grouping is the connection which is drawn lowest. The color scaling indicates the different distances. [@stdm]
+Repeat the previous two steps with the newly created distance matrix until only two groups remain. The outcome is a dendrogram which is also part of the illustration in figure \@ref(fig:distheatmap). The first step of grouping is the connection which is drawn lowest. The color scaling indicates the different distances. [@stdm]
 
 ```{r distheatmap, fig.cap = "Stocks grouped by Euclidean distance of correlation", fig.height = 7}
 cor = cor_mat(returns)
@@ -458,7 +458,7 @@ heatmap3(as.matrix(dist(cor)), method = "complete", symm = T, margins = c(7, 7),
 
 Using the algorithm described, the 20 stocks can now be divided into three groups. The dendrogram in figure \@ref(fig:distheatmap) shows the allocation. This division makes mathematical sense but is hardly ever used in practice. First, the groups are different in terms of size. *Group 1* consists of eleven stocks but *Group 3* of only three. This means that with equal weights within the group, the stocks in *Group 3* are weighted higher overall than those in *Group 1*. Second, one would have to explain to an investor why stocks from different industries are grouped together. For example, *ABB* is grouped with *UBS* but not with *Geberit* which is intuitively contradictory.
 
-Figure \@ref(fig:gefplot) gives some visual intuition. The groups contain stocks with similar volatility and return, so it makes sense that *ABB* is grouped with *UBS* because and not with *Geberit*.
+Figure \@ref(fig:gefplot) gives some visual intuition. The groups contain stocks with similar volatility and return, so it makes sense that *ABB* is grouped with *UBS* and not with *Geberit*.
 
 ```{r gefplot, fig.cap = " Return-volatility diagram with efficient frontier of groups by correlation", fig.height = 5}
 g2r = groups_returns(r, groups2)
@@ -532,7 +532,7 @@ suppressMessages(suppressWarnings(print(gg_bootstrap_ef(bs_r$samples_ef_points,
 \newpage
 
 ## Cross validation {#crossvalidation}
-Cross validation is a model validation technique for assessing how a model will generalize to an independent data set, i.e., in another time period. The data set is split into a training set used to train the model and a test set to evaluate its performance. This procedure is replicated multiple times until all data was once in the test set.
+Cross validation is a model validation technique for assessing how a model will generalize to an independent data set, i.e., in another time period. The data set is split into a training set used to train the model and a test set to evaluate its performance. This procedure is replicated multiple times until all the data was once used in the test set.
 
 In this case, the historical data is split into five sections and consequentially five models are trained as depicted in figure \@ref(fig:crossvalidation). The gray sections are the training sets and the red ones the test sets.
 
@@ -657,7 +657,7 @@ gg5 = gg5 + labs(x = expression(lambda), y = "Weight", title = "Model 5")
 ggarrange(gg1, gg2, gg3, gg4, gg5)
 ```
 
-Model three in figure \@ref(fig:tpwshrinkbymodel) shows such extreme asset weights ranging from approximately -20 to 20. The asymptote is visualized as a vertical red line. It is not optimal when such extreme weights are applied to returns as done in the cross validation. This can negatively influence further calculations and lead to undesired results. The other four models do show asset weights in a normal scale.
+Model three in figure \@ref(fig:tpwshrinkbymodel) shows such extreme asset weights ranging from approximately -20 to 20. The asymptote is visualized as a vertical red line. It is not optimal when such extreme weights are applied to returns as done in the cross validation. This can negatively influence further calculations and lead to undesired results. The other four models show asset weights in a normal scale.
 
 The scaling factor as a function of $\lambda$ is shown in figure \@ref(fig:tpwsfshrinkbymodel).
 
@@ -760,9 +760,9 @@ gg_errorbar(colnames(gr[-1]), tpw_gr, tpw_sd_gr, c(mintp, maxtp), "Weights",
             theme = custom_theme_markdown)
 ```
 
-The same conclusion can be drawn for the grouped stocks as for the individual stocks in chapter \@ref(res1). The TP weights standard deviation is also much larger than the one of the MVP.
+The same conclusion can be drawn for the grouped stocks and the individual stocks in chapter \@ref(res1). The TP weights standard deviation is also much larger than the one of the MVP.
 
-In table \@ref(tab:srcomtab2), the in- and out-of-sample Sharpe ratios for both groups is shown.
+In table \@ref(tab:srcomtab2), the in- and out-of-sample Sharpe ratios for both groups are shown.
 
 ```{r srcomtab2}
 srcomtab2 = data.frame(c(is_gr, is_g2r),
@@ -861,9 +861,9 @@ kable(tpw_r, col.names = c("Stock", "Before shrinkage", "After shrinkage"),
 
 \newpage
 
-When comparing the two sets of weights, a significant difference can be seen. Overall, the weights after shrinkage are closer around zero as they are before. This is caused by the fact that the returns are taken into account only 5%. Therefore, the weights are much closer to the MVP weights as seen in table \@ref(tab:mvpwrtab) in chapter \@ref(markovitz).
+When comparing the two sets of weights, a significant difference can be seen. Overall, the weights after shrinkage are closer around zero than they were before. This is caused by the fact that the returns are taken into account only 5%. Therefore, the weights are much closer to the MVP weights as seen in table \@ref(tab:mvpwrtab) in chapter \@ref(markovitz).
 
-Compared to the weights of the individual stocks already shown in table \@ref(tab:tpwrtab), the weights of the groups in table \@ref(tab:srcomtab2) and \@ref(tab:srcomtab3) are significantly higher or lower. To recall, the weights must sum up to one according to constraint \@ref(eq:constraint1). If the groups perform differently, like it is the case for *Finance* (negative mean return) and *Pharma* (positive mean return) in the groups by industry, the weights drift apart. This becomes even more prominent in the groups by correlation between *Group 1* and *Group 3*. As mentioned in chapter \@ref(markovitz), negative weights correspond to short sales. The difference between the weights before and after shrinkage is insignificant. This is attributed to the shrinkage factor of the mean returns being one and the one for the correlation being 0.95. So there is almost no shrinkage applied.
+Compared to the weights of the individual stocks already shown in table \@ref(tab:tpwrtab), the weights of the groups in table \@ref(tab:srcomtab2) and \@ref(tab:srcomtab3) are significantly higher or lower. To recall, the weights must summed up to one according to constraint \@ref(eq:constraint1). If the groups perform differently, like it is the case for *Finance* (negative mean return) and *Pharma* (positive mean return) in the groups by industry, the weights drift apart. This becomes even more prominent in the groups by correlation between *Group 1* and *Group 3*. As mentioned in chapter \@ref(markovitz), negative weights correspond to short sales. The difference between the weights before and after shrinkage is insignificant. This is attributed to the shrinkage factor of the mean returns being one and the one for the correlation being 0.95. So there is almost no shrinkage applied.
 
 ```{r tpwgrtab}
 gmr = mean_returns(gr)
@@ -886,7 +886,7 @@ kable(tpw_g2r_df, col.names = c("Group", "Before shrinkage", "After shrinkage"),
 \newpage
 
 # Conclusion
-Considered in isolation, the highest increase of Sharpe ratio is achieved with the grouping method by correlation. Nevertheless, the highest Sharpe ratio is obtained with a combination of grouping and shrinkage. It should be noted that when one method is applied after the other, its influence on the Sharpe ratio is significantly lower. This has to do with the fact that the noise can only be reduced to a certain degree. In this case, the first method which is grouping, has a larger increase in Sharpe ratio, while shrinkage, as the second method, has only a small additional increase. However, it is well apparent that for the SMI constituents where only shrinkage is applied, the rise in Sharpe ratio is similarly high compared with grouping as the first method.
+Considered in isolation, the highest increase of Sharpe ratio is achieved with the grouping method by correlation. However, the highest Sharpe ratio is obtained with a combination of grouping and shrinkage. It should be noted that when one method is applied after the other, its influence on the Sharpe ratio is significantly lower. This has to do with the fact that the noise can only be reduced to a certain degree. In this case, the first method which is grouping, has a larger increase in Sharpe ratio, while shrinkage, as the second method, has only a small additional increase. However, it is well apparent that for the SMI constituents where only shrinkage is applied, the rise in Sharpe ratio is similarly high compared with grouping as the first method.
 
 With these insights, the best procedure for optimizing multiple assets can be derived. In a first step, one would group by correlation to reduce noise by a significant amount. The second step would be applying shrinkage to mean returns and correlation. Examining the groups implies that returns remain unshrunk, while correlation is shrunk by a factor of 0.95. Although this is not generally valid, overall it can be said that shrinkage offers only a small gain in addition to the previous grouping. But if grouping is omitted, it is possible that a higher Sharpe ratio can be achieved with the shrinkage approach, especially with a high number of assets.
 
