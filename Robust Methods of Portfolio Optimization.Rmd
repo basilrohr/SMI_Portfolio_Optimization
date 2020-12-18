@@ -222,7 +222,7 @@ kable(se_volr, col.names = c("Stock", "Standard error [%]"),
 # Review of classical markovitz optimization {#markovitz}
 Modern portfolio theory deals with the construction of portfolios that maximize return for a given level of risk. Harry Markowitz pioneered this theory in his article *Portfolio Selection*. His portfolio theory shows that efficient risk reduction is only possible if the degree of correlation between the individual assets is considered in the construction of the portfolio. Risk reduction through risk diversification is a central insight of the aforementioned theory. The main point is that risk and return characteristics of an asset should not be considered in isolation but be judged by how the asset affects risk and return of the whole portfolio. It is shown that an investor can construct a portfolio of multiple assets that maximizes return for a given level of risk. Likewise, an investor can construct a portfolio with the lowest possible risk for a desired level of return. [@markovitz]
 
-It is assumed that return and covariance are known. The portfolio volatility is given as a function of covariance matrix and weights vector and can be minimized by sufficient diversification as shown in eq. \@ref(eq:minvol). The sum of all weights equals one as given in eq. \@ref(eq:constraint1). The weights calculated are those which match the portfolio with a given portfolio return $R_{p}$ as in eq. \@ref(eq:constraint2). This is a linear optimization problem as well as a formulation of the fundamental problem of balancing return and risk. Negative weightings are defined as short sales.
+It is assumed that return and covariance are known. The portfolio volatility is given as a function of covariance matrix and weights vector and can be minimized by sufficient diversification as shown in eq. \@ref(eq:minvol). The sum of all weights equals one as given in eq.&nbsp;\@ref(eq:constraint1). The weights calculated are those which match the portfolio with a given portfolio return $R_{p}$ as in eq. \@ref(eq:constraint2). This is a linear optimization problem as well as a formulation of the fundamental problem of balancing return and risk. Negative weightings are defined as short sales.
 
 \begin{equation}
 min \frac{1}{2}\vec{w}^\intercal\Sigma\vec{w}
@@ -553,7 +553,7 @@ R_{i,w} = \vec{w}^\intercal * \vec{R_i}
 
 At the end of the cross validation, all five test sets are combined into one time series consisting daily weighted returns and equaling the length of the historical data. This time series is entirely out-of-sample and is used to calculate the Sharpe ratio and hence measure the performance of the model. The implicit assumption behind this procedure is that the returns at different points in time are independent random variables (and, in particular, do not “remember” the past).
 
-It is to note that the training and test sets of the five sections vary significantly in some cases. To give one cause for this, the financial crisis from 2007–2008 can be looked at. During this period, most assets yielded negative returns. For example, model two in figure \@ref(fig:crossvalidation) includes this time period as part of the test set and model four of the training set. This results in fluctuating asset weights across the five models which are illustrated in figure \@ref(fig:tpwbymodel).
+It is to note that the training and test sets of the five sections vary significantly in some cases. To give one cause for this, the financial crisis from 2007–2008 can be looked at. During this period, most assets yielded negative returns. For example, model two in figure&nbsp;\@ref(fig:crossvalidation) includes this time period as part of the test set and model four of the training set. This results in fluctuating asset weights across the five models which are illustrated in figure \@ref(fig:tpwbymodel).
 
 \newpage
 
@@ -704,7 +704,7 @@ The shrunk correlation matrix is calculated as in eq. \@ref(eq:shrinkcor).
 <p> *$I_{i,j}$ = identity matrix at i,j* <p>
 <p> *$\tilde{\rho}_{i,j}$ = correlation matrix with diagonal zero at i,j* <p>
 
-When the shrinkage factor $\epsilon$ is set to one, the correlation matrix remains unchanged. When it is decreased from one towards zero, the correlation coefficients converge towards zero, except for the diagonal which always remains one. As the tangency portfolio eq. \@ref(eq:tpw) requires the covariance matrix, it is first standardized to the correlation matrix according to eq. \@ref(eq:cor), then shrunk with eq. \@ref(eq:shrinkcor) and scaled up to the covariance matrix again according to eq. \@ref(eq:cor).
+When the shrinkage factor $\epsilon$ is set to one, the correlation matrix remains unchanged. When it is decreased from one towards zero, the correlation coefficients converge towards zero, except for the diagonal which always remains one. As the tangency portfolio eq.&nbsp;\@ref(eq:tpw) requires the covariance matrix, it is first standardized to the correlation matrix according to eq.&nbsp;\@ref(eq:cor), then shrunk with eq.&nbsp;\@ref(eq:shrinkcor) and scaled up to the covariance matrix again according to eq.&nbsp;\@ref(eq:cor).
 
 There can also arise the case, where for some shrinkage factor $\epsilon$ the denominator of the tangency portfolio eq. \@ref(eq:tpw) becomes zero or close to zero. However, this is not further elaborated on.
 
@@ -834,7 +834,7 @@ os_g2r_sr_scor = unlist(out_of_sample_vec(sets_g2r, grid[,1], grid[,2]))
 gg_shrink3D(grid, os_g2r_sr_scor, theme = custom_theme_markdown)
 ```
 
-Table \@ref(tab:srcomtab3) sums up all investigated Sharpe ratios, namely in-sample (IS), out-of-sample (OS) and out-of-sample with applied shrinkage (OS shrinkage).
+Table \@ref(tab:srcomtab3) sums up all investigated Sharpe ratios, namely in-sample&nbsp;(IS), out-of-sample&nbsp;(OS) and out-of-sample with applied shrinkage&nbsp;(OS shrinkage).
 
 ```{r srcomtab3}
 srcomtab3 = data.frame(c(is_r, is_gr, is_g2r),
@@ -863,7 +863,7 @@ kable(tpw_r, col.names = c("Stock", "Before shrinkage", "After shrinkage"),
 
 When comparing the two sets of weights, a significant difference can be seen. Overall, the weights after shrinkage are closer around zero than they were before. This is caused by the fact that the returns are taken into account only 5%, meaning that they have only little impact on the optimization of the weights. Therefore, the weights are much closer to the MVP weights as seen in table \@ref(tab:mvpwrtab) in chapter \@ref(markovitz).
 
-Compared to the weights of the individual stocks already shown in table \@ref(tab:tpwrtab), the weights of the groups in table \@ref(tab:srcomtab2) and \@ref(tab:srcomtab3) are significantly higher or lower. To recall, the weights must summed up to one according to constraint \@ref(eq:constraint1). If the groups perform differently, like it is the case for *Finance* (negative mean return) and *Pharma* (positive mean return) in the groups by industry, the weights drift apart. This becomes even more prominent in the groups by correlation between *Group 1* and *Group 3*. As mentioned in chapter \@ref(markovitz), negative weights correspond to short sales. The difference between the weights before and after shrinkage is insignificant. This is attributed to the shrinkage factor of the mean returns being one and the one for the correlation being 0.95. So there is almost no shrinkage applied.
+Compared to the weights of the individual stocks already shown in table \@ref(tab:tpwrtab), the weights of the groups in table \@ref(tab:srcomtab2) and \@ref(tab:srcomtab3) are significantly higher or lower. To recall, the weights must summed up to one according to constraint \@ref(eq:constraint1). If the groups perform differently, like it is the case for *Finance* (negative mean return) and *Pharma* (positive mean return) in the groups by industry, the weights drift apart. This becomes even more prominent in the groups by correlation between *Group 1* and *Group 3*. As mentioned in chapter&nbsp;\@ref(markovitz), negative weights correspond to short sales. The difference between the weights before and after shrinkage is insignificant. This is attributed to the shrinkage factor of the mean returns being one and the one for the correlation being 0.95. So there is almost no shrinkage applied.
 
 ```{r tpwgrtab}
 gmr = mean_returns(gr)
