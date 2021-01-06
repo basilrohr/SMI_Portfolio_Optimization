@@ -540,7 +540,7 @@ server = function(input, output, session) {
                           c(os_r, os_gr),
                           c(max(os_r_sr_scor), max(os_gr_sr_scor)),
                           row.names = c("SMI constituents", "Groups"))
-    srcomtab %>% datatable(colnames = c("IS", "OS", "OS shrinkage"), rownames = NULL,
+    srcomtab %>% datatable(colnames = c("IS", "OS", "OS shrinkage"),
                            options = list(dom = "t")) %>%
       formatRound(columns = 1:3, digits = 3)
   })
